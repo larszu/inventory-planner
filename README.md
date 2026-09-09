@@ -41,14 +41,53 @@ npm run lint
 npm test        # vitest
 npm run grenze:check   # die Grenze zum Plan
 npm run lang:check     # Quellsprache (deutsch)
+
+npm run electron:dev   # Desktop-Fassung lokal starten (baut vorher)
+npm run dist:win       # Windows: Setup + Portable nach release/
+npm run dist:mac       # macOS: je ein DMG fuer Intel und Apple Silicon
 ```
 
-**Hinweis zur Installation:** `npm install` bricht mit
-`Cannot read properties of null (reading 'edgesOut')` ab — ein Fehler im
-Abhängigkeits-Auflöser von npm 10.9 an der Peer-Gruppe von `vitest`, nicht in
-diesem Projekt. `npm ci` (aus der Lockdatei) läuft durch, und CI benutzt
-ohnehin `npm ci`. Wer die Lockdatei erneuern muss:
-`npm install --legacy-peer-deps`.
+**Hinweis zur Installation.** Hier stand, `npm install` breche ab. Das ist zu
+pauschal, und die Korrektur steht hier statt einer stillen Änderung, weil der
+alte Satz jemanden davon abhielt, das Naheliegende zu versuchen: **mit der
+committeten `package-lock.json` läuft `npm install` durch** — also im normalen
+Fall nach einem `clone`.
+
+Es bricht mit `Cannot read properties of null (reading 'edgesOut')` ab, sobald
+npm den Peer-Graph OHNE Lockdatei neu auflösen muss (Lockdatei gelöscht,
+frisches Verzeichnis). Das ist ein Fehler im Auflöser, nicht in diesem Projekt;
+dann hilft `npm install --legacy-peer-deps`. `npm ci` fasst die Auflösung nie
+an und ist deshalb der Weg, den CI geht.
+
+*Gemessen am 2026-09-09 mit npm 10.9.7, in beiden Fällen und in beiden neuen
+Repos: mit Lockdatei grün, ohne Lockdatei rot.*
+
+## Drei Wege, dasselbe Werkzeug zu benutzen
+
+| Weg | Wie er entsteht | Wofür |
+| --- | --- | --- |
+| Desktop (Windows/macOS) | Tag `v*` → `.github/workflows/release.yml` | Der Rechner im Lager: Fensterstart, keine Adresszeile |
+| Web-Seite | Push auf `main` → `.github/workflows/pages.yml` | Draufschauen, ohne etwas zu installieren |
+| Eingebettet in die Suite | `av-planner-suite` vendoriert dieses Repo | Alle Werkzeuge unter einer Oberfläche |
+
+**Sie teilen ihren Bestand nicht.** Die Ablage ist `localStorage`, und Electron
+hält die in seinem eigenen `userData`-Bereich — Desktop-Fassung und
+Browser-Fassung sind zwei Lager auf demselben Rechner. Das ist keine Panne,
+sondern die Eigenschaft der Ablage; der Weg dazwischen ist der Export
+(`avplan-inventory`), nicht die Erwartung, es sei dasselbe Fenster.
+
+**Die Web-Seite ist noch nicht live.** Eine GitHub-Pages-Site kann nur ein
+Mensch in den Repo-Einstellungen anlegen (*Settings → Pages → Source:
+**GitHub Actions***); der `GITHUB_TOKEN` darf es nicht. Solange sie fehlt, baut
+`pages.yml` trotzdem und überspringt nur das Veröffentlichen — mit einer
+Warnung am Lauf statt einer roten Spalte auf `main`. Sobald die Freigabe da
+ist, veröffentlicht der nächste Push von selbst; an der Datei ist nichts zu
+ändern.
+
+**Keine gekaufte Signatur.** Die macOS-Pakete tragen eine Ad-hoc-Signatur, die
+Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
+Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
+Downloads.
 
 ## Stand
 

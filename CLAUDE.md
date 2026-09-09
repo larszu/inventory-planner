@@ -9,14 +9,25 @@ offline-first, Ablage in `localStorage`.
 ## Befehle
 
 ```bash
-npm ci                 # Installation. NICHT `npm install` — siehe README
+npm ci                 # Installation (CI-Weg). `npm install` geht auch — siehe README
 npm run dev            # Vite auf 4184 (fest, strictPort)
 npm run build          # tsc -b && vite build — MUSS vor jedem Push sauber sein
 npm run lint
 npm test               # vitest
 npm run grenze:check   # die Grenze zum Plan (ADR-006)
 npm run lang:check     # Quellsprache
+
+npm run electron:dev   # Desktop-Fassung lokal (Electron, electron/main.cjs)
+npm run dist:win       # Windows-Installer nach release/
+npm run dist:mac       # macOS-DMGs (x64 + arm64) nach release/
 ```
+
+**Drei Auslieferungen, eine Codebasis.** Desktop kommt aus
+`.github/workflows/release.yml` (Tag `v*`), die Web-Seite aus
+`.github/workflows/pages.yml` (Push auf `main`), die eingebettete Fassung aus
+der Suite. Der Electron-Hauptprozess bringt bewusst KEINE zusaetzliche
+Faehigkeit mit — kein IPC, kein Preload, kein Datei-Zugriff. Wer hier einen
+zweiten Schreibweg anlegt, hat zwei Fassungen derselben Sache.
 
 ## Die eine Regel, die dieses Repo trägt
 
