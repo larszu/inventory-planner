@@ -33,14 +33,11 @@ jobs:
         run: npm run lint
       - name: Typecheck + Build
         run: npm run build
-      - name: Tests
+      # `npm test` faehrt die Waechter mit (vitest, Grenze zum Plan,
+      # Quellsprache) — und zwar aus EINEM Grund: die Suite vendoriert dieses
+      # Repo und ruft dort `npm run test --workspaces`. Ein Waechter, der nur
+      # hier als eigener Workflow-Schritt staende, liefe in der vendorten Kopie
+      # nie mit; ihr Workflow-Abbild feuert nicht. Der Waechter der Suite
+      # (`ci:complete`) meldet genau das.
+      - name: Tests + Waechter (Grenze zum Plan, Quellsprache)
         run: npm test
-      # ADR-006: Das Lager kennt kein Plan-Modell. Faellt diese Grenze, ist aus
-      # zwei Werkzeugen wieder eines geworden — nur mit einer Repo-Grenze
-      # dazwischen, die dann niemand mehr halten kann.
-      - name: Grenze zum Plan
-        run: npm run grenze:check
-      # Quellsprache (E-17/E-20): dieses Repo ist deutsch-quellig, und das
-      # steht nicht nur da, es wird gemessen.
-      - name: Quellsprache — Fallbacks sind deutsch
-        run: npm run lang:check
