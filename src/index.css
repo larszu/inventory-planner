@@ -305,6 +305,22 @@ th {
   margin: 0 0 0.6rem;
 }
 
+/* Ein Datei-Feld sieht nirgends aus wie ein Knopf. Das Label IST der
+   Knopf, das Feld darin ist unsichtbar — sonst steht im Wareneingang ein
+   "Durchsuchen…" neben einem Text, der nicht dazu passt. */
+.eingang .datei-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--rand, #2a3444);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.eingang .datei-knopf input[type='file'] {
+  display: none;
+}
+
 .eingang .zeile {
   display: flex;
   flex-wrap: wrap;
