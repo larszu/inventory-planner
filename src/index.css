@@ -278,6 +278,28 @@ th {
   color: var(--warn);
 }
 
+/* ── Kamera-Sucher (B-65, sechste Zeile) ───────────────────────────────────
+   Der Sucher steht auch ohne Strom im Baum (`srcObject` braucht ein
+   gemountetes Element) und ist dann eingeklappt statt entfernt — ein
+   schwarzes Rechteck ueber der halben Seite waere eine Kamera, die laeuft,
+   und genau das tut sie dann nicht. */
+.inventur .kamera {
+  margin: 0.75rem 0;
+}
+
+.inventur .sucher {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  margin-top: 0.5rem;
+  background: #000;
+  border: 1px solid var(--rand);
+}
+
+.inventur .sucher.aus {
+  display: none;
+}
+
 /* ── Bericht (B-65, zweite Zeile) ──────────────────────────────────────────
    Kacheln oben, Aufschlüsselungen als Raster darunter, Packliste und
    Austausch als eigene Blöcke. Dieselben Regeln wie in der Inventur: keine
