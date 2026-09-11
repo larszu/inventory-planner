@@ -104,6 +104,42 @@ describe('Reiter und Menueleiste sind zwei Zeilen', () => {
   })
 })
 
+describe('die Datei-Eintraege tun, was auf ihnen steht', () => {
+  it('„Neues Lager" fuehrt die Rueckfrage VERNEINT', () => {
+    // Der eigentliche Fehler, gegen den dieser Lauf steht: bis zum
+    // 2026-09-11 stand hier `if (window.confirm(…)) return` — OK tat nichts,
+    // und „Abbrechen" LOESCHTE den Bestand. Ein Bestaetigungsdialog, dessen
+    // Abbruch die Tat ausfuehrt, ist schlimmer als gar keiner.
+    //
+    // Gemessen wird die Verneinung und nicht das Wort „confirm": ein Lauf,
+    // der nur nach `window.confirm` sucht, waere in beiden Fassungen gruen.
+    //
+    // OHNE KOMMENTARZEILEN gemessen. Die Begruendung in der Kopfzeile nennt
+    // die alte Zeile woertlich — suchte der Lauf im rohen Text, besaenftigte
+    // ihn genau der Kommentar, der ihn ausloesen soll. Dieselbe Falle wie
+    // beim Fokus-Waechter im Cable Planner (B-69).
+    const ohneKommentare = kopf
+      .split('\n')
+      .filter((z) => !z.trimStart().startsWith('//'))
+      .join('\n')
+    expect(ohneKommentare).toContain('if (!window.confirm(')
+    expect(ohneKommentare, 'die Rueckfrage steht wieder unverneint').not.toMatch(
+      /if \(window\.confirm\(/,
+    )
+  })
+
+  it('„Speichern" und „Speichern unter…" legen nicht dieselbe Datei ab', () => {
+    // Vorher unterschieden sich die beiden nur im fest eingetragenen
+    // Vorgabenamen — der eine hiess immer `bestand.…`, der andere immer
+    // `bestand-<heute>.…`. Das war kein „unter", sondern ein zweiter fester
+    // Name. Im Browser gibt es genau einen Unterschied zu holen: den NAMEN
+    // (den Ort fragt der Download-Dialog ohnehin).
+    expect(kopf).toContain('window.prompt(')
+    expect(kopf).toContain('speichern(name)')
+    expect(kopf).toContain('speichern(standardName())')
+  })
+})
+
 describe('Gegenprobe zum Lauf selbst', () => {
   it('die gelesenen Dateien sind wirklich da', () => {
     for (const [name, inhalt] of Object.entries({ kopf, css, app })) {

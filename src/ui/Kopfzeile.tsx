@@ -51,6 +51,10 @@ const gibAus = (name: string, inhalt: string) => {
 
 const heute = () => new Date().toISOString().slice(0, 10)
 
+/** Der Vorgabename beider Speicher-Einträge — einmal formuliert, damit
+ *  „Speichern" und „Speichern unter…" nicht auseinanderlaufen. */
+const standardName = () => `bestand-${heute()}.avplan-inventory.json`
+
 export function Kopfzeile() {
   const [einstellungenOffen, setEinstellungenOffen] = useState(false)
   const dateiFeld = useRef<HTMLInputElement>(null)
@@ -91,7 +95,18 @@ export function Kopfzeile() {
               <MenuePunkt
                 onClick={() => {
                   zu()
-                  if (window.confirm('Neuer Bestand — der aktuelle wird ersetzt. Vorher speichern?')) return
+                  // DIE VERNEINUNG IST DER PUNKT. Vorher stand hier
+                  // `if (window.confirm('… Vorher speichern?')) return` — wer
+                  // den Dialog mit OK bestätigte, bekam NICHTS, und wer auf
+                  // „Abbrechen" drückte, verlor seinen Bestand. Ein
+                  // Bestätigungsdialog, dessen Abbruch die Tat ausführt, ist
+                  // schlimmer als gar keiner: er erzeugt genau das Vertrauen,
+                  // das er dann bricht.
+                  //
+                  // Die Frage lautet jetzt nach der Tat und nicht nach einer
+                  // Vorbereitung darauf, damit OK und Abbrechen das
+                  // Naheliegende tun.
+                  if (!window.confirm('Neues Lager — der aktuelle Bestand wird ersetzt. Fortfahren?')) return
                   importSnapshot({ items: [], nodes: [], sets: [], units: [] }, 'replace')
                 }}
               >
@@ -99,8 +114,22 @@ export function Kopfzeile() {
               </MenuePunkt>
               <MenuePunkt onClick={() => { zu(); dateiFeld.current?.click() }}>Öffnen…</MenuePunkt>
               <MenueTrenner />
-              <MenuePunkt onClick={() => { zu(); speichern('bestand.avplan-inventory.json') }}>Speichern</MenuePunkt>
-              <MenuePunkt onClick={() => { zu(); speichern(`bestand-${heute()}.avplan-inventory.json`) }}>
+              <MenuePunkt onClick={() => { zu(); speichern(standardName()) }}>Speichern</MenuePunkt>
+              <MenuePunkt
+                onClick={() => {
+                  zu()
+                  // „Speichern unter…" unterscheidet sich vom „Speichern"
+                  // durch GENAU eine Sache: den Namen. Vorher legten beide
+                  // Einträge dieselbe Datei ab, nur mit anderem Vorgabenamen —
+                  // zwei Wege zu einer Sache, und der zweite sah aus wie eine
+                  // Fähigkeit, die es nicht gab. Der Browser fragt beim
+                  // Download ohnehin nach dem ORT; was er nicht fragt, ist der
+                  // NAME, und genau den holt dieser Eintrag.
+                  const name = window.prompt('Dateiname', standardName())
+                  if (!name) return
+                  speichern(name)
+                }}
+              >
                 Speichern unter…
               </MenuePunkt>
             </>
