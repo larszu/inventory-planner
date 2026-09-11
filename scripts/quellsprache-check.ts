@@ -61,6 +61,17 @@ const DEUTSCH = [
   'darf', 'soll', 'sollen', 'steht', 'gibt', 'sich', 'dieser', 'diese',
   'dieses', 'nach', 'bei', 'über', 'ueber', 'ohne', 'durch', 'gegen', 'sowie',
   'damit', 'wieder', 'immer', 'jede', 'jeder', 'jedes', 'alle', 'allen',
+  // Die folgenden 27 fehlten hier und standen in den drei grossen Kopien
+  // (cable, light, multicam) laengst — nachgezogen am 2026-09-11, als
+  // `lang:parity` erstmals alle FUENF Kopien ansah (B-71). Es sind die
+  // Woerter, an denen eine deutsche BESCHRIFTUNG haengt; ohne sie kannte
+  // dieser Lauf nur die Funktionswoerter und liess ein „Speichern" als
+  // merkmallos durch.
+  'neuer', 'neue', 'neues', 'neuen', 'bearbeiten', 'speichern', 'abbrechen',
+  'verbindung', 'stecker', 'kabel', 'notizen', 'anmerkung', 'anmerkungen',
+  'einstellungen', 'ansicht', 'auswahl', 'vorlage', 'vorlagen', 'datei',
+  'dateien', 'suche', 'suchen', 'farbe', 'nummer', 'zeile', 'spalte',
+  'ordner',
 ];
 
 /** Woerter, die es NUR im Englischen gibt. */
@@ -106,9 +117,24 @@ export function klassifiziere(roh: string): 'de' | 'en' | null {
  *
  * Als Funktion, weil ein `/g`-Ausdruck seinen Suchstand mitschleppt und ein
  * geteiltes Exemplar bei der zweiten Datei mitten im Text weitersuchen wuerde.
+ *
+ * ZWEI STELLEN SIND AM 2026-09-11 NACHGEZOGEN WORDEN, beide aus den drei
+ * grossen Kopien:
+ *
+ *   `tr|`   der Uebersetzer, den Module AUSSERHALB von React rufen. `\bt\(`
+ *           trifft `tr(` nicht — hinter dem `t` steht ein `r`. Im
+ *           `cable-planner` sind so sechs deutsche Fehlermeldungen durch die
+ *           Sprachdrehung E-28 gegangen, waehrend der Zaehler auf 0 blieb:
+ *           was der Ausdruck nicht sieht, kann er auch nicht falsch nennen.
+ *           Dieses Repo ruft heute kein `tr(` — die Luecke war also latent
+ *           und nicht wirksam. Sie hier stehenzulassen hiesse, auf den Tag
+ *           zu warten, an dem sie es wird.
+ *   `(?=\s*[,)])`  der Fallback endet an einem Komma oder der schliessenden
+ *           Klammer. Ohne die Absicherung geht auch etwas durch, das nur so
+ *           ANFAENGT wie ein Fallback.
  */
 export const fallbackMuster = () =>
-  /\b(?:t|translate)\(\s*(?:[A-Za-z]+\s*,\s*)?(['"])[^'"]+\1\s*,\s*(['"])((?:[^\\]|\\.)*?)\2/g;
+  /\b(?:t|tr|translate)\(\s*(?:[A-Za-z]+\s*,\s*)?(['"])[^'"]+\1\s*,\s*(['"])((?:[^\\]|\\.)*?)\2(?=\s*[,)])/g;
 
 /**
  * Sichtbarer Text zwischen JSX-Marken: `<p>Kein Termin vereinbart</p>`.
