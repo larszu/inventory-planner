@@ -33,11 +33,12 @@ import { SubHire } from './SubHire'
 import { Inventur } from './Inventur'
 import { Stapeln } from './Stapeln'
 import { Fahrzeuge } from './Fahrzeuge'
+import { Ladung } from './Ladung'
 import { Bericht } from './Bericht'
 import { WerteUndSchaeden } from './WerteUndSchaeden'
 import { Wareneingang } from './Wareneingang'
 
-type Reiter = 'bestand' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'fahrzeuge'
+type Reiter = 'bestand' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'fahrzeuge' | 'ladung'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -57,6 +58,7 @@ const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string
   { id: 'subhire', titel: t('tab.subhire', 'Sub-hire'), frage: t('tab.subhire.q', 'What is not ours — and when must it go back?') },
   { id: 'stapeln', titel: t('tab.stack', 'Stacking'), frage: t('tab.stack.q', 'Does this case go on that one — and how high does the stack get?') },
   { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles'), frage: t('tab.vehicles.q', 'What fits in — and who is allowed to drive it?') },
+  { id: 'ladung', titel: t('tab.load', 'Load'), frage: t('tab.load.q', 'What travels — and does the vehicle carry it?') },
 ]
 
 /**
@@ -153,6 +155,7 @@ export function App() {
         {reiter === 'subhire' && <SubHire />}
         {reiter === 'stapeln' && <Stapeln />}
         {reiter === 'fahrzeuge' && <Fahrzeuge />}
+        {reiter === 'ladung' && <Ladung />}
       </main>
       {/* Die Statusleiste des Rahmens (ADR-007 Abschnitt 6). Links steht,
           welche Frage gerade offen ist, rechts ihre Zahl. */}

@@ -40,4 +40,9 @@ export const STORAGE_KEYS = {
    * Artikel loescht, hat immer noch dieselben Fahrzeuge.
    */
   vehicles: 'inventory-planner:vehicles',
+  /**
+   * Die Ladungen. Betriebszustand EINER Fahrt, kein Katalog -- dieselbe
+   * Begruendung wie bei den Ausgabescheinen.
+   */
+  loads: 'inventory-planner:loads',
 } as const
