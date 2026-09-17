@@ -32,4 +32,12 @@ export const STORAGE_KEYS = {
    * Bestand nichts zu tun hat.
    */
   fristArten: 'inventory-planner:fristArten',
+  /**
+   * Die Fahrzeuge des Hauses (Ladeplanung).
+   *
+   * Eigener Schluessel aus demselben Grund wie die Fristarten: Stammdaten,
+   * kein Bestand. Ein Fahrzeug ueberdauert jeden Bestand, und wer alle
+   * Artikel loescht, hat immer noch dieselben Fahrzeuge.
+   */
+  vehicles: 'inventory-planner:vehicles',
 } as const
