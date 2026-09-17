@@ -7,6 +7,7 @@ import { moveRefusal } from '../lib/storageMoves'
 import { nodePathLabel } from '../lib/storageTree'
 import { useStorageMoveStore } from './storageMoveStore'
 import type { MoveRefusal } from '../types/storageMove'
+import type { CastorKind, CaseOrientation, TransportSpec } from '../types/transport'
 import type {
   InventoryItem,
   InventoryCase,
@@ -68,6 +69,80 @@ const healDimensions = (raw: unknown): PhysicalDimensions | undefined => {
     weightKg: num(r.weightKg),
   }
   return d.widthMm || d.heightMm || d.depthMm || d.weightKg ? d : undefined
+}
+
+/**
+ * Heilt die Transport-Angaben eines Containers (Ladeplanung).
+ *
+ * Dieselbe Regel wie bei den Massen: nichts erfinden. Eine Rolle ohne
+ * gemessene Aufbauhoehe ist keine Rolle mit Hoehe 0, sie ist gar keine
+ * Angabe. `includedInHeightMm` hat bewusst KEINE Vorgabe -- wer sie nicht
+ * gesetzt hat, hat nicht gemessen, und ein geratenes `false` waere pro Lage
+ * ein Fehler von einer Rollenhoehe.
+ */
+const healTransport = (raw: unknown): TransportSpec | undefined => {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Partial<TransportSpec>
+  const num = (v: unknown): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined
+  const paar = (v: unknown): { x: number; y: number } | undefined => {
+    if (!v || typeof v !== 'object') return undefined
+    const q = v as { x?: unknown; y?: unknown }
+    const x = typeof q.x === 'number' && Number.isFinite(q.x) ? q.x : undefined
+    const y = typeof q.y === 'number' && Number.isFinite(q.y) ? q.y : undefined
+    return x !== undefined && y !== undefined ? { x, y } : undefined
+  }
+
+  const c = r.castors
+  const castors =
+    c && typeof c === 'object' && num(c.heightMm) !== undefined && typeof c.includedInHeightMm === 'boolean'
+      ? {
+          heightMm: c.heightMm as number,
+          includedInHeightMm: c.includedInHeightMm,
+          kind: CASTOR_KINDS.has(c.kind as CastorKind) ? (c.kind as CastorKind) : 'swivel',
+          braked: typeof c.braked === 'boolean' ? c.braked : undefined,
+          insetMm: paar(c.insetMm),
+        }
+      : undefined
+
+  const s = r.stackTop
+  const dish = s && typeof s === 'object' ? paar(s.dishInsetMm) : undefined
+  const stackTop =
+    s && typeof s === 'object' && num(s.recessDepthMm) !== undefined && num(s.fitsCastorMm) !== undefined && dish
+      ? {
+          recessDepthMm: s.recessDepthMm as number,
+          fitsCastorMm: s.fitsCastorMm as number,
+          dishInsetMm: dish,
+          innerProtrusionMm: num(s.innerProtrusionMm),
+        }
+      : undefined
+
+  const orientations = Array.isArray(r.orientations)
+    ? r.orientations.filter((o): o is CaseOrientation => ORIENTATIONS.has(o as CaseOrientation))
+    : undefined
+
+  const d = r.deformable
+  const deformable =
+    d && typeof d === 'object'
+      ? {
+          compressibleMm: d.compressibleMm && typeof d.compressibleMm === 'object' ? d.compressibleMm : undefined,
+          maxLoadOnTopKg: num(d.maxLoadOnTopKg),
+        }
+      : undefined
+
+  const t: TransportSpec = {
+    castors,
+    stackTop,
+    orientations: orientations && orientations.length > 0 ? orientations : undefined,
+    deformable,
+    maxStackKg: num(r.maxStackKg),
+    maxLayers: num(r.maxLayers),
+    noLoadOnTop: typeof r.noLoadOnTop === 'boolean' ? r.noLoadOnTop : undefined,
+  }
+
+  return t.castors || t.stackTop || t.orientations || t.deformable || t.maxStackKg || t.maxLayers || t.noLoadOnTop
+    ? t
+    : undefined
 }
 
 const healCodeType = (v: unknown): InventoryItem['codeType'] =>
@@ -159,6 +234,9 @@ const healItem = (raw: unknown): InventoryItem | null => {
   }
 }
 
+const CASTOR_KINDS = new Set<CastorKind>(['fixed', 'swivel', 'swivelAuto'])
+const ORIENTATIONS = new Set<CaseOrientation>(['upright', 'onSide', 'onEnd'])
+
 const NODE_KINDS = new Set<StorageNodeKind>(['depot', 'room', 'shelf', 'bin', 'case', 'transportCase'])
 
 /** Heilt einen geladenen Lager-Knoten. */
@@ -176,6 +254,7 @@ const healNode = (raw: unknown): StorageNode | null => {
     code: typeof r.code === 'string' && r.code.trim() ? r.code.trim() : undefined,
     codeType: healCodeType(r.codeType),
     dimensions: healDimensions(r.dimensions),
+    transport: healTransport(r.transport),
     notes: typeof r.notes === 'string' ? r.notes : undefined,
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : now,
     updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : now,

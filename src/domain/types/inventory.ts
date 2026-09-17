@@ -13,6 +13,8 @@
  */
 
 /** Eigentumsverhältnis — gleiche Werte wie `EquipmentItem.ownership`. */
+import type { TransportSpec } from './transport'
+
 export type InventoryOwnership = 'owned' | 'rented' | 'subhire'
 
 /** Etiketten-Codeart eines Lager-Artikels/Cases. */
@@ -344,6 +346,13 @@ export interface InventoryCase {
   name: string
   /** Außenmaße + Leergewicht des Cases. */
   dimensions?: PhysicalDimensions
+  /**
+   * Rollen, Rollenteller, zulässige Lagen, Nachgeben — alles, was für die
+   * Ladeplanung zählt und nicht Aussenmass ist. Siehe `types/transport.ts`;
+   * bewusst NICHT in `PhysicalDimensions`, weil das byte-gleich in den
+   * Planern liegt.
+   */
+  transport?: TransportSpec
   /** Fester Etiketten-Code des Cases. */
   code?: string
   codeType?: InventoryCodeType
@@ -387,6 +396,13 @@ export interface StorageNode {
   codeType?: InventoryCodeType
   /** Außenmaße + Leergewicht (v. a. für Container). */
   dimensions?: PhysicalDimensions
+  /**
+   * Rollen, Rollenteller, zulässige Lagen, Nachgeben — alles, was für die
+   * Ladeplanung zählt und nicht Aussenmass ist. Siehe `types/transport.ts`;
+   * bewusst NICHT in `PhysicalDimensions`, weil das byte-gleich in den
+   * Planern liegt.
+   */
+  transport?: TransportSpec
   /** Freie Notiz. */
   notes?: string
   createdAt: string
