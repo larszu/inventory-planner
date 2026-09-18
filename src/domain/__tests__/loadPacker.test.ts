@@ -305,3 +305,80 @@ describe('Lagen', () => {
     expect(plan.unplaced[0]!.grund).toBe('zu-gross')
   })
 })
+
+// ───────────────────────────────────────────────────────────────────────────
+// Ein Laderaum ist selten eine Schachtel.
+//
+// Die Aussage, auf die es hier ankommt: der Hüllquader allein sagt „passt",
+// wo die Kiste an der gerundeten Dachkante ansteht. Das ist nicht eine
+// Ungenauigkeit von ein paar Millimetern, sondern eine falsche Auskunft —
+// und zwar in der teuren Richtung.
+// ───────────────────────────────────────────────────────────────────────────
+describe('Gebrochene und gerundete Kanten', () => {
+  const kastenWagen = (kanten?: Vehicle['kanten']): Vehicle => ({
+    ...auto(),
+    cargoMm: { lengthMm: 3000, widthMm: 1600, heightMm: 1600 },
+    kanten,
+  })
+
+  /** Die gerundeten Dachkanten links und rechts, über die ganze Länge. */
+  const dachkanten: Vehicle['kanten'] = [
+    { achse: 'z', seiten: ['min', 'max'], art: 'rundung', aMm: 400, bMm: 400 },
+    { achse: 'z', seiten: ['max', 'max'], art: 'rundung', aMm: 400, bMm: 400 },
+  ]
+
+  /** Ein Schrank, der genau bis unter die Decke reicht. */
+  const schrank = stueck('schrank', 700, 1600, 600)
+
+  it('setzt den Schrank im scharfkantigen Kasten', () => {
+    const plan = packe(kastenWagen(), [schrank])
+    expect(plan.placements).toHaveLength(1)
+    expect(plan.unplaced).toHaveLength(0)
+  })
+
+  it('setzt ihn unter der Rundung in die MITTE statt an die Wand', () => {
+    const plan = packe(kastenWagen(dachkanten), [schrank])
+    expect(plan.unplaced).toHaveLength(0)
+
+    const p = plan.placements[0]!
+    // An der Wand stünde er bei x = 0. Unter einer 400-mm-Rundung ist dort
+    // kein Platz mehr für volle Höhe.
+    expect(p.position.x).toBeGreaterThanOrEqual(400)
+    expect(p.position.x + p.sizeMm.x).toBeLessThanOrEqual(1200)
+  })
+
+  it('meldet mit Grund, wenn nur die Rundung im Weg ist', () => {
+    // Ein Schrank, der in den Hüllquader passt und in keine Ecke des
+    // gerundeten Raums: 1000 breit und 1600 hoch lässt links und rechts je
+    // 300 mm — zu wenig für die 400er Rundung.
+    const breit = stueck('breit', 1000, 1600, 600)
+    const plan = packe(kastenWagen(dachkanten), [breit])
+
+    expect(plan.placements).toHaveLength(0)
+    expect(plan.unplaced[0]!.grund).toBe('raumform')
+    expect(plan.unplaced[0]!.text).toContain('rounded')
+  })
+
+  it('lässt das flache Stück trotzdem an der Wand stehen', () => {
+    // Die Rundung greift oben. Wer niedrig baut, verliert nichts.
+    const flach = stueck('flach', 700, 600, 600)
+    const plan = packe(kastenWagen(dachkanten), [flach])
+
+    expect(plan.placements[0]!.position.x).toBe(0)
+  })
+
+  it('setzt nichts in die weggeschnittene Ecke', () => {
+    const ecke: Vehicle['kanten'] = [
+      { achse: 'y', seiten: ['min', 'max'], art: 'fase', aMm: 600, bMm: 900 },
+    ]
+    const plan = packe(kastenWagen(ecke), [stueck('a', 500, 500, 500), stueck('b', 500, 500, 500)])
+
+    for (const p of plan.placements) {
+      // Innerhalb der Fase gilt da/600 + db/900 < 1 — kein gesetztes Stück
+      // darf mit seiner innersten Ecke dort liegen.
+      const da = p.position.x
+      const db = 3000 - (p.position.z + p.sizeMm.z)
+      expect(da / 600 + db / 900).toBeGreaterThanOrEqual(1)
+    }
+  })
+})

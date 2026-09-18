@@ -1025,11 +1025,25 @@ p.warnung { color: var(--warn); }
  *
  * `min()` und nicht `vh` allein: auf einem kurzen Fenster entscheidet die
  * Fensterhoehe, auf einem langen die absolute Schranke. */
+/* Die Beschriftungen der Draufsicht stehen NEBEN dem Bild und nicht darin:
+ * ein `<text>` in Laderaum-Millimetern skaliert mit, bricht aber nicht um
+ * und lief auf dem Telefon rechts aus dem Bild. */
+.draufsicht-rahmen { margin: var(--steg-3) 0; }
+
+.draufsicht-legende,
+.draufsicht-oeffnung {
+  margin: var(--steg-1) 0;
+  font-size: 0.9rem;
+}
+
+.draufsicht-legende { color: var(--leise); }
+.draufsicht-oeffnung { color: var(--warn); text-align: center; }
+
 .draufsicht {
   display: block;
   width: 100%;
   max-height: min(70vh, 620px);
-  margin: var(--steg-3) 0;
+  margin: 0;
   touch-action: none; /* sonst scrollt das Telefon, statt die Kiste zu ziehen */
 }
 

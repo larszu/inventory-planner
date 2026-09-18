@@ -17,6 +17,7 @@ import { useT } from '../i18n'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
 import type { VehicleKind } from '../domain/types/vehicle'
+import { Kantenformen } from './Kantenform'
 
 const KINDS: VehicleKind[] = [
   'kofferraum',
@@ -48,6 +49,7 @@ export function Fahrzeuge() {
   const { t, format } = useT()
   const vehicles = useVehicleStore((s) => s.vehicles)
   const addVehicle = useVehicleStore((s) => s.addVehicle)
+  const updateVehicle = useVehicleStore((s) => s.updateVehicle)
   const removeVehicle = useVehicleStore((s) => s.removeVehicle)
 
   const labels = kindLabels(t)
@@ -134,6 +136,14 @@ export function Fahrzeuge() {
                 netto: liter(raum.nettoLiter),
                 boden: raum.bodenBreiteMm,
               })}
+              {raum.kantenLiter > 0 && (
+                <>
+                  {' · '}
+                  {format(t('vehicle.edgeLoss', '{l} l taken by chamfers and roundings'), {
+                    l: liter(raum.kantenLiter),
+                  })}
+                </>
+              )}
             </p>
             <p>
               {t('vehicle.payload', 'Payload:')}{' '}
@@ -154,6 +164,8 @@ export function Fahrzeuge() {
               {t('vehicle.licence', 'Licence class:')}{' '}
               {v.fuehrerscheinKlasse ?? t('vehicle.notGiven', 'not given')}
             </p>
+            <Kantenformen vehicle={v} onAendern={(kanten) => updateVehicle(v.id, { kanten })} />
+
             <button type="button" onClick={() => removeVehicle(v.id)}>
               {t('vehicle.remove', 'Remove')}
             </button>

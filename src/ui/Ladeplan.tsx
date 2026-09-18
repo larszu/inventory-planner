@@ -177,6 +177,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
         onVerschiebe={absetzen}
         rasterMm={raster}
         oeffnungText={t('plan.aperture', 'Loading aperture — what comes out first stands here')}
+        engsteText={t('plan.narrowest', 'Dashed: the narrowest cross-section further up')}
       />
 
       {zeige3d && (

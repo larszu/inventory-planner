@@ -13,17 +13,36 @@
 //      Fläche" ist eine Grundriss-Frage.
 //
 // DIESELBEN REGELN WIE DER PACKER, NICHT EIGENE. Die Gültigkeitsprüfung beim
-// Ziehen benutzt `ueberlappt` und `liegtInnerhalb` aus dem Packer. Eine eigene
-// Kollisionsrechnung hier wäre die zweite Wahrheit darüber, ob etwas passt —
-// und sie würde irgendwann anders antworten als der Plan, den sie zeichnet.
+// Ziehen benutzt `ueberlappt` und `liegtInnerhalb` aus dem Packer und
+// `quaderFrei` aus `domain/lib/kontur`. Eine eigene Kollisionsrechnung hier
+// wäre die zweite Wahrheit darüber, ob etwas passt — und sie würde irgendwann
+// anders antworten als der Plan, den sie zeichnet.
+//
+// DER UMRISS IST NICHT DAS RECHTECK DES HÜLLQUADERS. Er kommt aus
+// `konturBeiHoehe` und zeigt, was auf BODENHÖHE frei ist: eine gerundete
+// untere Kante, eine gebrochene Ecke am Heck, ein verjüngter Kofferraum. Ein
+// Rechteck zu zeichnen, wo eine Rundung ist, wäre eine Einladung, eine Kiste
+// dorthin zu schieben, wo sie nicht steht.
+//
+// Weil der Grundriss WEITER OBEN anders aussehen kann — zusammenlaufende
+// Wände, eine gerundete Dachkante —, steht der engste Schnitt als
+// gestrichelte Linie daneben. Ohne ihn hiesse „passt in der Draufsicht"
+// stillschweigend „passt nur bis Kniehöhe".
 //
 // WAS SIE NICHT ZEIGT: die Höhe. Zwei Kisten übereinander liegen in der
 // Draufsicht aufeinander; die obere wird dünner gezeichnet, aber die Frage
 // „passt das unter die Decke" beantwortet die 3D-Ansicht.
 // ───────────────────────────────────────────────────────────────────────────
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { liegtInnerhalb, quader, ueberlappt } from '../../domain/lib/loadPacker'
 import type { LoadPlan, Vec3 } from '../../domain/lib/loadPacker'
+import {
+  konturBeiHoehe,
+  konturFlaeche,
+  konturHoehen,
+  quaderFrei,
+  type Punkt2D,
+} from '../../domain/lib/kontur'
 import type { Vehicle } from '../../domain/types/vehicle'
 import { gruppenFarbe } from './farben'
 
@@ -37,12 +56,26 @@ interface Props {
   rasterMm: number
   /** Beschriftung der Öffnungskante. */
   oeffnungText: string
+  /** Beschriftung des engsten Schnitts weiter oben. Fehlt er, wird er nicht
+   *  gezeichnet — eine Linie ohne Erklärung ist ein Rätsel. */
+  engsteText?: string
 }
 
 /** Rand um die Ladefläche, in Laderaum-Millimetern. */
 const RAND = 40
+/**
+ * Unten Platz für die Öffnungskante — sie liegt auf dem Rand des Raums und
+ * bräuchte sonst keinen.
+ *
+ * DIE BESCHRIFTUNGEN STEHEN NICHT MEHR IM BILD. Sie standen es im ersten
+ * Anlauf, als `<text>` in Laderaum-Millimetern: auf dem Telefon lief der Satz
+ * dann aus dem `viewBox` heraus und war rechts abgeschnitten („…stands her").
+ * Ein SVG skaliert seinen Text mit, aber es bricht ihn nicht um. Als HTML
+ * daneben bricht er um, folgt der Schriftgrösse des Geräts und lässt sich
+ * vorlesen.
+ */
 /** Unten mehr Platz: dort steht die Beschriftung der Öffnungskante. */
-const RAND_UNTEN = 260
+const RAND_UNTEN = 60
 /**
  * Um soviel wird eine obere Lage eingerückt gezeichnet.
  *
@@ -61,6 +94,7 @@ export function Draufsicht({
   onVerschiebe,
   rasterMm,
   oeffnungText,
+  engsteText,
 }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const [zug, setZug] = useState<{ id: string; dx: number; dz: number; x: number; z: number } | null>(null)
@@ -92,6 +126,39 @@ export function Draufsicht({
     return { x: p.x - RAND, z: p.y - RAND }
   }
 
+  /**
+   * Der Umriss am Boden und der engste Schnitt darüber.
+   *
+   * Der engste wird gesucht statt gesetzt: welche Höhe die schmalste ist,
+   * hängt von den Kanten ab — beim Transporter die Decke, beim Kofferraum
+   * mit Radlauf eine Höhe mittendrin. Eine feste Höhe zu nehmen hiesse zu
+   * raten, welche Bauform jemand fährt.
+   */
+  const { boden, engste } = useMemo(() => {
+    const amBoden = konturBeiHoehe(vehicle, 0)
+    let schmalste: Punkt2D[] | null = null
+    let kleinste = konturFlaeche(amBoden)
+    for (const y of konturHoehen(vehicle)) {
+      const k = konturBeiHoehe(vehicle, y)
+      const f = konturFlaeche(k)
+      if (f < kleinste - 1) {
+        kleinste = f
+        schmalste = k
+      }
+    }
+    return { boden: amBoden, engste: schmalste }
+  }, [vehicle])
+
+  const alsPfad = (punkte: readonly Punkt2D[]) =>
+    punkte.map((p) => `${RAND + p.x},${RAND + p.z}`).join(' ')
+
+  // Die Öffnungskante ist so breit wie der Boden DORT — bei einem zum Heck
+  // verjüngten Raum ist das weniger als die Innenbreite. Eine Linie über die
+  // volle Breite zeichnete eine Öffnung, die es nicht gibt.
+  const hinten = boden.filter((p) => p.z > raum.z - 1)
+  const kanteVon = hinten.length > 0 ? Math.min(...hinten.map((p) => p.x)) : 0
+  const kanteBis = hinten.length > 0 ? Math.max(...hinten.map((p) => p.x)) : raum.x
+
   const raste = (n: number) => (rasterMm > 0 ? Math.round(n / rasterMm) * rasterMm : Math.round(n))
 
   /** Liegt das gezogene Stück gerade gültig? Dieselben Regeln wie der Packer. */
@@ -100,6 +167,7 @@ export function Draufsicht({
     if (!p) return false
     const q = quader(pos, p.sizeMm)
     if (!liegtInnerhalb(q, raum)) return false
+    if (!quaderFrei(vehicle.kanten, raum, pos, p.sizeMm)) return false
     const andere = [
       ...plan.placements.filter((x) => x.stueckId !== id).map((x) => quader(x.position, x.sizeMm)),
       ...vehicle.obstructions.map((h) => quader(h.originMm, h.sizeMm)),
@@ -111,6 +179,8 @@ export function Draufsicht({
   const zugGueltig = zug && gezogen ? gueltig(zug.id, { x: zug.x, y: gezogen.position.y, z: zug.z }) : true
 
   return (
+    <figure className="draufsicht-rahmen">
+      {engste && engsteText && <p className="draufsicht-legende">{engsteText}</p>}
     <svg
       ref={svg}
       className="draufsicht"
@@ -130,8 +200,23 @@ export function Draufsicht({
       }}
       onPointerLeave={() => setZug(null)}
     >
-      {/* Laderaum */}
-      <rect x={RAND} y={RAND} width={raum.x} height={raum.z} fill="#24405F" stroke="#8C9CB3" strokeWidth={6} />
+      {/* Der Laderaum am BODEN — der Umriss und nicht das Rechteck. */}
+      <polygon points={alsPfad(boden)} fill="#24405F" stroke="#8C9CB3" strokeWidth={6} />
+
+      {/* Der engste Schnitt weiter oben. Gestrichelt, weil er nichts ist,
+          worauf man etwas stellt — er sagt, wie weit es nach oben eng wird. */}
+      {engste && engsteText && (
+        <>
+          <polygon
+            points={alsPfad(engste)}
+            fill="none"
+            stroke="#8C9CB3"
+            strokeWidth={5}
+            strokeDasharray="60 40"
+            opacity={0.8}
+          />
+        </>
+      )}
 
       {/* Hindernisse */}
       {vehicle.obstructions.map((h, i) => {
@@ -203,22 +288,15 @@ export function Draufsicht({
 
       {/* Die Öffnungskante, beschriftet — sonst weiss niemand, wo vorn ist. */}
       <line
-        x1={RAND}
+        x1={RAND + kanteVon}
         y1={RAND + raum.z}
-        x2={RAND + raum.x}
+        x2={RAND + kanteBis}
         y2={RAND + raum.z}
         stroke="#C8892B"
         strokeWidth={16}
       />
-      <text
-        x={RAND + raum.x / 2}
-        y={RAND + raum.z + 150}
-        textAnchor="middle"
-        fontSize={110}
-        fill="#C8892B"
-      >
-        {oeffnungText}
-      </text>
     </svg>
+      <p className="draufsicht-oeffnung">{oeffnungText}</p>
+    </figure>
   )
 }

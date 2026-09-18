@@ -598,6 +598,52 @@ export const de: Record<string, string> = {
   'loading.layers': 'Lagen',
   'loading.layer': 'Lage {n} — {mm} mm über dem Boden',
 
+  // ── Die Form des Laderaums: Ecken, Kanten, Rundungen ────────────────────
+  //
+  // „Fase" und „Rundung" sind die Werkstattbegriffe; „abgeschrägt" wäre eine
+  // Beschreibung, aber keine Benennung, und wer den Laderaum ausmisst, sagt
+  // Fase. Links/rechts stehen aus Sicht dessen, der am Heck steht und
+  // hineinschaut — dieselbe Blickrichtung wie in der Draufsicht.
+  'pack.roomShape':
+    'Es käme nur dort unter, wo der Laderaum gefast oder gerundet ist — das Kistenmass passt, das Fahrzeug nicht.',
+  'plan.narrowest': 'Gestrichelt: der engste Querschnitt weiter oben',
+  'vehicle.edgeLoss': '{l} l gehen für Fasen und Rundungen ab',
+
+  'edge.along': 'läuft über die ganze Länge',
+  'edge.across': 'läuft quer durchs Fahrzeug',
+  'edge.upright': 'läuft vom Boden zum Dach',
+  'edge.depth.width': 'in die Breite (mm)',
+  'edge.depth.height': 'in die Höhe (mm)',
+  'edge.depth.length': 'in die Länge (mm)',
+  'edge.roofLeft': 'Dachkante links',
+  'edge.roofRight': 'Dachkante rechts',
+  'edge.floorLeft': 'Bodenkante links',
+  'edge.floorRight': 'Bodenkante rechts',
+  'edge.rearTop': 'Heckkante oben',
+  'edge.rearBottom': 'Heckkante unten',
+  'edge.frontTop': 'Stirnkante oben',
+  'edge.frontBottom': 'Stirnkante unten',
+  'edge.cornerRearLeft': 'Raumecke hinten links',
+  'edge.cornerRearRight': 'Raumecke hinten rechts',
+  'edge.cornerFrontLeft': 'Raumecke vorn links',
+  'edge.cornerFrontRight': 'Raumecke vorn rechts',
+  'edge.none': 'Form des Laderaums — scharfkantiger Quader, nichts gemessen',
+  'edge.count': 'Form des Laderaums — {n} Kanten gemessen',
+  'edge.intro':
+    'Ein Laderaum ist selten eine Schachtel: Dachkanten sind gerundet, Wände laufen zusammen, ein Kofferraum verjüngt sich zur Heckklappe. Was nicht eingetragen ist, bleibt eine scharfe Kante — das lässt höchstens Platz ungenutzt und verspricht nie Platz, den es nicht gibt.',
+  'edge.roundedBy': 'gerundet, {a} x {b} mm',
+  'edge.chamferedBy': 'gefast, {a} x {b} mm',
+  'edge.remove': 'Entfernen',
+  'edge.which': 'Welche Kante',
+  'edge.art': 'Form',
+  'edge.rounded': 'Gerundet',
+  'edge.chamfered': 'Gefast (gerade)',
+  'edge.hintRound':
+    'Gleiche Werte ergeben einen Viertelkreis, ungleiche eine Ellipse. Gemessen wird, wie weit die Rundung in jede Richtung reicht.',
+  'edge.hintChamfer':
+    'Ein gerader Schnitt von einer Wand zur anderen — gemessen wird, wie weit er in jede Richtung reicht.',
+  'edge.add': 'Kante eintragen',
+
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
   'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',

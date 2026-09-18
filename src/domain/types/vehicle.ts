@@ -43,6 +43,75 @@ export type VehicleKind =
   | 'sattelzug'
   | 'anhaenger'
 
+/**
+ * ─── DIE KANTEN DES LADERAUMS ──────────────────────────────────────────────
+ *
+ * Ein Hindernis erklärt, was IM Laderaum steht. Es erklärt nicht, dass der
+ * Laderaum selbst keine Schachtel ist: die Dachkante eines Transporters ist
+ * gerundet, die Wände eines Kastens laufen nach oben zusammen, ein
+ * Kofferraum verjüngt sich zum Heck, und über dem Radlauf steht eine
+ * Schräge. Das als Quader-Hindernis nachzubauen hiesse, eine Rundung mit
+ * Treppenstufen zu beschreiben — und jede Stufe ist entweder zu viel Platz
+ * (falsches „passt") oder zu wenig (Platz, den niemand nutzt).
+ *
+ * Deshalb trägt der Laderaum seine eigenen Kanten. Eine `Kantenform` nimmt
+ * EINE der zwölf Kanten des Quaders und bricht sie — gerade (`fase`) oder
+ * rund (`rundung`). Damit sind alle vier Fälle oben darstellbar, und zwar
+ * mit zwei Zahlen statt mit einer Treppe.
+ *
+ * ─── WARUM NICHT EIN FREIER GRUNDRISS ──────────────────────────────────────
+ *
+ * Ein Polygonzug je Höhe wäre allgemeiner. Er wäre aber auch etwas, das
+ * jemand mit einem Zollstock am Fahrzeug nicht aufnehmen kann: man misst
+ * „die Dachkante ist auf 120 mm gerundet", nicht dreissig Stützpunkte. Das
+ * Modell folgt der Messung, nicht der Mathematik.
+ *
+ * ─── UND DIE HAUSREGEL GILT WEITER ─────────────────────────────────────────
+ *
+ * Ohne Eintrag ist die Kante SCHARF. Das ist keine Annahme über das
+ * Fahrzeug, sondern die konservative Richtung: eine scharfe Kante lässt
+ * höchstens Platz ungenutzt. Eine geratene Rundung dagegen gäbe Platz frei,
+ * den es vielleicht nicht gibt — und das ist genau die falsche Auskunft, vor
+ * der der Kopf dieser Datei warnt.
+ */
+export type Achse = 'x' | 'y' | 'z'
+
+/** Die beiden Enden einer Achse: `min` = 0, `max` = Kantenlänge. */
+export type Seite = 'min' | 'max'
+
+export interface Kantenform {
+  /**
+   * Die Achse, ENTLANG der die Kante läuft.
+   *
+   * `z` (Länge) ist der häufigste Fall — die Dachkanten eines Transporters
+   * laufen von vorn nach hinten durch.
+   */
+  achse: Achse
+  /**
+   * Wo die Kante liegt: die Seiten der beiden ANDEREN Achsen, in
+   * Achsenreihenfolge (x vor y vor z).
+   *
+   * Beispiel: `achse: 'z'`, `seiten: ['max', 'max']` ist die Kante
+   * rechts oben, die über die ganze Länge läuft.
+   */
+  seiten: [Seite, Seite]
+  art: 'fase' | 'rundung'
+  /** Tiefe des Bruchs entlang der ERSTEN der beiden anderen Achsen, in mm. */
+  aMm: number
+  /** Tiefe entlang der ZWEITEN. Bei `rundung` zusammen mit `aMm` die
+   *  Halbachsen — gleich gross ist der Kreis, ungleich die Ellipse. */
+  bMm: number
+  /** Wofür sie steht, in den Worten dessen, der gemessen hat. */
+  name?: string
+}
+
+/** Die beiden Achsen, die eine Kante aufspannt — in Achsenreihenfolge. */
+export function andereAchsen(achse: Achse): [Achse, Achse] {
+  if (achse === 'x') return ['y', 'z']
+  if (achse === 'y') return ['x', 'z']
+  return ['x', 'y']
+}
+
 /** Ein Hindernis IM Laderaum: Radkasten, Sitzbank, Ersatzrad, Aufbau. */
 export interface CargoObstruction {
   name: string
@@ -75,8 +144,13 @@ export interface Vehicle {
   id: string
   name: string
   kind: VehicleKind
-  /** Der grösste Quader; Hindernisse werden davon abgezogen. */
+  /** Der grösste Quader; Kanten und Hindernisse werden davon abgezogen. */
   cargoMm: { lengthMm: number; widthMm: number; heightMm: number }
+  /**
+   * Gebrochene und gerundete Kanten des Laderaums. Fehlt die Liste, ist der
+   * Raum ein scharfkantiger Quader — siehe `Kantenform`.
+   */
+  kanten?: Kantenform[]
   obstructions: CargoObstruction[]
   aperture?: CargoAperture
   /** Zulässige Zuladung in kg — NICHT das zulässige Gesamtgewicht. */

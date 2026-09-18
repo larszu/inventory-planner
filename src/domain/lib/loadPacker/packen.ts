@@ -34,6 +34,7 @@
 
 import type { CaseOrientation } from '../../types/transport'
 import type { Vehicle } from '../../types/vehicle'
+import { quaderFrei, wandEinzuege } from '../kontur'
 import { format, quelle, type Uebersetzen } from '../../../i18n/quelle'
 import {
   absetzPunkte,
@@ -168,6 +169,7 @@ export function packe(
   t: Uebersetzen = quelle,
 ): LoadPlan {
   const raum: Vec3 = { x: v.cargoMm.widthMm, y: v.cargoMm.heightMm, z: v.cargoMm.lengthMm }
+  const einzuege = wandEinzuege(v)
   const mindest = options.mindestStuetzung ?? VORGABE_STUETZUNG
   const reihenfolge = options.gruppenReihenfolge ?? []
   const raster = options.rasterMm ?? 0
@@ -261,7 +263,7 @@ export function packe(
     }
 
     const ziel = wunschTiefe(s.gruppe, reihenfolge, raum.z)
-    const punkte = absetzPunkte(gesetzt.map((g) => g.q), raum)
+    const punkte = absetzPunkte(gesetzt.map((g) => g.q), raum, einzuege)
       .sort((a, b) => Math.abs(a.z - ziel) - Math.abs(b.z - ziel) || a.y - b.y || a.x - b.x)
 
     let gesetztHier: Placement | null = null
@@ -288,6 +290,14 @@ export function packe(
           : p
         const q = quader(pos, lv.masse)
         if (!liegtInnerhalb(q, raum)) continue
+        // Der Laderaum ist selten eine Schachtel: gerundete Dachkanten,
+        // zusammenlaufende Waende, ein zum Heck verjuengter Kofferraum. Der
+        // Huellquader allein sagt „passt", wo die Kiste an der Rundung
+        // ansteht — und das ist die teure Richtung des Irrtums.
+        if (!quaderFrei(v.kanten, raum, pos, lv.masse)) {
+          gruende.add('raumform')
+          continue
+        }
         if (gesetzt.some((g) => ueberlappt(q, g.q))) continue
 
         const anteil = stuetzAnteil(q, gesetzt.map((g) => g.q))
@@ -326,7 +336,9 @@ export function packe(
     }
 
     if (!gesetztHier) {
-      const grund = (['zu-gross', 'stapelregel', 'stuetzflaeche'] as const).find((g) => gruende.has(g))
+      const grund = (['zu-gross', 'raumform', 'stapelregel', 'stuetzflaeche'] as const).find((g) =>
+        gruende.has(g),
+      )
         ?? 'kein-platz'
       unplaced.push({ stueckId: s.id, label: s.label, grund, text: grundText(grund, t) })
       continue
@@ -364,6 +376,11 @@ function grundText(grund: Unplaced['grund'], t: Uebersetzen): string {
       return t('pack.stackRule', 'A stacking rule of the case below forbids it.')
     case 'zu-gross':
       return t('pack.tooBig', 'Larger than the cargo space in every allowed orientation.')
+    case 'raumform':
+      return t(
+        'pack.roomShape',
+        'It only clears the free spots where the cargo space is chamfered or rounded — the box measure fits, the vehicle does not.',
+      )
     default:
       return t('pack.noRoom', 'No free spot left that it fits into.')
   }
