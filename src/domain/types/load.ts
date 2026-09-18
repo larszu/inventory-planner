@@ -24,7 +24,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import type { PhysicalDimensions } from './inventory'
-import type { TransportSpec } from './transport'
+import type { CaseOrientation, TransportSpec } from './transport'
 
 /** Woher ein Stück in die Ladung kam. */
 export type LadungsHerkunft = 'container' | 'artikel' | 'bedarf' | 'csv'
@@ -49,6 +49,31 @@ export interface LadungsStueck {
   transport?: TransportSpec
   /** Freie Abladegruppe (Bühne, Licht, Ton …). Ordnet die Ladereihenfolge. */
   gruppe?: string
+  /**
+   * Von Hand im Laderaum abgesetzt — und damit VERANKERT (#22, #23).
+   *
+   * Der Packer fasst ein verankertes Stück nicht mehr an. Das ist der Kern
+   * der Bedienung: „drag any case into place by hand when load order matters
+   * more than pure density". Wer eine Kiste hingestellt hat, hat einen Grund,
+   * den der Packer nicht kennt — und ein Plan, der sie beim nächsten Lauf
+   * wieder wegräumt, ist kein Werkzeug, sondern ein Gegner.
+   *
+   * Die Position ist der Ursprung des Hüllquaders in Millimetern, im
+   * Koordinatensystem aus `domain/lib/loadPacker/typen.ts`.
+   */
+  fixiert?: { position: { x: number; y: number; z: number }; lage: CaseOrientation }
+  /**
+   * Wann dieses Stück WIRKLICH eingeladen wurde (ISO-Zeitpunkt).
+   *
+   * Ein Zeitpunkt und kein Haken: er beantwortet „wann", und er hält
+   * nebenbei die Reihenfolge fest, in der tatsächlich geladen wurde — die
+   * kann von der geplanten abweichen, und genau diese Abweichung ist beim
+   * nächsten Mal die interessantere Angabe.
+   *
+   * Fehlt er, ist das Stück NICHT geladen. Es ist nicht „vielleicht" — wer
+   * am Heck steht, braucht eine Liste, der er glauben kann.
+   */
+  geladenAm?: string
   notes?: string
 }
 
@@ -58,6 +83,14 @@ export interface Ladung {
   /** Fahrzeug, für das geplant wird. Leer heißt: noch nicht entschieden. */
   vehicleId?: string
   stuecke: LadungsStueck[]
+  /**
+   * Die Abladegruppen in der Reihenfolge, in der sie GEBRAUCHT werden (#22).
+   *
+   * Die erste kommt an die Öffnung, die letzte nach hinten. Fehlt die Liste,
+   * gibt es keine Reihenfolge — und dann sagt der Plan auch nicht, er habe
+   * eine eingehalten.
+   */
+  gruppenReihenfolge?: string[]
   createdAt: string
   updatedAt: string
 }

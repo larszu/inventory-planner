@@ -532,4 +532,78 @@ export const de: Record<string, string> = {
   'tab.subhire.q': 'Was gehört uns nicht — und wann muss es zurück?',
   'tab.values': 'Werte & Schäden',
   'tab.values.q': 'Was ist es wert, was ist kaputt, und was ist gebunden?',
+
+  // ── Ladeplan: Packer, Draufsicht, 3D (#20, #22, #23) ────────────────────
+  'pack.noAperture':
+    'Keine Ladeöffnung erfasst — niemand hat nachgesehen, ob die Stücke durch die Tür gehen.',
+  'pack.noPayload': 'Keine Nutzlast eingetragen — das Gewicht wird summiert, aber nicht geprüft.',
+  'pack.noDims': 'Keine Außenmaße erfasst — es fährt mit, es lässt sich nur nicht einplanen.',
+  'pack.tooBigForAperture': 'Passt in keiner erlaubten Lage durch die Ladeöffnung.',
+  'pack.noSupport': 'Kein Platz mit genug Auflage unter der Grundfläche — es würde kippen.',
+  'pack.stackRule': 'Eine Stapelregel des Cases darunter verbietet es.',
+  'pack.tooBig': 'In jeder erlaubten Lage größer als der Laderaum.',
+  'pack.noRoom': 'Kein freier Platz mehr, in den es passt.',
+  'pack.orderConflict':
+    'Gruppe „{group}" passt nur, wenn {n} Stücke einer späteren Gruppe davor stehen.',
+  'pack.overPayload':
+    'Das gesetzte Gewicht übersteigt die Nutzlast — der Plan passt, das Fahrzeug nicht.',
+
+  'plan.noVehicle':
+    'Wähle ein Fahrzeug für diese Ladung — ohne Laderaum gibt es nichts einzuteilen.',
+  'plan.grid': 'Raster',
+  'plan.grid.free': 'frei',
+  'plan.grid.mm': '{n} mm',
+  'plan.show3d': 'In 3D zeigen',
+  'plan.hide3d': '3D ausblenden',
+  'plan.loading3d': 'Die 3D-Ansicht wird geladen…',
+  'plan.releaseAll': '{n} von Hand gesetzte lösen',
+  'plan.dragHint':
+    'Zieh ein Case an seinen Platz. Was du gesetzt hast, bleibt stehen — der Packer fasst es nicht mehr an.',
+  'plan.aperture': 'Ladeöffnung — was zuerst herauskommt, steht hier',
+  'plan.selected': '{label} — Schritt {step}, {x}/{z} mm, {state}',
+  'plan.anchored': 'von Hand gesetzt',
+  'plan.byPacker': 'vom Packer gesetzt',
+  'plan.anchoredShort': '(von Hand)',
+  'plan.groups': 'Abladereihenfolge',
+  'plan.groupsHint': 'Die erste Gruppe steht an der Öffnung und kommt zuerst heraus.',
+  'plan.groupUp': 'Früher',
+  'plan.groupDown': 'Später',
+  'plan.findings': 'Was es gekostet hat',
+  'plan.unplaced': 'Nicht eingeplant ({n})',
+  'plan.order': 'Ladereihenfolge',
+  'plan.orderHint': 'In dieser Reihenfolge laden. Das Abladen läuft rückwärts.',
+
+  // ── Beladen: der Blick aus der Ladeöffnung ──────────────────────────────
+  'plan.mode': 'Modus',
+  'plan.modePlan': 'Planen',
+  'plan.modeLoad': 'Beladen',
+
+  'loading.stow': 'Verstaut',
+  'loading.undo': 'Zurücknehmen',
+  'loading.done': 'Alles vom Plan ist verstaut.',
+  'loading.where': 'Lage {layer}, {x} mm von links, {z} mm tief',
+  'loading.progress': '{n} von {m} verstaut · {kg} kg',
+  'loading.noWeight': '{n} davon ohne Gewicht',
+  'loading.stowed': '{label} verstaut — Schritt {step}.',
+  'loading.already': '{label} ist schon verstaut.',
+  'loading.outOfOrder':
+    '{n} Stücke sollten vor diesem hinein — du musst später daran vorbeigreifen.',
+  'loading.missingBelow': 'Es steht auf {n} Stücken, die noch nicht geladen sind: {labels}',
+  'loading.unknownCode': 'Code „{code}" ist nicht im Bestand.',
+  'loading.notInLoad':
+    '{what} steht im Bestand — gehört aber nicht zu dieser Ladung. Falsches Fahrzeug?',
+  'loading.camOn': 'Case scannen',
+  'loading.camOff': 'Kamera aus',
+  'loading.camFailed': 'Die Kamera liess sich nicht starten.',
+  'loading.layers': 'Lagen',
+  'loading.layer': 'Lage {n} — {mm} mm über dem Boden',
+
+  // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
+  // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
+  'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',
+  'loading.roleLoaded': 'Geladen',
+  'loading.roleCurrent': 'Wird geladen',
+  'loading.roleOpen': 'Folgt',
+  'loading.stowOf': '{label} als verstaut vermerken',
+  'loading.undoOf': '{label} wieder herausnehmen',
 }

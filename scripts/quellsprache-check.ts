@@ -163,6 +163,38 @@ export const fallbackMuster = () =>
  * Abdeckung — ein JSX-Tag endet nie so —, und es nimmt dem Waechter den
  * einzigen Grund, den jemand haette, ihn abzuschalten.
  *
+ * UND EINE DRITTE SCHWESTER (gefunden 2026-09-18 beim Bau der Ladeplanung).
+ * `=>` und `>=` auszunehmen reicht nicht — der GEWOEHNLICHE Vergleich endet
+ * auf nichts davon:
+ *
+ *     const ein = p.position.y > 0 ? LAGEN_VERSATZ : 0
+ *     const farbe = gruppenFarbe(p.gruppe, gruppen)
+ *     return (
+ *       <g
+ *
+ * Zwischen dem `>` und dem `<` von `<g` steht keine Klammer, also greift das
+ * Muster ueber drei Zeilen Code — und der Klassifizierer sieht „Farbe" und
+ * „Gruppe" und meldet eine deutsche Beschriftung. Eine einwandfreie Zeile,
+ * die so gemeldet wird, kostet den Waechter sein Ansehen.
+ *
+ * Die Bedingung ist deshalb jetzt POSITIV: vor einem Tag-Ende steht ein
+ * Anfuehrungszeichen, ein Wortzeichen, ein `/`, `]` oder `}` — `<p>`,
+ * `className="x">`, `<br/>`, `{...rest}>`. Vor einem Vergleich steht ein
+ * LEERZEICHEN, und das ist keines davon.
+ *
+ * Was das kostet: einen Textknoten direkt hinter einem mehrzeilig
+ * geschriebenen Tag, dessen `>` allein auf einer Zeile steht.
+ *
+ * GEMESSEN am 2026-09-18 ueber das ganze Repo, vorher gegen nachher:
+ *
+ *     englisch        172  ->  172     unveraendert
+ *     deutsch           1  ->    0     der Fehlalarm
+ *     ohne Merkmal   1003  ->  966     37 Code-Schnipsel weniger
+ *
+ * Die 37, die wegfallen, trugen alle KEIN Sprachmerkmal — es waren
+ * Code-Stuecke, die das weite Muster mitgelesen hat. Die Zahl der wirklich
+ * erkannten Beschriftungen bleibt gleich; verloren geht nur Rauschen.
+ *
  * UND DIE FALLE HAT EINE ZWILLINGSSCHWESTER (gefunden 2026-09-11 im
  * `larszu-facility-planner`, hier mitgezogen). Die spitzen Klammern von
  * TypeScript enden ebenfalls auf `>`: `useState<Belegung>(…)` und
@@ -170,7 +202,7 @@ export const fallbackMuster = () =>
  * Zeilen an. In DIESEM Repo hat sie noch nicht zugeschnappt — das ist ein
  * Zufall der Schreibweise und kein Schutz. Siehe `ohneGenerics`.
  */
-export const jsxTextMuster = () => /(?<!=)>(?!=)([^<>{}]{4,300})</g;
+export const jsxTextMuster = () => /(?<=["'\w/\]}])>(?!=)([^<>{}]{4,300})</g;
 
 /**
  * Typ-Anwendungen entfernen: `Record<Bauform, string>`, `useState<Thema>`.
@@ -311,6 +343,24 @@ assert.equal(
   klassifiziere([...ohneGenerics('<p>Kein Termin vereinbart</p>').matchAll(jsxTextMuster())][0][1]),
   'de',
 );
+
+// Und die Gegenprobe zum Vergleichs-Operator (2026-09-18). Die erste Fassung
+// las hier drei Zeilen Code als Beschriftung und meldete sie als deutsch.
+assert.equal(
+  [...'const ein = p.position.y > 0 ? VERSATZ : 0\nconst farbe = f(p.gruppe)\nreturn (\n  <g'.matchAll(
+    jsxTextMuster(),
+  )].length,
+  0,
+);
+// Die vier Schreibweisen eines echten Tag-Endes bleiben erkannt.
+for (const zeile of [
+  '<p>Kein Termin vereinbart</p>',
+  '<p className="x">Kein Termin vereinbart</p>',
+  '<p {...rest}>Kein Termin vereinbart</p>',
+  '<p data-x={1} title="a">Kein Termin vereinbart</p>',
+]) {
+  assert.equal([...zeile.matchAll(jsxTextMuster())].length > 0, true, zeile);
+}
 
 
 console.log('Alle Quellsprachen-Checks bestanden.');

@@ -96,6 +96,70 @@ Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
 Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
 Downloads.
 
+## Ladeplanung
+
+Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Load** rechnet einen
+Ladeplan und zeigt ihn, statt Koordinaten aufzulisten.
+
+**Der Packer** (`src/domain/lib/loadPacker/`) rechnet **frei in 3D**, nicht im
+Raster: die Branche lädt Peli-Cases, weiche Taschen und Stative in Sprinter,
+Ducato und Kofferräume, und dort gibt es kein Packmass, sondern Radkästen und
+Reste. Verfahren ist eine Extreme-Point-Heuristik mit achsparallelen
+Hüllquadern; berücksichtigt werden Stützfläche, Stapelregeln des Cases
+(`noLoadOnTop`, `maxStackKg`, `maxLayers`), erlaubte Lagen, die Ladeöffnung,
+Hindernisse im Laderaum und das Gewicht.
+
+**Was nicht passt, wird benannt — mit Grund.** „Passt nicht durch die
+Heckklappe", „Stützfläche zu klein", „eine Stapelregel des Cases darunter
+verbietet es". Ein Plan, der Stücke stillschweigend weglässt, ist am Dock
+gefährlicher als gar keiner.
+
+**Die Reihenfolge zählt mehr als die Dichte.** Jedes Stück bekommt eine
+Abladegruppe; der Packer legt die zuerst gebrauchte an die Öffnung. Wo das mit
+der Passgenauigkeit kollidiert, sagt das Werkzeug, was es kostet, statt
+stillschweigend umzuräumen.
+
+**Bedient wird mit der Hand.** In der Draufsicht zieht man ein Case an seinen
+Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
+**verankert**: der Packer fasst es nicht mehr an. Auf Wunsch kommt die
+**3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
+mittlere Maustaste wird nirgends gebraucht).
+
+Three.js liegt hinter einer `lazy`-Grenze und wird erst beim Klick auf
+„Show in 3D" geladen: Startpaket 356 kB, 3D-Ansicht 950 kB (gemessen
+2026-09-18). `dreiGrenze.node.test.ts` hält das fest.
+
+### Beladen — der Blick aus der Ladeöffnung
+
+Derselbe Plan hat einen zweiten Modus, und der ist für die andere Seite
+gedacht: nicht den Schreibtisch, sondern das Heck. Man schaut **aus der
+Ladeöffnung** in den Laderaum und sieht drei Dinge:
+
+* **was schon drin steht** — voll ausgefüllt,
+* **die eine Lücke**, in die das nächste Stück gehört — als heller Umriss,
+* **sonst nichts.** Kisten, die noch nicht dran sind, stehen dieser Frage im
+  Bild nur im Weg.
+
+Das Bild baut sich also Stück für Stück auf, während geladen wird. Vermerkt
+wird per **Scan** (dieselbe Kamera-Erkennung wie in der Inventur) oder mit
+einem Knopf, wenn der Aufkleber hinüber ist. Ein Code, der im Bestand steht
+aber nicht zu dieser Fahrt gehört, wird ausdrücklich so gemeldet — „falsches
+Fahrzeug?" ist der teurere Fall und darf nicht als „unbekannt" durchgehen.
+
+Daneben steht das **Schicht-Modell**: was in welcher Lage steht, und was davon
+schon verstaut ist. Beim Laden arbeitet man eine Lage ab und stellt dann die
+nächste darauf; wer nur eine Reihe sieht, merkt den Wechsel nicht.
+
+**Aus der Reihe laden ist erlaubt und wird gemeldet.** Wer ein Case einlädt,
+hat es in der Hand — vielleicht stand der Hänger im Weg. Das Werkzeug sagt,
+was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
+noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
+sagt, wird umgangen und weiss danach gar nichts mehr.
+
+**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
+Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
+Fahrzeug-Stammdaten mit Quelle (#19).
+
 ## Stand
 
 Erste Fassung. Übernommen ist die Domäne aus
