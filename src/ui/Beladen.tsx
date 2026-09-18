@@ -33,6 +33,7 @@ import {
   befundText,
   fortschritt,
   geladenAus,
+  karussell,
   naechstes,
   scanInLadung,
   schichten,
@@ -42,6 +43,7 @@ import type { Ladung } from '../domain/types/load'
 import type { Vehicle } from '../domain/types/vehicle'
 import { einLesen, hindernisText, scanFaehigkeit, waehleLeser } from '../lib/codeLeser'
 import { gruppenFarbe } from './Ladeansicht/farben'
+import { Ladestreifen } from './Ladeansicht/Ladestreifen'
 
 const Ladeansicht3D = lazy(() => import('./Ladeansicht/Ladeansicht3D'))
 
@@ -71,6 +73,7 @@ export function Beladen({ ladung, vehicle, plan, gruppen }: Props) {
   const naechstesStueck = naechstes(plan, geladen)
   const stand = fortschritt(plan, geladen, ladung.stuecke)
   const lagen = schichten(plan)
+  const streifen = useMemo(() => karussell(plan, geladen), [plan, geladen])
 
   /**
    * Ein Stück als geladen vermerken.
@@ -237,6 +240,16 @@ export function Beladen({ ladung, vehicle, plan, gruppen }: Props) {
       ) : (
         <p className="befund ja">{t('loading.done', 'Everything on the plan is stowed.')}</p>
       )}
+
+      {/* Der Streifen: was drin ist, was gerade drankommt, was folgt. Er
+          steht UNTER der grossen Karte und nicht statt ihr — die Karte
+          beantwortet die eine Frage, der Streifen zeigt, wo man steht. */}
+      <Ladestreifen
+        eintraege={streifen}
+        gruppen={gruppen}
+        onVerstauen={vermerken}
+        onZurueck={(id) => setGeladen(ladung.id, id, undefined)}
+      />
 
       <p className="hinweis">
         {format(t('loading.progress', '{n} of {m} stowed · {kg} kg'), {

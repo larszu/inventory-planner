@@ -597,4 +597,13 @@ export const de: Record<string, string> = {
   'loading.camFailed': 'Die Kamera liess sich nicht starten.',
   'loading.layers': 'Lagen',
   'loading.layer': 'Lage {n} — {mm} mm über dem Boden',
+
+  // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
+  // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
+  'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',
+  'loading.roleLoaded': 'Geladen',
+  'loading.roleCurrent': 'Wird geladen',
+  'loading.roleOpen': 'Folgt',
+  'loading.stowOf': '{label} als verstaut vermerken',
+  'loading.undoOf': '{label} wieder herausnehmen',
 }

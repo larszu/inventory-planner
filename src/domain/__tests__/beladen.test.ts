@@ -6,7 +6,16 @@
 // sagt, wird umgangen — und dann weiss es gar nichts mehr.
 // ───────────────────────────────────────────────────────────────────────────
 import { describe, expect, it } from 'vitest'
-import { befundFuer, befundText, fortschritt, geladenAus, naechstes, scanInLadung, schichten } from '../lib/beladen'
+import {
+  befundFuer,
+  befundText,
+  fortschritt,
+  geladenAus,
+  karussell,
+  naechstes,
+  scanInLadung,
+  schichten,
+} from '../lib/beladen'
 import { packe } from '../lib/loadPacker'
 import type { LoadPlan, PackStueck } from '../lib/loadPacker'
 import type { Ladung, LadungsStueck } from '../types/load'
@@ -217,5 +226,53 @@ describe('Der Lade-Stand überlebt das Speichern', () => {
     expect(g.size).toBe(1)
     expect(g.get('a')).toBe('2026-09-18T07:10:00.000Z')
     expect(g.has('b')).toBe(false)
+  })
+})
+
+describe('Der Lade-Streifen', () => {
+  it('trägt jedes Stück des Plans, nicht einen Ausschnitt', () => {
+    const plan = planMitStapel()
+    expect(karussell(plan, new Map()).length).toBe(plan.placements.length)
+  })
+
+  it('steht in Plan-Reihenfolge', () => {
+    const schritte = karussell(planMitStapel(), new Map()).map((e) => e.placement.ladeSchritt)
+    expect([...schritte].sort((a, b) => a - b)).toEqual(schritte)
+  })
+
+  it('kennt genau ein „aktuell"', () => {
+    const plan = planMitStapel()
+    const rollen = karussell(plan, new Map()).map((e) => e.rolle)
+    expect(rollen.filter((r) => r === 'aktuell').length).toBe(1)
+    expect(rollen[0]).toBe('aktuell')
+  })
+
+  it('rückt das „aktuell" weiter, sobald geladen wurde', () => {
+    const plan = planMitStapel()
+    const erstes = plan.placements.find((p) => p.ladeSchritt === 1)!
+    const streifen = karussell(plan, new Map([[erstes.stueckId, now]]))
+
+    expect(streifen[0]!.rolle).toBe('geladen')
+    expect(streifen[1]!.rolle).toBe('aktuell')
+  })
+
+  it('lässt ein übersprungenes Stück an seinem Platz stehen', () => {
+    // Wer Schritt 2 lädt, findet es weiterhin an Position 2 — als erledigt.
+    // Nach vorn zu sortieren verfälschte die Reihenfolge, an der sich beim
+    // Abladen jemand orientiert.
+    const plan = planMitStapel()
+    const zweites = plan.placements.find((p) => p.ladeSchritt === 2)!
+    const streifen = karussell(plan, new Map([[zweites.stueckId, now]]))
+
+    expect(streifen[1]!.placement.stueckId).toBe(zweites.stueckId)
+    expect(streifen[1]!.rolle).toBe('geladen')
+    // Und „aktuell" bleibt das übersprungene erste Stück.
+    expect(streifen[0]!.rolle).toBe('aktuell')
+  })
+
+  it('hat kein „aktuell" mehr, wenn alles steht', () => {
+    const plan = planMitStapel()
+    const alle = new Map(plan.placements.map((p) => [p.stueckId, now]))
+    expect(karussell(plan, alle).every((e) => e.rolle === 'geladen')).toBe(true)
   })
 })

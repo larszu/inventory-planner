@@ -24,6 +24,11 @@ import { Suspense, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Edges, OrbitControls, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
+// Wie ein Stück in der Belade-Ansicht dasteht: der Wortschatz kommt aus
+// `domain/lib/beladen` — dieselben drei Rollen, die auch der Lade-Streifen
+// zeigt. Eine eigene Fassung hier hiesse, dass „das laufende Stück" in zwei
+// Ansichten zwei verschiedene Dinge heissen kann.
+import type { LadeRolle } from '../../domain/lib/beladen'
 import type { LoadPlan, Placement, Vec3 } from '../../domain/lib/loadPacker'
 import type { Vehicle } from '../../domain/types/vehicle'
 import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
@@ -66,9 +71,6 @@ const mitte = (pos: Vec3, size: Vec3, raum: Vec3): [number, number, number] => [
   mm(pos.z + size.z / 2 - raum.z / 2),
 ]
 
-/** Wie ein Stück in der Belade-Ansicht dasteht. */
-type LadeRolle = 'geladen' | 'naechstes' | 'offen'
-
 function Stueck({
   p,
   raum,
@@ -91,7 +93,7 @@ function Stueck({
   // Das nächste Stück ist ein ZIEL und kein Bestand: es steht als heller
   // Umriss da, damit man die Lücke sieht und nicht ein Case, das schon drin
   // wäre. Der Unterschied entscheidet, ob jemand zweimal lädt.
-  const istZiel = rolle === 'naechstes'
+  const istZiel = rolle === 'aktuell'
   const deckkraft = istZiel ? 0.28 : rolle === 'geladen' ? 1 : p.verankert ? 1 : 0.85
 
   return (
@@ -214,7 +216,7 @@ function Szene({
                 : geladen?.has(p.stueckId)
                   ? 'geladen'
                   : p.stueckId === naechstesId
-                    ? 'naechstes'
+                    ? 'aktuell'
                     : 'offen'
             }
           />

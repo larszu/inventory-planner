@@ -219,3 +219,59 @@ export function scanInLadung(
         : (treffer.unit.houseRef ?? treffer.unit.serial ?? treffer.unit.code ?? '')
   return { art: 'nicht-in-ladung', was }
 }
+
+/**
+ * Welche Rolle ein Stück beim Laden gerade spielt.
+ *
+ * EIN WORTSCHATZ FÜR ALLE ANSICHTEN. Die 3D-Ansicht, der Streifen und die
+ * Lagen-Liste sagen dasselbe; hätte jede ihre eigenen Namen, wäre die erste
+ * Frage bei jeder Änderung, welche davon gemeint ist.
+ */
+export type LadeRolle = 'geladen' | 'aktuell' | 'offen'
+
+export interface KarussellEintrag {
+  placement: Placement
+  rolle: LadeRolle
+}
+
+/**
+ * Der Lade-Streifen: alles in Plan-Reihenfolge, mit Rolle.
+ *
+ * ─── WARUM ALLES UND KEIN FENSTER ──────────────────────────────────────────
+ *
+ * Es wäre naheliegend, nur „zwei davor, drei danach" zu liefern. Das wäre
+ * aber genau die Entscheidung, die der Streifen dem Menschen abnimmt: wer
+ * eine Kiste sucht, die er vor zehn Minuten eingeladen hat, findet sie dann
+ * nicht mehr. Die Liste ist vollständig und rollt; welcher Ausschnitt im
+ * Bild steht, entscheidet die Oberfläche und nicht diese Rechnung.
+ *
+ * ─── „AKTUELL" IST KEIN GESPEICHERTER ZUSTAND ──────────────────────────────
+ *
+ * Es ist schlicht das nächste Stück nach Plan — das, was das Werkzeug
+ * gerade verlangt. Ein eigener Zustand „wird gerade geladen" müsste
+ * gespeichert und wieder aufgeräumt werden, und ein Stück, das darin
+ * hängenbleibt (jemand legt es wieder hin, das Telefon geht aus), wäre
+ * danach weder drin noch draussen. Solange es keinen zweiten Scan beim
+ * AUFNEHMEN gibt, ist „aktuell" eine Ableitung — und eine Ableitung kann
+ * nicht hängenbleiben.
+ *
+ * ─── EIN ÜBERSPRUNGENES STÜCK BLEIBT AN SEINEM PLATZ ───────────────────────
+ *
+ * Wer aus der Reihe lädt, sieht das geladene Stück weiter dort, wo der Plan
+ * es vorsah — als erledigt. Es nach vorn zu sortieren würde die Plan-
+ * Reihenfolge verfälschen, und die ist das Einzige, woran sich beim Abladen
+ * jemand orientieren kann.
+ */
+export function karussell(plan: LoadPlan, geladen: Geladen): KarussellEintrag[] {
+  const aktuell = naechstes(plan, geladen)
+  return [...plan.placements]
+    .sort((a, b) => a.ladeSchritt - b.ladeSchritt)
+    .map((placement) => ({
+      placement,
+      rolle: geladen.has(placement.stueckId)
+        ? ('geladen' as const)
+        : placement.stueckId === aktuell?.stueckId
+          ? ('aktuell' as const)
+          : ('offen' as const),
+    }))
+}

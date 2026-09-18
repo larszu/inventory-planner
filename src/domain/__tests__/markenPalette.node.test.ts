@@ -85,14 +85,18 @@ describe('ADR-007: was es nicht gibt', () => {
   })
 
   it('das eine Schwarz ist die Kamera-Flaeche und kein Geschmack', () => {
-    // `.inventur .sucher` ist das Videobild des Scanners. Schwarz ist dort die
+    // `.sucher` ist das Videobild des Scanners. Schwarz ist dort die
     // richtige Umgebung fuer ein Kamerabild, so wie in `pi-media-station` die
     // Wiedergabe-Flaeche: jeder andere Grund faerbt das Bild. Eine
     // Marken-Regel fuer Bedienoberflaechen endet am Bild — und dieser Lauf
     // haelt fest, dass es bei DIESEM einen Schwarz bleibt.
     const schwarz = css.match(/#000\b/g) ?? []
     expect(schwarz.length, 'genau ein Schwarz, und zwar das der Kamera').toBe(1)
-    expect(css).toMatch(/\.inventur \.sucher \{[^}]*background: #000;/)
+    // Die Regel stand bis 2026-09-18 unter `.inventur .sucher` — und griff
+    // deshalb im Beladen nicht, wo mit derselben Maschinerie gescannt wird.
+    // Der Wachposten folgt der Korrektur: geprueft wird die Regel, nicht die
+    // Ansicht, in der sie damals zuerst gebraucht wurde.
+    expect(css).toMatch(/\n\.sucher \{[^}]*background: #000;/)
   })
 })
 
