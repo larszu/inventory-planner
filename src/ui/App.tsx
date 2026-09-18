@@ -28,6 +28,7 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCheckoutStore } from '../domain/store/checkoutStore'
 import { Kopfzeile } from './Kopfzeile'
 import { Bestand } from './Bestand'
+import { Lagerbaum } from './Lagerbaum'
 import { Ausgabescheine } from './Ausgabescheine'
 import { SubHire } from './SubHire'
 import { Inventur } from './Inventur'
@@ -38,7 +39,7 @@ import { Bericht } from './Bericht'
 import { WerteUndSchaeden } from './WerteUndSchaeden'
 import { Wareneingang } from './Wareneingang'
 
-type Reiter = 'bestand' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'fahrzeuge' | 'ladung'
+type Reiter = 'bestand' | 'lager' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'fahrzeuge' | 'ladung'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -50,6 +51,7 @@ type UebersetzFn = (key: string, en: string) => string
  */
 const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string }[] => [
   { id: 'bestand', titel: t('tab.stock', 'Stock'), frage: t('tab.stock.q', 'What is here, how much of it, and where does it sit?') },
+  { id: 'lager', titel: t('tab.storage', 'Storage'), frage: t('tab.storage.q', 'Where does it sit — and what is inside what?') },
   { id: 'eingang', titel: t('tab.receiving', 'Receiving'), frage: t('tab.receiving.q', 'What arrived — and what does that do to the stock?') },
   { id: 'inventur', titel: t('tab.audit', 'Stocktake'), frage: t('tab.audit.q', 'Is what should be here actually here?') },
   { id: 'ausgabe', titel: t('tab.checkouts', 'Checkout notes'), frage: t('tab.checkouts.q', 'What is out, with whom, and since when?') },
@@ -147,6 +149,7 @@ export function App() {
       <main className="inhalt">
         <p className="frage">{aktiv.frage}</p>
         {reiter === 'bestand' && <Bestand />}
+        {reiter === 'lager' && <Lagerbaum />}
         {reiter === 'eingang' && <Wareneingang />}
         {reiter === 'inventur' && <Inventur />}
         {reiter === 'ausgabe' && <Ausgabescheine />}

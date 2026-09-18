@@ -23,14 +23,17 @@
 
 import type { StorageNode, InventoryItem, InventoryUnit } from '../types/inventory'
 import type { MoveRefusal, MoveSubjectKind, StorageMove } from '../types/storageMove'
-import { MOVE_SUBJECT_LABEL } from '../types/storageMove'
+import { moveSubjectLabel } from '../types/storageMove'
 import { nodePathLabel, wouldCreateCycle } from './storageTree'
+import { quelle, type Uebersetzen } from '../../i18n/quelle'
 import type { CsvCell, CsvTable } from '../../lib/csv'
 
 /** Was dasteht, wo ein Lagerort nicht (mehr) auflösbar ist. */
-export const UNKNOWN_PLACE = 'nicht mehr im Lager'
+export const unknownPlace = (t: Uebersetzen = quelle): string =>
+  t('move.place.unknown', 'no longer in the warehouse')
 /** Was dasteht, wo etwas nie eingeräumt wurde. */
-export const NEVER_PLACED = 'nie eingeräumt'
+export const neverPlaced = (t: Uebersetzen = quelle): string =>
+  t('move.place.never', 'never put away')
 
 /**
  * Prüft einen geplanten Umzug und benennt, was ihn verhindert.
@@ -107,10 +110,11 @@ export function lastKnownPlace(
   moves: readonly StorageMove[],
   kind: MoveSubjectKind,
   subjectId: string,
+  t: Uebersetzen = quelle,
 ): string {
   const letzte = movesOf(moves, kind, subjectId)[0]
-  if (!letzte) return NEVER_PLACED
-  if (!letzte.toId) return UNKNOWN_PLACE
+  if (!letzte) return neverPlaced(t)
+  if (!letzte.toId) return unknownPlace(t)
   return letzte.toLabel || letzte.toId
 }
 
@@ -125,19 +129,27 @@ export function moveTable(
   moves: readonly StorageMove[],
   nodes: readonly StorageNode[],
   nameOf: (kind: MoveSubjectKind, id: string) => string,
+  t: Uebersetzen = quelle,
 ): CsvTable {
   const pfad = (id: string | undefined): string => {
-    if (!id) return UNKNOWN_PLACE
-    return nodes.some((n) => n.id === id) ? nodePathLabel([...nodes], id) : UNKNOWN_PLACE
+    if (!id) return unknownPlace(t)
+    return nodes.some((n) => n.id === id) ? nodePathLabel([...nodes], id) : unknownPlace(t)
   }
   return {
-    headers: ['Zeitpunkt', 'Art', 'Objekt', 'Von', 'Nach', 'Notiz'],
+    headers: [
+      t('move.col.at', 'When'),
+      t('move.col.kind', 'Kind'),
+      t('move.col.subject', 'Object'),
+      t('move.col.from', 'From'),
+      t('move.col.to', 'To'),
+      t('move.col.note', 'Note'),
+    ],
     rows: moves
       .slice()
       .sort((a, b) => b.at.localeCompare(a.at))
       .map((m): CsvCell[] => [
         m.at,
-        MOVE_SUBJECT_LABEL[m.kind],
+        moveSubjectLabel(m.kind, t),
         nameOf(m.kind, m.subjectId),
         pfad(m.fromId),
         m.toLabel || pfad(m.toId),

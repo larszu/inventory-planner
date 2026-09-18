@@ -96,6 +96,30 @@ Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
 Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
 Downloads.
 
+## Lager — wo liegt es, und was steckt worin?
+
+Die Ansicht **Storage** zeigt den Lagerbaum: Depot, Raum, Regal, Fach, Case,
+Transport-Case, und darin die Artikel. **Gezogen wird mit dem Finger** — ein
+Lagerort, ein Case oder ein Artikel wandert dorthin, wo er hingehört, mit der
+Maus genauso wie auf dem Telefon im Regalgang. (HTML5-`draggable` gibt es auf
+einem Touch-Gerät nicht; deshalb Zeiger-Ereignisse, dieselbe Lösung wie in der
+Draufsicht der Ladeplanung.)
+
+**Die Absage hat einen Namen, und zwar bevor man loslässt.** Wer ein Case in
+sich selbst zieht, liest „Ein Container kann nicht in sich selbst", während
+der Finger noch über dem Ziel steht. Ein Vorgang, der ohne Grund nichts tut,
+ist von einem kaputten Programm nicht zu unterscheiden — und beim nächsten Mal
+räumt jemand wieder von Hand um und trägt es nirgends ein.
+
+**Jeder Umzug geht ins Journal**, mit dem Klartext-Pfad von damals, und lässt
+sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
+beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
+
+Noch ohne Bedienung bleiben `addSet` und `addUnit`: ein Kit ist keine
+Lagerstelle und eine serialisierte Einheit ist ein Stück mit Seriennummer —
+zwei andere Fragen, die nicht in denselben Baum gehören, nur weil sie im
+selben Store liegen.
+
 ## Ladeplanung
 
 Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Load** rechnet einen

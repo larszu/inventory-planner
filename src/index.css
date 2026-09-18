@@ -1230,3 +1230,108 @@ p.warnung { color: var(--warn); }
 .schicht li button { margin-left: var(--steg-2); }
 
 .modus-schalter { display: flex; gap: 2px; }
+
+/* ── Der Lagerbaum ───────────────────────────────────────────────────────
+ *
+ * Gezogen wird mit dem Finger (siehe Kopf von `Lagerbaum.tsx`). Daraus
+ * folgen drei Dinge im Stilblatt, und alle drei sind Bedienung:
+ *
+ *   `touch-action: none` am Griff — sonst scrollt das Telefon, statt die
+ *   Kiste zu bewegen. Dieselbe Zeile steht aus demselben Grund an der
+ *   Draufsicht der Ladeplanung.
+ *
+ *   `pointer-events: none` am Geist — `elementFromPoint` fände sonst immer
+ *   nur ihn und nie die Zeile darunter.
+ *
+ *   Der Griff ist ein EIGENES Element und nicht die ganze Zeile, damit der
+ *   Baum scrollbar bleibt.
+ *
+ * Markiert wird nach Handbuch ueber die LINIE und nicht ueber eine Flaeche:
+ * das gueltige Ziel bekommt eine helle Kante, das abgelehnte die Meldefarbe
+ * `--gefahr` — eine Absage IST eine Meldung, und dafuer sind die Meldefarben
+ * da. Tally-Rot kommt hier nicht vor; das Signal dieses Abschnitts ist der
+ * Punkt im Primaerknopf „Anlegen". */
+.baum-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.baum-liste.wurzel { margin: var(--steg-3) 0; }
+
+.baum-zeile {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  padding: var(--steg-1) var(--steg-2);
+  border-top: 1px solid var(--rand);
+}
+
+.baum-zeile.artikel { color: var(--text); }
+
+/* Das angepeilte Ziel: helle Kante rundum statt Farbflaeche. */
+.baum-zeile.ziel,
+.baum-wurzelablage.ziel {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+  background: var(--erhoben);
+}
+
+.baum-zeile.nein {
+  outline: 2px solid var(--gefahr);
+  outline-offset: -2px;
+}
+
+.baum-absage { margin: 0 0 var(--steg-1) var(--steg-5); }
+
+.baum-falten {
+  flex: none;
+  width: var(--ziel);
+  min-height: var(--ziel);
+  background: none;
+  border: 0;
+  color: var(--leise);
+  font-size: 1rem;
+}
+
+.baum-griff {
+  flex: none;
+  min-width: var(--ziel);
+  min-height: var(--ziel);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--leise);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.baum-griff:active { cursor: grabbing; }
+
+.baum-zeile .leise { margin-left: auto; }
+.baum-zeile button.still { margin-left: var(--steg-2); }
+
+/* „Aus allem heraus" — ohne diese Ablage gaebe es keinen Weg zurueck. */
+.baum-wurzelablage {
+  margin: var(--steg-3) 0;
+  padding: var(--steg-3);
+  border: 1px dashed var(--rand);
+  color: var(--leise);
+  text-align: center;
+}
+
+.baum-geist {
+  position: fixed;
+  z-index: 50;
+  transform: translate(12px, 12px);
+  padding: var(--steg-1) var(--steg-2);
+  background: var(--erhoben);
+  border-top: 3px solid var(--text);
+  color: var(--text);
+  pointer-events: none;
+}
+
+.umzug-liste { margin: 0 0 var(--steg-3); padding-left: 1.4em; }
+.umzug-liste li { padding: var(--steg-1) 0; }
