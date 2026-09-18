@@ -700,6 +700,71 @@ export const de: Record<string, string> = {
     'Jeder Umzug wird festgehalten. Das ist der Nachweis, der „wo war es zuletzt" beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.',
   'tree.journalEmpty': 'Noch nichts umgelagert.',
   'tree.csv': 'Umlagerungen als CSV',
+  'tree.mode': 'Ansicht',
+  'tree.modeTree': 'Baum',
+  'tree.modePlan': 'Grundriss',
+  'tree.modeRoom': 'In 3D',
+
+  // ── Grundriss, Raum und die Kennung des Lagerplatzes ────────────────────
+  //
+  // „Gasse", „Feld", „Ebene" sind die Begriffe der Lagertechnik und keine
+  // Übersetzung von aisle/bay/level: ein Lagerist sagt Feld, nicht Fach —
+  // ein Fach ist das, was in einem Case steckt.
+  'floor.unplaced': 'Nicht im Grundriss ({n})',
+  'floor.unplacedHint':
+    'Ein Lagerort ohne Grundriss-Eintrag ist nicht falsch — es hat nur niemand gemessen, wo er steht.',
+  'floor.place': 'In den Grundriss',
+  'floor.empty':
+    'Es steht noch nichts im Grundriss, und die Halle ist nicht vermessen — es gibt also nichts zu zeichnen. Setz einen Lagerort in den Grundriss, oder gib dem obersten Knoten seine eigene Grundfläche.',
+  'floor.derived':
+    'Der Umriss folgt dem, was im Grundriss steht, und nicht einer vermessenen Halle. Gib dem obersten Lagerort eine Grundfläche, dann steht die echte da.',
+  'floor.label': 'Grundriss des Lagers',
+  'floor.clashes': 'Überschneidungen im Grundriss',
+  'floor.clashHint':
+    'Gemeldet, nicht verboten — beim Umbau steht das neue Regal schon da, während das alte noch nicht weg ist.',
+  'floor.clash': '{a} und {b} überschneiden sich.',
+  'floor.unplace': 'Aus dem Grundriss nehmen',
+  'floor.width': 'Breite (mm)',
+  'floor.depth': 'Tiefe (mm)',
+  'floor.height': 'Höhe (mm)',
+  'floor.levels': 'Ebenen',
+  'floor.rotation': 'Drehung (°)',
+
+  'room.empty': 'Es steht noch nichts im Grundriss — im Raum ist dann auch nichts aufzustellen.',
+  'room.noHeight': 'Ohne erfasste Höhe: {n}. Die liegen flach im Bild — geraten wird hier nichts.',
+  'room.tall': '{h} mm hoch, {e} Ebenen',
+  'room.flat': 'keine Höhe erfasst',
+
+  'code.stage.aisle': 'Gasse',
+  'code.stage.row': 'Reihe',
+  'code.stage.bay': 'Feld',
+  'code.stage.level': 'Ebene',
+  'code.stage.slot': 'Platz',
+  'code.clash': 'Kennung {code} ist {n}-mal vergeben.',
+  'code.head': 'Hausschema für Lagerplatz-Kennungen',
+  'code.intro':
+    'Dafür gibt es keine Norm. Gasse, Feld und Ebene ist die verbreitete Adressierung, aber jedes Haus schneidet sie anders — deshalb wird sie hier eingestellt und nicht angenommen.',
+  'code.stage': 'Stufe',
+  'code.chars': 'Zeichen',
+  'code.letters': 'Buchstaben (A, B, … AA)',
+  'code.digits': 'Ziffern (1, 2, 3)',
+  'code.pad': 'Auffüllen auf',
+  'code.dropStage': 'Entfernen',
+  'code.addStage': 'Stufe hinzufügen',
+  'code.separator': 'Trenner',
+  'code.example': 'Sieht so aus: {code}',
+  'code.none': 'Keine Stufen — Lagerorte tragen dann keine Kennung aus diesem Schema.',
+  'code.batch': 'Eine Reihe auf einmal beschriften',
+  'code.batchHint':
+    'Acht Felder und vier Ebenen sind zweiunddreissig Kennungen, und die tippt niemand ab. Angefasst wird nur, was noch keine Kennung trägt — eine Kennung, die schon auf einem Aufkleber steht, wird nicht still geändert.',
+  'code.under': 'Unterhalb von',
+  'code.pick': '— Lagerort wählen —',
+  'code.howMany': '{stage} — wieviele?',
+  'code.label': 'Beschriften',
+  'code.allLabelled': 'Jeder Lagerort darunter trägt schon eine Kennung.',
+  'code.noRange': 'Gib erst für jede Stufe des Schemas eine Anzahl an.',
+  'code.labelled': '{n} von {m} Lagerorten ohne Kennung beschriftet.',
+  'code.clashes': 'Doppelt vergebene Kennungen',
 
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.

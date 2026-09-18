@@ -373,6 +373,26 @@ export interface InventoryCase {
 // Transport-Case", „Artikel in Case einpacken" (= locationId auf Case-Knoten)
 // und „effektiver Lagerort" (oberster Vorfahr). Quelle: LPN/Nested-LPN (WMS).
 
+/**
+ * Die Lage eines festen Lagerplatzes im Grundriss, in Millimetern.
+ *
+ * Ursprung ist die linke hintere Ecke der Halle; x läuft nach rechts, z in
+ * die Tiefe, y nach oben — dieselben Achsen wie im Laderaum des Packers
+ * (`loadPacker/typen.ts`), damit niemand zwei Systeme im Kopf halten muss.
+ */
+export interface Stellplatz {
+  xMm: number
+  zMm: number
+  breiteMm: number
+  tiefeMm: number
+  /** Höhe des Regals. Fehlt sie, wird im 3D nichts aufgebaut. */
+  hoeheMm?: number
+  /** Drehung um die Hochachse in Grad. 0 = Front nach vorn (+z). */
+  drehung?: number
+  /** Wieviele Ebenen das Regal trägt — für die Kennung und das Bild. */
+  ebenen?: number
+}
+
 /** Art eines Lager-Knotens. `case`/`transportCase` sind Container. */
 export type StorageNodeKind = 'depot' | 'room' | 'shelf' | 'bin' | 'case' | 'transportCase'
 
@@ -394,6 +414,25 @@ export interface StorageNode {
   /** Fester Etiketten-Code — Lagerplätze UND Cases sind scanbar. */
   code?: string
   codeType?: InventoryCodeType
+  /**
+   * Wo der Lagerplatz IM RAUM steht (2D-Grundriss und 3D).
+   *
+   * ─── WARUM DAS NICHT `dimensions` IST ────────────────────────────────────
+   *
+   * `dimensions` sind die Aussenmasse eines Containers — was er wiegt und
+   * wie gross er ist, damit er in einen LKW passt. `stellplatz` ist etwas
+   * anderes: die LAGE eines festen Lagerplatzes in der Halle. Ein Regal hat
+   * beides (es ist so tief wie es ist, und es steht an einer Stelle), ein
+   * Case hat nur das erste — es steht heute hier und morgen dort.
+   *
+   * ─── OHNE EINTRAG STEHT ES NIRGENDS ──────────────────────────────────────
+   *
+   * Nicht bei (0,0). Ein Punkt im Ursprung sähe im Grundriss aus wie eine
+   * Angabe über die Halle; das ist dieselbe Regel, an der `belastbarkeit()`
+   * im Facility-Planner `watt: null` mit Grund zurückgibt.
+   */
+  stellplatz?: Stellplatz
+
   /** Außenmaße + Leergewicht (v. a. für Container). */
   dimensions?: PhysicalDimensions
   /**

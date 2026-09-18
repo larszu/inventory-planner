@@ -115,6 +115,54 @@ räumt jemand wieder von Hand um und trägt es nirgends ein.
 sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
+### Grundriss und Raum — wo die Regale wirklich stehen
+
+Der Baum sagt, wo etwas **hingehört**. Er sagt nicht, wo man **hinlaufen**
+muss: er kennt keine Gasse, keine Reihenfolge im Raum und keine Seite. Genau
+deshalb hängt in jedem Lager ein Plan an der Wand.
+
+Derselbe Reiter hat deshalb drei Ansichten auf dieselben Knoten — **Baum**
+(worin), **Grundriss** (wo) und **In 3D** (wie hoch):
+
+* Im **Grundriss** bekommt ein Lagerort eine Grundfläche und wird mit der Maus
+  oder mit dem Finger an seine Stelle geschoben, mit Raster. Räume und Depots
+  sind Umrisse, Regale gefüllte Flächen mit ihrer Kennung.
+* **In 3D** stehen dieselben Regale auf derselben Fläche, mit ihren Ebenen als
+  Fachboden-Linien. Das beantwortet die eine Frage, die der Grundriss nicht
+  beantwortet: wie hoch es wird.
+* **Überschneidungen werden gemeldet, nicht verboten** — beim Umbau steht das
+  neue Regal schon da, während das alte noch nicht weg ist. Gerechnet wird mit
+  `ueberlappt` aus dem Packer: eine Antwort im Haus auf „überschneidet sich
+  das".
+
+**Die Halle wird nicht erfunden.** Es gibt keine Vorgabe von zehn mal zehn
+Metern. Gezeichnet wird das vermessene Depot, sonst die Hülle dessen, was
+schon steht — und dann steht dabei, dass der Umriss gerechnet und nicht
+gemessen ist (`domain/lib/hallenumriss.ts`, eine Rechnung für beide
+Ansichten). Ein Lagerort ohne Grundfläche ist nicht falsch; es hat nur
+niemand gemessen, wo er steht.
+
+### Kennungen: A1, A-01-02 — nach dem Schema des Hauses
+
+**Dafür gibt es keine Norm.** Gasse, Feld und Ebene ist die verbreitete
+Adressierung, aber jedes Haus schneidet sie anders: „A1" im kleinen Lager,
+„A-01-02" mit führenden Nullen im grossen. Das Schema wird deshalb
+eingestellt und nicht angenommen — dieselbe Entscheidung wie beim
+Scan-Prefix der Inventur, der ausdrücklich „eine Hausregel, keine Norm" ist.
+
+Eine Stufe ist eine Art (Gasse, Reihe, Feld, Ebene, Platz), ein Zeichensatz
+(Buchstaben laufen wie Tabellenspalten: nach Z kommt AA) und eine Auffüllung.
+`domain/lib/platzkennung.ts` baut die Kennung **und liest sie zurück** — ohne
+den Rückweg wäre ein gescanntes „A-01-02" eine Zeichenkette, die zufällig wie
+eine Adresse aussieht. Wo zwei Lesarten möglich wären („1102" ist 1|102 und
+11|02 zugleich), entscheidet sich das Werkzeug nicht, sondern sagt nein.
+
+**Eine Reihe wird auf einmal beschriftet:** acht Felder und vier Ebenen sind
+zweiunddreissig Kennungen, und die tippt niemand ab. Angefasst wird nur, was
+noch keine trägt — eine Kennung, die schon auf einem Aufkleber steht, wird
+nicht still geändert. Doppelt vergebene Kennungen werden gemeldet, nicht
+verhindert.
+
 Noch ohne Bedienung bleiben `addSet` und `addUnit`: ein Kit ist keine
 Lagerstelle und eine serialisierte Einheit ist ein Stück mit Seriennummer —
 zwei andere Fragen, die nicht in denselben Baum gehören, nur weil sie im
@@ -159,9 +207,12 @@ Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
 **3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
 mittlere Maustaste wird nirgends gebraucht).
 
-Three.js liegt hinter einer `lazy`-Grenze und wird erst beim Klick auf
-„Show in 3D" geladen: Startpaket 356 kB, 3D-Ansicht 950 kB (gemessen
-2026-09-18). `dreiGrenze.node.test.ts` hält das fest.
+Three.js liegt hinter einer `lazy`-Grenze und wird erst geladen, wenn eine
+3D-Ansicht geöffnet wird. Gemessen 2026-09-18: Startpaket **408 kB**
+(gzip 126 kB), der gemeinsame Three-Brocken **916 kB** — und der steht in
+keinem Skript, das die Seite beim Start holt. `dreiGrenze.node.test.ts` misst
+nicht mehr den Ordner, sondern die Grenze: welche Dateien Three ziehen, wird
+gefunden statt aufgezählt, und jede davon muss über `lazy()` geholt werden.
 
 ### Beladen — der Blick aus der Ladeöffnung
 
