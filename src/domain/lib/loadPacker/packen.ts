@@ -211,6 +211,13 @@ export function packe(
     brauchbar.push(s)
   }
 
+  // Die Summen stehen VOR Schritt 2, nicht dazwischen: sie standen dahinter,
+  // und damit zählte kein von Hand gesetztes Stück in die Zuladung — der
+  // Nutzlast-Befund schwieg genau bei der Ladung, die ein Mensch selbst
+  // zusammengeschoben hat.
+  let gesetztKg = 0
+  let ohneGewicht = 0
+
   // ── Schritt 2: verankerte Stücke zuerst, unverändert ────────────────────
   //
   // UNVERÄNDERT HEISST NICHT UNGEPRÜFT. Was ein Mensch von Hand absetzt, wird
@@ -242,6 +249,8 @@ export function packe(
       })
     }
     gesetzt.push({ q, s })
+    if (s.weightKg === undefined) ohneGewicht += 1
+    else gesetztKg += s.weightKg
     placements.push({
       stueckId: s.id,
       label: s.label,
@@ -249,6 +258,7 @@ export function packe(
       sizeMm: q.size,
       lage: fix.lage,
       gruppe: s.gruppe,
+      weightKg: s.weightKg,
       verankert: true,
       ladeSchritt: 0,
     })
@@ -267,9 +277,6 @@ export function packe(
       if (fa !== fb) return fb - fa
       return a.id < b.id ? -1 : 1
     })
-
-  let gesetztKg = 0
-  let ohneGewicht = 0
 
   for (const s of offen) {
     const varianten = lagevarianten(s)
@@ -352,6 +359,7 @@ export function packe(
           sizeMm: q.size,
           lage: lv.lage,
           gruppe: s.gruppe,
+          weightKg: s.weightKg,
           verankert: false,
           ladeSchritt: 0,
         }

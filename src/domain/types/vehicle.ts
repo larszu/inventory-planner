@@ -138,6 +138,16 @@ export interface Axle {
   /** Abstand von der Vorderachse in mm. */
   positionMm: number
   maxLastKg: number
+  /**
+   * Was diese Achse LEER trägt, in kg — von der Waage, nicht gerechnet (#24).
+   *
+   * Ohne sie lässt sich nur sagen, was die LADUNG auf die Achse bringt, und
+   * nicht, ob die Achse überladen ist: das Leergewicht verteilt sich nach der
+   * Bauart und nicht nach einer Formel. Die Papiere nennen die zulässigen
+   * Achslasten, die leeren nennt die Brückenwaage — deshalb steht sie hier
+   * als eigene, optionale Angabe und wird nirgends geschätzt.
+   */
+  leergewichtKg?: number
 }
 
 export interface Vehicle {
@@ -158,6 +168,17 @@ export interface Vehicle {
   leergewichtKg?: number
   zulGesamtgewichtKg?: number
   axles?: Axle[]
+  /**
+   * Wie weit die vordere Kante der Ladefläche (z = 0) HINTER der Vorderachse
+   * liegt, in mm (#24).
+   *
+   * Ohne diese eine Zahl steht der Laderaum nirgends am Fahrzeug: `axles[]`
+   * misst ab der Vorderachse, der Packer ab der vorderen Kante der
+   * Ladefläche, und was dazwischen liegt, weiss nur das Fahrzeug. Sie zu
+   * raten hiesse, einen Hebelarm zu erfinden — und ein erfundener Hebelarm
+   * steht am Ende auf einem Lastverteilungsplan.
+   */
+  ladeflaecheAbVorderachseMm?: number
   /** Ebener Boden? Sonst sind Rollen nutzlos. */
   flatFloor?: boolean
   hebebuehneKg?: number

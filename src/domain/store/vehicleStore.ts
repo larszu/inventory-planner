@@ -97,7 +97,11 @@ const healAxle = (raw: unknown): Axle | null => {
   const r = raw as Partial<Axle>
   const pos = typeof r.positionMm === 'number' && Number.isFinite(r.positionMm) ? r.positionMm : undefined
   const max = num(r.maxLastKg)
-  return pos !== undefined && max !== undefined ? { positionMm: pos, maxLastKg: max } : null
+  if (pos === undefined || max === undefined) return null
+  // `leergewichtKg` ist einzeln optional: eine Achse mit zulässiger Last und
+  // ohne gewogene Leerlast ist ein gültiger Stammdatensatz — sie sagt dann
+  // eben nur, was die Ladung beiträgt.
+  return { positionMm: pos, maxLastKg: max, leergewichtKg: num(r.leergewichtKg) }
 }
 
 /** Heilt ein geladenes Fahrzeug. Ohne Laderaum-Masse kein Fahrzeug. */
@@ -162,6 +166,7 @@ export const healVehicle = (raw: unknown): Vehicle | null => {
     leergewichtKg: num(r.leergewichtKg),
     zulGesamtgewichtKg: num(r.zulGesamtgewichtKg),
     axles: Array.isArray(r.axles) ? r.axles.map(healAxle).filter((a): a is Axle => a !== null) : undefined,
+    ladeflaecheAbVorderachseMm: num(r.ladeflaecheAbVorderachseMm),
     flatFloor: typeof r.flatFloor === 'boolean' ? r.flatFloor : undefined,
     hebebuehneKg: num(r.hebebuehneKg),
     fuehrerscheinKlasse: KLASSEN.has(r.fuehrerscheinKlasse as NonNullable<Vehicle['fuehrerscheinKlasse']>)

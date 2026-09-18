@@ -849,4 +849,99 @@ export const de: Record<string, string> = {
   'loading.roleOpen': 'Folgt',
   'loading.stowOf': '{label} als verstaut vermerken',
   'loading.undoOf': '{label} wieder herausnehmen',
+
+  // ── Gewicht, Schwerpunkt, Achslast (#24) ────────────────────────────────
+  //
+  // Normbegriffe bleiben, wie sie heissen: zGG, Nutzlast, Achslast, kg, mm.
+  // Übersetzt wird, was das Werkzeug SAGT — nicht, wie die Papiere heissen.
+  // Die Sätze, die eine fehlende Angabe erklären, sind ausdrücklich SÄTZE
+  // und keine Kürzel: sie stehen an der Stelle einer Zahl, und dort liest
+  // jemand mit einer Frage.
+  'load.noWeights':
+    'Kein einziges gesetztes Stück ist gewogen — daraus lässt sich kein Schwerpunkt rechnen.',
+  'load.noAxles': 'Für dieses Fahrzeug sind keine Achsen eingetragen — es gibt nichts zu verteilen.',
+  'load.threeAxles':
+    'Mehr als zwei Achsen: wie sich die Last verteilt, hängt an der Federung und nicht allein an der Statik. Hier hilft nur die Waage.',
+  'load.noFloorOffset':
+    'Es ist nicht eingetragen, wie weit die Ladefläche hinter der Vorderachse liegt — ohne diese Zahl gibt es keinen Hebelarm.',
+  'load.someUnweighed':
+    'Es fahren Stücke ohne gewogenes Gewicht mit: {n}. Eine Achslast, die um sie herum gerechnet ist, läse sich wie eine Messung.',
+  'load.axlesSamePlace':
+    'Beide Achsen stehen mit demselben Abstand eingetragen — eine der beiden Zahlen stimmt nicht.',
+  'load.antiSlip': 'Antirutschmatten unter jedes Stück, das nicht verkeilt steht',
+  'load.straps': 'Zurrgurte, ein Paar je Reihe, mit abgelesener Zurrkraft',
+  'load.bars': 'Sperrstangen oder Ladungssicherungsnetz zur Tür hin',
+  'load.edges': 'Kantenschutz überall dort, wo ein Gurt über eine Ecke läuft',
+  'load.disclaimer':
+    'Dieses Blatt rechnet und zeigt. Es erteilt keine Freigabe: die Verantwortung für die Ladungssicherung bleibt bei Fahrer und Verlader.',
+
+  // Das Blatt
+  'sheet.vehicle': 'Fahrzeug',
+  'sheet.cargoSpace': 'Laderaum',
+  'sheet.cargoSpaceValue': '{l} × {w} × {h} mm',
+  'sheet.payload': 'Nutzlast',
+  'sheet.kg': '{n} kg',
+  'sheet.loaded': 'Gesetztes Gewicht',
+  'sheet.unweighed': 'Nicht gewogen',
+  'sheet.unweighedValue':
+    'Stücke an Bord ohne gewogenes Gewicht: {n}. Sie stecken in keiner Zahl weiter unten.',
+  'sheet.over': 'Über der Nutzlast',
+  'sheet.overValue': 'Um {n} kg — erreicht mit {label}, in Ladereihenfolge.',
+  'sheet.cogValue': '{z} mm ab der vorderen Kante der Ladefläche, {x} mm ab der linken Wand, {y} mm hoch',
+  'sheet.frontAxle': 'Vorderachse',
+  'sheet.rearAxle': 'Hinterachse',
+  'sheet.fromLoad': 'aus der Ladung {n} kg',
+  'sheet.noEmptyAxle': 'Leerlast nicht gewogen — keine Gesamtlast',
+  'sheet.total': 'gesamt {n} kg',
+  'sheet.permitted': 'zulässig {n} kg',
+  'sheet.axleOver': 'um {n} kg überschritten',
+  'sheet.axleLoads': 'Achslasten',
+  'sheet.title': 'Lastverteilungsplan — {name}',
+  'sheet.kicker': 'Lastverteilungsplan',
+  'sheet.vehicleAndLoad': 'Fahrzeug und Ladung',
+  'sheet.cog': 'Schwerpunkt',
+  // Die Zeile heisst nicht wie ihre Überschrift: „Schwerpunkt — Schwerpunkt"
+  // stand zweimal untereinander und sagte beim zweiten Mal nichts mehr.
+  'sheet.cogRow': 'Lage',
+  'sheet.securing': 'Sicherungsmittel — Merkliste',
+  'sheet.securingNote':
+    'Eine Liste, keine Rechnung: welches Mittel ein Stück braucht, hängt an Reibwert, Schwerpunkt und Aufbau — und keines davon kennt dieses Werkzeug.',
+
+  // Die Ansicht
+  'weight.printBlocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+  'weight.head': 'Gewicht und Achslasten',
+  'weight.placed': 'Gesetzt: {kg} kg',
+  'weight.unweighed': 'ohne gewogenes Gewicht: {n}',
+  'weight.over': 'Um {n} kg über der Nutzlast — erreicht mit {label}, in Ladereihenfolge.',
+  'weight.cog': 'Schwerpunkt:',
+  'weight.cogValue': '{z} mm ab der vorderen Kante, {x} mm ab der linken Wand, {y} mm hoch',
+  'weight.front': 'Vorderachse',
+  'weight.rear': 'Hinterachse',
+  'weight.fromLoad': 'aus der Ladung {n} kg',
+  'weight.noEmptyAxle': 'Leerlast nicht gewogen — keine Gesamtlast',
+  'weight.total': 'gesamt {n} kg von {max} zulässig',
+  'weight.axleOver': 'um {n} kg überschritten',
+  'weight.securing': 'Sicherungsmittel — Merkliste',
+  'weight.sheet': 'Lastverteilungsplan',
+
+  // Die Maske am Fahrzeug
+  'weigh.none': 'Gewichte und Achsen — nichts eingetragen',
+  'weigh.count': 'Gewichte und Achsen — {n} Achsen, davon {m} leer gewogen',
+  'weigh.intro':
+    'Gewicht ist die härtere Grenze: ein 3,5-Tonner ist oft bei unter 1.200 kg Zuladung am Ende. Nichts hier wird aus etwas anderem gerechnet — Nutzlast ist nicht zGG minus Leermasse, sobald ein Aufbau, eine Hebebühne oder eine volle Tankfüllung dazwischen liegt.',
+  'weigh.gross': 'Zulässige Gesamtmasse (kg)',
+  'weigh.kerb': 'Leermasse (kg)',
+  'weigh.payload': 'Nutzlast (kg)',
+  'weigh.floorOffset': 'Ladefläche hinter der Vorderachse (mm)',
+  'weigh.floorOffsetWhy':
+    'Gemessen von der Mitte der Vorderachse bis zur vorderen Kante der Ladefläche. Ohne sie steht der Laderaum nirgends am Fahrzeug, und ohne das gibt es keinen Hebelarm für eine Achslast.',
+  'weigh.front': 'Vorderachse',
+  'weigh.rear': 'Hinterachse',
+  'weigh.axlePos': 'Abstand von der Vorderachse (mm)',
+  'weigh.axleMax': 'Zulässige Achslast (kg)',
+  'weigh.axleEmpty': 'Leer gewogen (kg)',
+  'weigh.removeAxle': 'Achse entfernen',
+  'weigh.addAxle': 'Achse hinzufügen',
+  'weigh.axleWhy':
+    'Die Leerlast einer Achse kommt von der Brückenwaage und nicht aus den Papieren: die Papiere nennen, was eine Achse tragen DARF, nicht was sie leer trägt. Ohne sie sagt das Blatt, was die Ladung auf die Achse bringt, und schweigt dazu, ob die Achse überladen ist.',
 }

@@ -78,6 +78,16 @@ export interface Placement {
   sizeMm: Vec3
   lage: CaseOrientation
   gruppe?: string
+  /**
+   * Das Gewicht dieses Stücks in kg, soweit angegeben (#24).
+   *
+   * Es steht MIT, obwohl der Packer es nur summiert: Schwerpunkt und
+   * Achslast sind eine Hebelrechnung aus Position und Gewicht, und ohne
+   * diese Zeile müsste jeder Leser des Plans die Ladung daneben aufschlagen
+   * und die Stücke von Hand zuordnen. `undefined` heisst „nicht gewogen"
+   * und ist ausdrücklich nicht null.
+   */
+  weightKg?: number
   /** Von Hand gesetzt; der Packer hat es nur übernommen. */
   verankert: boolean
   /**

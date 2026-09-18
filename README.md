@@ -305,6 +305,40 @@ selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
 rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
 sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
 
+### Gewicht, Schwerpunkt, Achslast
+
+**Gewicht ist die härtere Grenze.** Ein 3,5-Tonner ist oft bei unter 1.200 kg
+Zuladung am Ende — wer nach Volumen packt, ist überladen, bevor der Laderaum
+voll ist. Die Positionen stehen nach dem Packen fest; Schwerpunkt und
+Achslast fallen als Hebelrechnung daraus heraus
+(`src/domain/lib/lastverteilung.ts`).
+
+Der **Lastverteilungsplan** ist in Deutschland das Papier, nach dem bei einer
+Kontrolle gefragt wird. Er lässt sich drucken, mit Fahrzeug, Ladung,
+Schwerpunkt, Achslasten, Merkliste der Sicherungsmittel und Datum.
+
+**Er erteilt keine Freigabe.** Das Werkzeug rechnet und zeigt; die
+Verantwortung für die Ladungssicherung bleibt bei Fahrer und Verlader, und
+der Satz steht im Kopf des Blattes und nicht im Kleingedruckten.
+
+**Vier Stellen, an denen geschwiegen wird, obwohl gerechnet werden könnte:**
+kein einziges gewogenes Stück · ein gesetztes Stück ohne Gewicht (der
+Schwerpunkt kommt trotzdem, mit der Zahl der ungewogenen daneben — die
+Achslast nicht) · mehr als zwei Achsen (statisch überbestimmt, das hängt an
+der Federung) · keine gewogene Leerlast je Achse (dann steht da, was die
+Ladung beiträgt, und ausdrücklich nicht, ob die Achse überladen ist). Eine
+Achslast aus geschätzten Fahrzeugdaten sähe auf dem Ausdruck aus wie eine
+Messung, und bei der Kontrolle wiegt die Waage.
+
+Eingetragen werden die Zahlen am Fahrzeug unter **Gewichte und Achsen** —
+zulässige Gesamtmasse, Leermasse, Nutzlast, je Achse die zulässige Achslast
+und die gewogene Leerlast, dazu die eine Zahl, die niemand erwartet: wie weit
+die Ladefläche hinter der Vorderachse liegt. Ohne sie steht der Laderaum
+nirgends am Fahrzeug, und ohne das gibt es keinen Hebelarm. **Nichts davon
+wird aus etwas anderem gerechnet** — Nutzlast ist nicht zGG minus Leermasse,
+sobald ein Aufbau, eine Hebebühne oder eine volle Tankfüllung dazwischen
+liegt.
+
 Three.js liegt hinter einer `lazy`-Grenze und wird erst geladen, wenn eine
 3D-Ansicht geöffnet wird. Gemessen 2026-09-18: Startpaket **408 kB**
 (gzip 126 kB), der gemeinsame Three-Brocken **916 kB** — und der steht in
@@ -348,9 +382,10 @@ was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
 noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
 sagt, wird umgangen und weiss danach gar nichts mehr.
 
-**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
-Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
-Fahrzeug-Stammdaten mit Quelle (#19).
+**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), das
+Packmass-Raster als Kandidatenfilter (#21), Fahrzeug-Stammdaten mit Quelle
+(#19 — die Gewichte und Achsen daraus stehen seit #24, die Herkunftsangabe
+noch nicht).
 
 ## Marke
 

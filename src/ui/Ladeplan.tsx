@@ -19,7 +19,7 @@
 // quadratisch wird.
 // ───────────────────────────────────────────────────────────────────────────
 import { lazy, Suspense, useMemo, useState } from 'react'
-import { useT } from '../i18n'
+import { locale, useT } from '../i18n'
 import { useLoadStore } from '../domain/store/loadStore'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { packe } from '../domain/lib/loadPacker'
@@ -29,6 +29,7 @@ import { gruppen as gruppenDerLadung } from '../domain/lib/ladung'
 import { Draufsicht } from './Ladeansicht/Draufsicht'
 import { gruppenFarbe } from './Ladeansicht/farben'
 import { Beladen } from './Beladen'
+import { Lastverteilung } from './Lastverteilung'
 
 // Three liegt hinter dieser Grenze und nur hinter ihr. Wer `Ladeansicht3D`
 // irgendwo statisch importiert, zieht es in den Start des Lagers — in
@@ -39,7 +40,7 @@ const Ladeansicht3D = lazy(() => import('./Ladeansicht/Ladeansicht3D'))
 const RASTER = [0, 50, 100]
 
 export function Ladeplan({ ladung }: { ladung: Ladung }) {
-  const { t, format } = useT()
+  const { t, format, sprache } = useT()
   const vehicles = useVehicleStore((s) => s.vehicles)
   const { setFixierung, setGruppenReihenfolge } = useLoadStore()
 
@@ -55,6 +56,8 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
    * müsste.
    */
   const [modus, setModus] = useState<'planen' | 'beladen'>('planen')
+  /** Was schiefging, wenn es nicht am Plan liegt — heute nur der Druckbogen. */
+  const [fehler, setFehler] = useState('')
 
   const fahrzeug = vehicles.find((v) => v.id === ladung.vehicleId)
   const gruppen = ladung.gruppenReihenfolge ?? gruppenDerLadung(ladung)
@@ -111,6 +114,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
 
   return (
     <div className="ladeplan">
+      {fehler && <p className="ueberladen">{fehler}</p>}
       <div className="ladeplan-leiste">
         <div className="modus-schalter" role="group" aria-label={t('plan.mode', 'Mode')}>
           <button
@@ -194,6 +198,14 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
           />
         </Suspense>
       )}
+
+      <Lastverteilung
+        ladungName={ladung.name}
+        vehicle={fahrzeug}
+        plan={plan}
+        datum={new Date().toLocaleDateString(locale(sprache))}
+        onFehler={setFehler}
+      />
 
       {auswahl && (
         <p className="leise">

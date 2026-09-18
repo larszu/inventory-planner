@@ -18,6 +18,7 @@ import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
 import type { VehicleKind } from '../domain/types/vehicle'
 import { Kantenformen } from './Kantenform'
+import { Wiegedaten } from './Wiegedaten'
 
 const KINDS: VehicleKind[] = [
   'kofferraum',
@@ -165,6 +166,7 @@ export function Fahrzeuge() {
               {v.fuehrerscheinKlasse ?? t('vehicle.notGiven', 'not given')}
             </p>
             <Kantenformen vehicle={v} onAendern={(kanten) => updateVehicle(v.id, { kanten })} />
+            <Wiegedaten vehicle={v} onAendern={(patch) => updateVehicle(v.id, patch)} />
 
             <button type="button" onClick={() => removeVehicle(v.id)}>
               {t('vehicle.remove', 'Remove')}

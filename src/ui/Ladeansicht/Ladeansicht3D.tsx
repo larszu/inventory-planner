@@ -37,6 +37,7 @@ import { konturBeiHoehe, konturHoehen, punktFrei, raumMasse, type Punkt2D } from
 // Funktion, die auch die Draufsicht beim Ziehen mit dem Finger fragt. Sie
 // stand einmal nur dort, und deshalb liess diese Ansicht jede Lage zu.
 import { platzUrteil, platzUrteilText, type PlatzUrteil } from '../../domain/lib/platzGueltig'
+import { schwerpunkt } from '../../domain/lib/lastverteilung'
 import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
 import { gruppenFarbe } from './farben'
 import { Beschriftung } from './Beschriftung'
@@ -252,6 +253,51 @@ function Laderaum({ vehicle }: { vehicle: Vehicle }) {
   )
 }
 
+/**
+ * Der Schwerpunkt der Ladung als Marke (#24).
+ *
+ * ─── EIN LOT UND KEINE KUGEL ───────────────────────────────────────────────
+ *
+ * Gezeichnet wird ein senkrechtes Lot vom Schwerpunkt auf die Ladefläche plus
+ * ein Kreuz dort, wo es auftrifft. Eine Kugel mitten im Raum sagt nichts über
+ * die Frage, die jemand hat — die lautet „liegt er zwischen den Achsen und in
+ * der Mitte", und das ist eine Frage an den BODEN. Die Höhe steht daneben im
+ * Text; sie entscheidet über Kippen, nicht über Achslast.
+ *
+ * ─── UND ER STEHT NICHT DA, WENN ER NICHT BEKANNT IST ──────────────────────
+ *
+ * Kein Stück gewogen, keine Marke. Eine Marke aus den halben Gewichten stünde
+ * an einer Stelle, an der der Schwerpunkt nicht liegt — und sie sähe genauso
+ * aus wie eine, die stimmt.
+ */
+function Schwerpunktmarke({ plan, raum }: { plan: LoadPlan; raum: Vec3 }) {
+  const sp = useMemo(() => schwerpunkt(plan), [plan])
+  if (!sp.bekannt) return null
+
+  const x = mm(sp.wert.xMm) - mm(raum.x) / 2
+  const z = mm(sp.wert.zMm) - mm(raum.z) / 2
+  const boden = -mm(raum.y) / 2
+  const oben = boden + mm(sp.wert.yMm)
+  const arm = 0.12
+
+  const linien = new Float32Array([
+    x, boden, z, x, oben, z,
+    x - arm, boden, z, x + arm, boden, z,
+    x, boden, z - arm, x, boden, z + arm,
+  ])
+
+  return (
+    <lineSegments>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[linien, 3]} />
+      </bufferGeometry>
+      {/* Off-White wie die Zielmarke: die Linie trägt, nicht die Farbe. Rot
+          gehört der Öffnung, und ein zweiter Punkt nähme beiden den Rang. */}
+      <lineBasicMaterial color="#F6F5F0" />
+    </lineSegments>
+  )
+}
+
 function Szene({
   vehicle,
   plan,
@@ -297,6 +343,8 @@ function Szene({
       <directionalLight position={[3, 6, 4]} intensity={1.1} />
 
       <Laderaum vehicle={vehicle} />
+
+      <Schwerpunktmarke plan={plan} raum={raum} />
 
       {/* Die Öffnung liegt bei z = lengthMm (siehe `loadPacker/typen.ts`) und
           wird markiert: ohne sie sieht niemand, wo vorn ist.

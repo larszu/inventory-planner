@@ -1463,3 +1463,32 @@ p.warnung { color: var(--warn); }
   gap: var(--steg-2);
   min-height: var(--ziel);
 }
+
+/* ── Gewicht, Schwerpunkt, Achslast (#24) ────────────────────────────────
+ *
+ * DIE ÜBERSCHREITUNG IST EINE ZAHL UND KEINE AMPEL. Sie steht in der
+ * Meldefarbe und fett, nie als Flaeche und nie als Punkt: Tally-Rot ist in
+ * diesem Haus das Aufnahmelicht, und eine Ampel neben einer Kiste naehme ihm
+ * den Rang. Eine Zahl sagt ohnehin mehr — „rot" laesst offen, ob es um 5 kg
+ * geht oder um 500. */
+.lastverteilung { margin-top: var(--steg-3); }
+
+.ueberladen { color: var(--gefahr); font-weight: 700; }
+
+.achslasten,
+.achsen-liste {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+}
+
+.achslasten li { padding: var(--steg-1) 0; border-top: 1px solid var(--rand); }
+
+.achsen-liste li {
+  padding: var(--steg-2) 0;
+  border-top: 1px solid var(--rand);
+}
+
+/* Der Achsname traegt die Zeile: er steht als einziges Wort links und
+ * bekommt deshalb das Gewicht, das sonst eine Beschriftung haette. */
+.achse-name { font-weight: 700; }
