@@ -292,7 +292,18 @@ stillschweigend umzuräumen.
 Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
 **verankert**: der Packer fasst es nicht mehr an. Auf Wunsch kommt die
 **3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
-mittlere Maustaste wird nirgends gebraucht).
+mittlere Maustaste wird nirgends gebraucht). Dort lassen sich die beiden
+Ziehrichtungen **einzeln sperren** — wer eine Kiste nur nach hinten schieben
+will, stösst sie sonst nebenbei zur Seite. Eine dritte Sperre für die Höhe
+gibt es nicht: die stapelt der Packer.
+
+**Was nicht geht, steht da, solange man zieht.** Beide Ansichten fragen
+dieselbe Stelle (`src/domain/lib/platzGueltig.ts`) und schreiben den Grund
+hin — „ragt heraus", „dort ist der Laderaum gerundet", „dort steht schon X".
+Unterschieden wird dabei, was wirklich im Weg ist: ein Stück, das der Packer
+selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
+rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
+sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
 
 Three.js liegt hinter einer `lazy`-Grenze und wird erst geladen, wenn eine
 3D-Ansicht geöffnet wird. Gemessen 2026-09-18: Startpaket **408 kB**

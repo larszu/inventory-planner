@@ -212,10 +212,35 @@ export function packe(
   }
 
   // ── Schritt 2: verankerte Stücke zuerst, unverändert ────────────────────
+  //
+  // UNVERÄNDERT HEISST NICHT UNGEPRÜFT. Was ein Mensch von Hand absetzt, wird
+  // nicht verschoben — das ist der Sinn der Verankerung. Aber eine Lage, die
+  // es nicht gibt, ist keine Entscheidung: die Ansichten sagen beim Ziehen,
+  // dass sie nicht geht, und wer trotzdem loslässt, hat sie sonst still im
+  // Plan. Der Befund bleibt, solange sie drinsteht (ADR-005: verlustfrei
+  // oder laut).
   for (const s of brauchbar.filter((x) => x.fixiert)) {
     const fix = s.fixiert!
     const masse = lagevarianten(s).find((l) => l.lage === fix.lage)?.masse ?? masseInLage(s.sizeMm, fix.lage)
     const q = quader({ ...fix.position }, masse)
+    const stoert = gesetzt.find((g) => ueberlappt(q, g.q))
+    if (!liegtInnerhalb(q, raum) || !quaderFrei(v.kanten, raum, q.origin, q.size)) {
+      befunde.push({
+        art: 'verankert-ungueltig',
+        text: format(
+          t('pack.anchoredOutside', '{label} was placed by hand where the cargo space is not — it sticks out.'),
+          { label: s.label },
+        ),
+      })
+    } else if (stoert) {
+      befunde.push({
+        art: 'verankert-ungueltig',
+        text: format(
+          t('pack.anchoredOverlap', '{label} was placed by hand where {other} already stands.'),
+          { label: s.label, other: stoert.s?.label ?? t('pack.obstruction', 'a fixture of the vehicle') },
+        ),
+      })
+    }
     gesetzt.push({ q, s })
     placements.push({
       stueckId: s.id,

@@ -13,10 +13,12 @@
 //      Fläche" ist eine Grundriss-Frage.
 //
 // DIESELBEN REGELN WIE DER PACKER, NICHT EIGENE. Die Gültigkeitsprüfung beim
-// Ziehen benutzt `ueberlappt` und `liegtInnerhalb` aus dem Packer und
-// `quaderFrei` aus `domain/lib/kontur`. Eine eigene Kollisionsrechnung hier
-// wäre die zweite Wahrheit darüber, ob etwas passt — und sie würde irgendwann
-// anders antworten als der Plan, den sie zeichnet.
+// Ziehen ist `platzUrteil` aus `domain/lib/platzGueltig` — dieselbe Funktion,
+// die auch die 3D-Ansicht am Griff fragt. Sie stand zuerst HIER, als lokales
+// `gueltig()`: die 3D-Ansicht liess deshalb jede Lage zu und sagte dazu
+// nichts. Eine eigene Kollisionsrechnung in einer Ansicht wäre die zweite
+// Wahrheit darüber, ob etwas passt — und sie würde irgendwann anders
+// antworten als der Plan, den sie zeichnet.
 //
 // DER UMRISS IST NICHT DAS RECHTECK DES HÜLLQUADERS. Er kommt aus
 // `konturBeiHoehe` und zeigt, was auf BODENHÖHE frei ist: eine gerundete
@@ -34,13 +36,13 @@
 // „passt das unter die Decke" beantwortet die 3D-Ansicht.
 // ───────────────────────────────────────────────────────────────────────────
 import { useMemo, useRef, useState } from 'react'
-import { liegtInnerhalb, quader, ueberlappt } from '../../domain/lib/loadPacker'
+import { useT } from '../../i18n'
 import type { LoadPlan, Vec3 } from '../../domain/lib/loadPacker'
+import { platzUrteil, platzUrteilText } from '../../domain/lib/platzGueltig'
 import {
   konturBeiHoehe,
   konturFlaeche,
   konturHoehen,
-  quaderFrei,
   type Punkt2D,
 } from '../../domain/lib/kontur'
 import type { Vehicle } from '../../domain/types/vehicle'
@@ -96,6 +98,7 @@ export function Draufsicht({
   oeffnungText,
   engsteText,
 }: Props) {
+  const { t } = useT()
   const svg = useRef<SVGSVGElement>(null)
   const [zug, setZug] = useState<{ id: string; dx: number; dz: number; x: number; z: number } | null>(null)
 
@@ -161,26 +164,24 @@ export function Draufsicht({
 
   const raste = (n: number) => (rasterMm > 0 ? Math.round(n / rasterMm) * rasterMm : Math.round(n))
 
-  /** Liegt das gezogene Stück gerade gültig? Dieselben Regeln wie der Packer. */
-  const gueltig = (id: string, pos: Vec3): boolean => {
-    const p = plan.placements.find((x) => x.stueckId === id)
-    if (!p) return false
-    const q = quader(pos, p.sizeMm)
-    if (!liegtInnerhalb(q, raum)) return false
-    if (!quaderFrei(vehicle.kanten, raum, pos, p.sizeMm)) return false
-    const andere = [
-      ...plan.placements.filter((x) => x.stueckId !== id).map((x) => quader(x.position, x.sizeMm)),
-      ...vehicle.obstructions.map((h) => quader(h.originMm, h.sizeMm)),
-    ]
-    return !andere.some((o) => ueberlappt(q, o))
-  }
-
   const gezogen = zug ? plan.placements.find((p) => p.stueckId === zug.id) : undefined
-  const zugGueltig = zug && gezogen ? gueltig(zug.id, { x: zug.x, y: gezogen.position.y, z: zug.z }) : true
+  const urteil =
+    zug && gezogen
+      ? platzUrteil(vehicle, plan, zug.id, { x: zug.x, y: gezogen.position.y, z: zug.z })
+      : null
+  const zugGueltig = urteil ? urteil.gueltig : true
 
   return (
     <figure className="draufsicht-rahmen">
       {engste && engsteText && <p className="draufsicht-legende">{engsteText}</p>}
+      {/* Der Grund, SOLANGE gezogen wird — nicht erst beim Nachrechnen (#23).
+          Ein roter Rahmen allein sagt „geht nicht" und lässt den Menschen
+          raten, ob es die Wand, die Rundung oder die Nachbarkiste ist.
+          Die Zeile trägt auch die gültige Auskunft „X rückt zur Seite"; rot
+          wird sie nur, wenn die Lage wirklich nicht geht. */}
+      <p className={urteil && !urteil.gueltig ? 'draufsicht-urteil ungueltig' : 'draufsicht-urteil'} role="status">
+        {urteil ? platzUrteilText(urteil, t) : ''}
+      </p>
     <svg
       ref={svg}
       className="draufsicht"
@@ -269,6 +270,9 @@ export function Draufsicht({
                 height={Math.max(0, p.sizeMm.z - 2 * ein)}
                 fill={farbe}
                 fillOpacity={p.position.y > 0 ? 0.75 : 0.95}
+                // Gefahr-Ton und NICHT Tally-Rot: das Rot dieser Zeichnung gehört
+                // der Öffnungskante, und zwei rote Dinge im selben Bild nehmen
+                // beiden den Rang (Handbuch, ADR-007).
                 stroke={aktiv && !zugGueltig ? '#B04A3F' : p.stueckId === auswahl ? '#E1ECEF' : '#132040'}
                 strokeWidth={aktiv || p.stueckId === auswahl ? 10 : 4}
               />

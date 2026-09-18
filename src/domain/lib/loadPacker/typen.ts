@@ -114,7 +114,13 @@ export interface Unplaced {
  * ist; er sagt, was er tun musste, und der Mensch entscheidet.
  */
 export interface PackBefund {
-  art: 'reihenfolge-verletzt' | 'nutzlast-unbekannt' | 'nutzlast-ueberschritten' | 'oeffnung-unbekannt'
+  art:
+    | 'reihenfolge-verletzt'
+    | 'nutzlast-unbekannt'
+    | 'nutzlast-ueberschritten'
+    | 'oeffnung-unbekannt'
+    /** Von Hand an eine Stelle gesetzt, an der es nicht steht (#23). */
+    | 'verankert-ungueltig'
   text: string
 }
 

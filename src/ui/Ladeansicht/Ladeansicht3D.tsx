@@ -21,6 +21,7 @@
 // auf dem Rad — die mittlere Taste wird nirgends gebraucht.
 // ───────────────────────────────────────────────────────────────────────────
 import { Suspense, useMemo, useState } from 'react'
+import { useT } from '../../i18n'
 import { Canvas } from '@react-three/fiber'
 import { Edges, OrbitControls, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -32,6 +33,10 @@ import type { LadeRolle } from '../../domain/lib/beladen'
 import type { LoadPlan, Placement, Vec3 } from '../../domain/lib/loadPacker'
 import type { Vehicle } from '../../domain/types/vehicle'
 import { konturBeiHoehe, konturHoehen, punktFrei, raumMasse, type Punkt2D } from '../../domain/lib/kontur'
+// Ob ein Stück HIER stehen darf, beantwortet `platzUrteil` — dieselbe
+// Funktion, die auch die Draufsicht beim Ziehen mit dem Finger fragt. Sie
+// stand einmal nur dort, und deshalb liess diese Ansicht jede Lage zu.
+import { platzUrteil, platzUrteilText, type PlatzUrteil } from '../../domain/lib/platzGueltig'
 import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
 import { gruppenFarbe } from './farben'
 import { Beschriftung } from './Beschriftung'
@@ -47,6 +52,18 @@ interface Props {
   onVerschiebe: (stueckId: string, position: Vec3) => void
   /** Raster in Millimetern, auf das der Griff einrastet. 0 = frei. */
   rasterMm: number
+  /**
+   * Gesperrte Achsen (#23). `true` heisst: diese Richtung ist am Griff frei.
+   *
+   * Y fehlt mit Absicht und ist keine dritte Sperre: die Höhe eines Stücks
+   * ist gestapelt und nicht gezogen — sie kommt aus dem Packer. Ein Griff,
+   * der ein Case in die Luft hebt, stellte eine Lage her, die am Dock
+   * niemand nachbauen kann.
+   */
+  freiX?: boolean
+  freiZ?: boolean
+  /** Meldet die Lage des Griffs, solange gezogen wird. */
+  onUrteil?: (urteil: PlatzUrteil | null) => void
   /**
    * PLANEN oder BELADEN — zwei Ansichten desselben Plans, und der
    * Unterschied ist nicht Kosmetik:
@@ -93,6 +110,7 @@ function Stueck({
   gewaehlt,
   onWaehle,
   rolle,
+  ungueltig,
 }: {
   p: Placement
   raum: Vec3
@@ -101,6 +119,8 @@ function Stueck({
   onWaehle: (id: string | undefined) => void
   /** `undefined` heisst Planen — dort gibt es keine Rollen. */
   rolle?: LadeRolle
+  /** Hängt gerade am Griff und stünde so nicht (#23). */
+  ungueltig?: boolean
 }) {
   const farbe = gruppenFarbe(p.gruppe, gruppen)
   const [x, y, z] = mitte(p.position, p.sizeMm, raum)
@@ -128,7 +148,13 @@ function Stueck({
           transparent={deckkraft < 1}
           roughness={0.7}
         />
-        <Edges threshold={15} color={istZiel ? ZIEL_FARBE : gewaehlt ? '#E1ECEF' : '#132040'} />
+        {/* Gefahr-Ton und nicht Tally-Rot: das Rot der Ladeansicht gehört der
+            Öffnung, und ein zweites Rot im selben Bild nähme beiden den Rang
+            (ADR-007). Die Kante trägt es, nicht die Fläche. */}
+        <Edges
+          threshold={15}
+          color={ungueltig ? '#B04A3F' : istZiel ? ZIEL_FARBE : gewaehlt ? '#E1ECEF' : '#132040'}
+        />
       </mesh>
       {/* Die Beschriftung liegt auf der Oberseite und nicht an der Flanke:
           von schräg oben ist das die Fläche, die man sieht. */}
@@ -237,6 +263,9 @@ function Szene({
   modus,
   geladen,
   naechstesId,
+  freiX = true,
+  freiZ = true,
+  onUrteil,
 }: Props) {
   const raum: Vec3 = {
     x: vehicle.cargoMm.widthMm,
@@ -247,7 +276,20 @@ function Szene({
   // Objekt beim Rendern, und eine Ref ist beim ersten Durchlauf noch leer.
   const [griff, setGriff] = useState<THREE.Group | null>(null)
   const [zieht, setZieht] = useState(false)
+  const [urteil, setUrteil] = useState<PlatzUrteil | null>(null)
   const gewaehlt = plan.placements.find((p) => p.stueckId === auswahl)
+
+  /** Wo das Stück am Griff gerade stünde — in Laderaum-Millimetern. */
+  const amGriff = (g: THREE.Group, p: Placement): Vec3 => ({
+    x: Math.round((g.position.x + mm(raum.x) / 2) * 1000 - p.sizeMm.x / 2),
+    y: p.position.y,
+    z: Math.round((g.position.z + mm(raum.z) / 2) * 1000 - p.sizeMm.z / 2),
+  })
+
+  const melde = (u: PlatzUrteil | null) => {
+    setUrteil(u)
+    onUrteil?.(u)
+  }
 
   return (
     <>
@@ -302,6 +344,7 @@ function Szene({
             gruppen={gruppen}
             gewaehlt={p.stueckId === auswahl}
             onWaehle={onWaehle}
+            ungueltig={p.stueckId === auswahl && urteil !== null && !urteil.gueltig}
             rolle={
               modus === 'planen'
                 ? undefined
@@ -332,16 +375,24 @@ function Szene({
           <TransformControls
             object={griff}
             mode="translate"
+            // Y ist keine Sperre, sondern gibt es nicht: die Höhe stapelt der
+            // Packer. X und Z sperrt der Mensch (#23) — wer eine Kiste nur
+            // nach hinten schieben will, stösst sie sonst nebenbei zur Seite.
+            showX={freiX}
+            showZ={freiZ}
             showY={false}
             translationSnap={rasterMm > 0 ? mm(rasterMm) : null}
             onMouseDown={() => setZieht(true)}
+            // SOFORT und nicht erst beim Loslassen (#23): sonst sieht man am
+            // Griff keinen Unterschied zwischen einer Stelle, an der das Case
+            // steht, und einer, an der es in der Nachbarkiste steckt.
+            onObjectChange={() =>
+              melde(platzUrteil(vehicle, plan, gewaehlt.stueckId, amGriff(griff, gewaehlt)))
+            }
             onMouseUp={() => {
               setZieht(false)
-              onVerschiebe(gewaehlt.stueckId, {
-                x: Math.round((griff.position.x + mm(raum.x) / 2) * 1000 - gewaehlt.sizeMm.x / 2),
-                y: gewaehlt.position.y,
-                z: Math.round((griff.position.z + mm(raum.z) / 2) * 1000 - gewaehlt.sizeMm.z / 2),
-              })
+              melde(null)
+              onVerschiebe(gewaehlt.stueckId, amGriff(griff, gewaehlt))
             }}
           />
           )}
@@ -366,6 +417,16 @@ function Szene({
 
 export default function Ladeansicht3D(props: Props) {
   const { vehicle, modus } = props
+  const { t } = useT()
+  /**
+   * Die Achsensperren liegen HIER und nicht in der Szene: die Schalter stehen
+   * als HTML über dem Bild, und ein Zustand in der Szene wäre für sie nicht
+   * erreichbar. Ausserdem überlebt er so das Neuaufbauen der Kamera beim
+   * Moduswechsel — wer quer gesperrt hat, hat es danach immer noch.
+   */
+  const [freiX, setFreiX] = useState(true)
+  const [freiZ, setFreiZ] = useState(true)
+  const [urteil, setUrteil] = useState<PlatzUrteil | null>(null)
   const blick = useMemo(() => {
     const l = mm(vehicle.cargoMm.lengthMm)
     const b = mm(vehicle.cargoMm.widthMm)
@@ -375,7 +436,37 @@ export default function Ladeansicht3D(props: Props) {
 
   return (
     <div className="ladeansicht-3d">
+      {modus === 'planen' && (
+        <div className="ladeansicht-achsen" role="group" aria-label={t('plan.axes', 'Drag axes')}>
+          <button
+            type="button"
+            className={freiX ? 'reiter aktiv' : 'reiter'}
+            aria-pressed={freiX}
+            onClick={() => setFreiX((f) => !f)}
+          >
+            {t('plan.axisX', 'Across')}
+          </button>
+          <button
+            type="button"
+            className={freiZ ? 'reiter aktiv' : 'reiter'}
+            aria-pressed={freiZ}
+            onClick={() => setFreiZ((f) => !f)}
+          >
+            {t('plan.axisZ', 'Lengthwise')}
+          </button>
+        </div>
+      )}
+      {/* Der Grund, solange gezogen wird. Er steht als HTML NEBEN dem Bild und
+          nicht darin: ein Satz in der Szene skalierte mit der Kamera und wäre
+          auf dem Telefon abgeschnitten. */}
+      <p
+        className={urteil && !urteil.gueltig ? 'ladeansicht-urteil ungueltig' : 'ladeansicht-urteil'}
+        role="status"
+      >
+        {urteil ? platzUrteilText(urteil, t) : ''}
+      </p>
       <Canvas
+        className="ladeansicht-leinwand"
         // `key` auf den Modus: ein Wechsel baut die Kamera neu auf, statt die
         // Stellung der vorigen Ansicht zu behalten. Ohne das steht man beim
         // Umschalten auf „Beladen" weiter schräg über der Kiste.
@@ -385,7 +476,7 @@ export default function Ladeansicht3D(props: Props) {
       >
         <color attach="background" args={['#132040']} />
         <Suspense fallback={null}>
-          <Szene {...props} />
+          <Szene {...props} freiX={freiX} freiZ={freiZ} onUrteil={setUrteil} />
         </Suspense>
       </Canvas>
     </div>

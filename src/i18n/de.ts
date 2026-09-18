@@ -607,6 +607,24 @@ export const de: Record<string, string> = {
   'pack.roomShape':
     'Es käme nur dort unter, wo der Laderaum gefast oder gerundet ist — das Kistenmass passt, das Fahrzeug nicht.',
   'plan.narrowest': 'Gestrichelt: der engste Querschnitt weiter oben',
+
+  // ── Die Lage am Griff (#23) ─────────────────────────────────────────────
+  //
+  // Drei Gründe und drei Sätze: „geht nicht" liesse den Menschen raten, ob es
+  // die Wand, die Rundung oder die Nachbarkiste ist. „Quer" und „längs" statt
+  // X und Z — am Dock spricht niemand von Achsen.
+  'plan.axes': 'Ziehrichtungen',
+  'plan.axisX': 'Quer',
+  'plan.axisZ': 'Längs',
+  // Der Befund bleibt, wenn jemand trotz der Warnung losgelassen hat — die
+  // Verankerung ist eine Entscheidung, eine unmögliche Lage ist keine.
+  'pack.anchoredOutside': '{label} steht von Hand dort, wo kein Laderaum ist — es ragt heraus.',
+  'pack.anchoredOverlap': '{label} steht von Hand dort, wo schon {other} steht.',
+  'pack.obstruction': 'ein fester Einbau des Fahrzeugs',
+  'place.outside': 'So ragt es aus dem Laderaum heraus.',
+  'place.shape': 'Dort ist der Laderaum gefast oder gerundet.',
+  'place.taken': 'Dort steht schon {what}.',
+  'place.gives': '{what} rückt dafür zur Seite.',
   'vehicle.edgeLoss': '{l} l gehen für Fasen und Rundungen ab',
 
   'edge.along': 'läuft über die ganze Länge',
