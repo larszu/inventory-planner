@@ -27,9 +27,10 @@ import type { PackStueck, Vec3 } from '../domain/lib/loadPacker'
 import type { Ladung } from '../domain/types/load'
 import { gruppen as gruppenDerLadung } from '../domain/lib/ladung'
 import { Draufsicht } from './Ladeansicht/Draufsicht'
-import { gruppenFarbe } from './Ladeansicht/farben'
+import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { Beladen } from './Beladen'
 import { Lastverteilung } from './Lastverteilung'
+import { Ladeausgabe } from './Ladeausgabe'
 
 // Three liegt hinter dieser Grenze und nur hinter ihr. Wer `Ladeansicht3D`
 // irgendwo statisch importiert, zieht es in den Start des Lagers — in
@@ -198,6 +199,15 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
           />
         </Suspense>
       )}
+
+      <Ladeausgabe
+        ladungName={ladung.name}
+        vehicle={fahrzeug}
+        plan={plan}
+        gruppen={gruppen}
+        datum={new Date().toLocaleDateString(locale(sprache))}
+        onFehler={setFehler}
+      />
 
       <Lastverteilung
         ladungName={ladung.name}

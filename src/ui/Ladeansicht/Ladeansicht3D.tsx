@@ -39,7 +39,7 @@ import { konturBeiHoehe, konturHoehen, punktFrei, raumMasse, type Punkt2D } from
 import { platzUrteil, platzUrteilText, type PlatzUrteil } from '../../domain/lib/platzGueltig'
 import { schwerpunkt } from '../../domain/lib/lastverteilung'
 import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
-import { gruppenFarbe } from './farben'
+import { gruppenFarbe } from '../../domain/lib/gruppenFarben'
 import { Beschriftung } from './Beschriftung'
 
 interface Props {

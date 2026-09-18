@@ -30,7 +30,7 @@
 import { useEffect, useRef } from 'react'
 import type { KarussellEintrag } from '../../domain/lib/beladen'
 import { useT } from '../../i18n'
-import { gruppenFarbe } from './farben'
+import { gruppenFarbe } from '../../domain/lib/gruppenFarben'
 
 interface Props {
   eintraege: readonly KarussellEintrag[]

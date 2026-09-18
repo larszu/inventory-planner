@@ -10,6 +10,16 @@
 // INHALT und keine Fläche. Der Wächter `markenPalette` misst deshalb auch nur
 // die Token-Schicht der CSS und nicht diese Datei.
 //
+// SIE LAG BIS 2026-09-18 UNTER `ui/Ladeansicht/`, und das ging so lange gut,
+// wie nur Ansichten sie brauchten. Der Ladeplan-Druckbogen (#25) braucht
+// dieselben Töne für seine Legende — ein Modul unter `domain/lib/`, das aus
+// `ui/` importiert, hätte die Richtung umgedreht, in der dieses Repo gebaut
+// ist. Sie ist eine reine Funktion und gehört deshalb hierher.
+//
+// AUF PAPIER GILT DER GRUND NICHT MEHR. Die Töne sind gegen Deep Navy
+// gewählt; „Nebel" ist auf Off-White fast weiss. Wer sie auf ein Blatt
+// setzt, umrandet die Fläche — der Druckbogen tut das.
+//
 // Die Töne sind gegen den Navy-Grund gewählt und liegen weit genug
 // auseinander, dass sie auch bei Rot-Grün-Schwäche unterscheidbar bleiben —
 // sie unterscheiden sich in Helligkeit UND Farbton, nicht nur im Farbton.

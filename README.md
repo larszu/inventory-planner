@@ -305,6 +305,26 @@ selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
 rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
 sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
 
+### Was am Dock an der Bordwand hängt
+
+Am Dock steht niemand mit der 3D-Ansicht. Vier Ausgaben, alle ohne Electron —
+das Repo liefert auch als Web-Seite aus:
+
+* **Ladeplan** — je Lage eine Draufsicht im Umriss des Laderaums (nicht im
+  Rechteck des Hüllquaders), Stücke in Ladereihenfolge nummeriert, Legende
+  nach Abladegruppe. SVG und kein Bildschirmfoto: ein Rasterbild hat die
+  Auflösung des Bildschirms, ein SVG die des Druckers.
+* **Dock-Checkliste** — eine Zeile je Stück mit Kästchen, in 13 pt für
+  schlechtes Hallenlicht. Auf demselben Blatt die **Rückladeliste**: dieselbe
+  Liste rückwärts, denn der Abbau läuft so.
+* **Case-Etiketten** — Nummer gross, darunter Ladung, Gruppe und Platz.
+* **CSV** der Ladung für die Weitergabe.
+
+**Jedes Blatt trägt Fahrzeug, Datum, gesetztes Gewicht und den
+Haftungshinweis** — und was nicht eingeplant werden konnte, steht **mit
+Grund** darauf und nicht nur im Werkzeug. Wer am Dock ein Case vermisst, soll
+auf dem Papier lesen, warum, statt es im Lager zu suchen.
+
 ### Gewicht, Schwerpunkt, Achslast
 
 **Gewicht ist die härtere Grenze.** Ein 3,5-Tonner ist oft bei unter 1.200 kg
@@ -382,10 +402,11 @@ was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
 noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
 sagt, wird umgangen und weiss danach gar nichts mehr.
 
-**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), das
-Packmass-Raster als Kandidatenfilter (#21), Fahrzeug-Stammdaten mit Quelle
-(#19 — die Gewichte und Achsen daraus stehen seit #24, die Herkunftsangabe
-noch nicht).
+**Noch nicht gebaut:** das Packmass-Raster als Kandidatenfilter (#21),
+Fahrzeug-Stammdaten mit Quelle (#19 — die Gewichte und Achsen daraus stehen
+seit #24, die Herkunftsangabe noch nicht). Aus #25 fehlt XLSX; CSV ist da,
+und eine zweite Tabellenfassung wäre eine zweite Wahrheit über dieselbe
+Ladung.
 
 ## Marke
 

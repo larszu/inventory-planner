@@ -42,7 +42,7 @@ import type { LoadPlan } from '../domain/lib/loadPacker'
 import type { Ladung } from '../domain/types/load'
 import type { Vehicle } from '../domain/types/vehicle'
 import { einLesen, hindernisText, scanFaehigkeit, waehleLeser } from '../lib/codeLeser'
-import { gruppenFarbe } from './Ladeansicht/farben'
+import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { Ladestreifen } from './Ladeansicht/Ladestreifen'
 
 const Ladeansicht3D = lazy(() => import('./Ladeansicht/Ladeansicht3D'))

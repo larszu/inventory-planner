@@ -46,7 +46,7 @@ import {
   type Punkt2D,
 } from '../../domain/lib/kontur'
 import type { Vehicle } from '../../domain/types/vehicle'
-import { gruppenFarbe } from './farben'
+import { gruppenFarbe } from '../../domain/lib/gruppenFarben'
 
 interface Props {
   vehicle: Vehicle
