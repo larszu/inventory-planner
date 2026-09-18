@@ -649,6 +649,58 @@ export const de: Record<string, string> = {
   'print.packList': 'Packliste — {name}',
   'print.positions': '{n} Positionen',
 
+  // ── Lagerbaum und Umlagerungen ──────────────────────────────────────────
+  //
+  // „Umlagern" ist der Begriff des Hauses; „verschieben" wäre die Geste und
+  // nicht der Vorgang. Der Unterschied steht mit Grund in
+  // `types/storageMove.ts`: es ist eine Buchung und keine Nebenwirkung.
+  'tab.storage': 'Lager',
+  'tab.storage.q': 'Wo liegt es — und was steckt worin?',
+
+  'move.subject.node': 'Lagerort/Container',
+  'move.subject.item': 'Artikel',
+  'move.subject.unit': 'Einheit',
+  'move.refusal.subject': 'Das Objekt gibt es nicht mehr.',
+  'move.refusal.target': 'Den Ziel-Lagerort gibt es nicht.',
+  'move.refusal.cycle': 'Ein Container kann nicht in sich selbst.',
+  'move.refusal.same': 'Liegt schon dort.',
+  'move.place.unknown': 'nicht mehr im Lager',
+  'move.place.never': 'nie eingeräumt',
+  'move.col.at': 'Zeitpunkt',
+  'move.col.kind': 'Art',
+  'move.col.subject': 'Objekt',
+  'move.col.from': 'Von',
+  'move.col.to': 'Nach',
+  'move.col.note': 'Notiz',
+
+  'tree.kind.depot': 'Depot',
+  'tree.kind.room': 'Raum',
+  'tree.kind.shelf': 'Regal',
+  'tree.kind.bin': 'Fach',
+  'tree.kind.case': 'Case',
+  'tree.kind.transportCase': 'Transport-Case',
+  'tree.intro':
+    'Zieh einen Lagerort, ein Case oder einen Artikel dorthin, wo er hingehört — mit der Maus oder mit dem Finger. Jeder Umzug geht ins Journal, und was nicht geht, sagt seinen Grund, bevor du loslässt.',
+  'tree.create.head': 'Lagerort oder Case anlegen',
+  'tree.name': 'Name',
+  'tree.kind': 'Art',
+  'tree.under': 'Liegt in',
+  'tree.add': 'Anlegen',
+  'tree.root': 'dem Lager selbst',
+  'tree.grab': '{name} umlagern',
+  'tree.container': 'Container',
+  'tree.remove': 'Entfernen',
+  'tree.qty': '{n} Stk',
+  'tree.moved': '{what} liegt jetzt in {where}.',
+  'tree.none': 'Noch keine Lagerorte. Ein Case braucht einen Platz, bevor etwas hineinkann.',
+  'tree.dropRoot': 'Hierher ziehen, um es aus allem herauszunehmen',
+  'tree.unplaced': 'Nicht eingeräumt ({n})',
+  'tree.journal': 'Umlagerungen',
+  'tree.journalHint':
+    'Jeder Umzug wird festgehalten. Das ist der Nachweis, der „wo war es zuletzt" beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.',
+  'tree.journalEmpty': 'Noch nichts umgelagert.',
+  'tree.csv': 'Umlagerungen als CSV',
+
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
   'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',
