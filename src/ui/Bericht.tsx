@@ -259,6 +259,7 @@ export function Bericht() {
       wurzel.code,
       packliste,
       new Date().toLocaleDateString(locale(sprache)),
+      t,
     )
     const w = window.open('', '_blank')
     if (!w) {

@@ -269,7 +269,7 @@ export function Draufsicht({
                 height={Math.max(0, p.sizeMm.z - 2 * ein)}
                 fill={farbe}
                 fillOpacity={p.position.y > 0 ? 0.75 : 0.95}
-                stroke={aktiv && !zugGueltig ? '#B2413A' : p.stueckId === auswahl ? '#E1ECEF' : '#132040'}
+                stroke={aktiv && !zugGueltig ? '#B04A3F' : p.stueckId === auswahl ? '#E1ECEF' : '#132040'}
                 strokeWidth={aktiv || p.stueckId === auswahl ? 10 : 4}
               />
               <text
@@ -287,12 +287,22 @@ export function Draufsicht({
         })}
 
       {/* Die Öffnungskante, beschriftet — sonst weiss niemand, wo vorn ist. */}
+      {/* ── DIE ÖFFNUNGSKANTE TRÄGT DAS SIGNAL ────────────────────────────
+          Tally-Rot, und zwar als LINIE: das Handbuch erlaubt die rote
+          Akzentlinie und verbietet die rote Fläche. Hier stand `--warn`, und
+          das war falsch — die Meldefarben gehören Formularmeldungen, nicht
+          der wichtigsten Orientierungsmarke des Bildes.
+
+          Es ist das einzige Rot dieser Zeichnung. Die 3D-Ansicht markiert
+          dieselbe Kante mit einer hellen Linie statt mit einem zweiten
+          Punkt: sie ist die zugeschaltete, zweite Abbildung, und zwei
+          Signale für dieselbe Aussage nehmen beiden den Rang. */}
       <line
         x1={RAND + kanteVon}
         y1={RAND + raum.z}
         x2={RAND + kanteBis}
         y2={RAND + raum.z}
-        stroke="#C8892B"
+        stroke="#D6402E"
         strokeWidth={16}
       />
     </svg>
