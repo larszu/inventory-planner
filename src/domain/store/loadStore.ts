@@ -10,6 +10,7 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_KEYS } from '../../lib/storageKeys'
 import type { Ladung, LadungsStueck } from '../types/load'
+import type { RasterModus } from '../lib/loadPacker'
 
 const HERKUENFTE = new Set<LadungsStueck['herkunft']>(['container', 'artikel', 'bedarf', 'csv'])
 
@@ -73,6 +74,8 @@ const healStueck = (raw: unknown): LadungsStueck | null => {
   }
 }
 
+const MODI = new Set<RasterModus>(['frei', 'raster', 'gemischt'])
+
 export const healLadung = (raw: unknown): Ladung | null => {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Partial<Ladung>
@@ -92,6 +95,7 @@ export const healLadung = (raw: unknown): Ladung | null => {
     gruppenReihenfolge: Array.isArray(r.gruppenReihenfolge)
       ? r.gruppenReihenfolge.filter((g): g is string => typeof g === 'string' && g.trim() !== '')
       : undefined,
+    rasterModus: MODI.has(r.rasterModus as RasterModus) ? r.rasterModus : undefined,
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : now,
     updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : now,
   }
@@ -139,6 +143,8 @@ interface LoadState {
   ) => void
   /** Die Abladegruppen in ihrer Reihenfolge setzen (#22). */
   setGruppenReihenfolge: (id: string, gruppen: string[]) => void
+  /** Wie streng das Raster des Fahrzeugs für diese Ladung gilt (#21). */
+  setRasterModus: (id: string, modus: RasterModus) => void
   /** Die Abladegruppe eines Stücks setzen. */
   setGruppe: (ladungId: string, stueckId: string, gruppe: string | undefined) => void
   /**
@@ -189,6 +195,14 @@ export const useLoadStore = create<LoadState>((set, get) => ({
             stuecke: l.stuecke.map((s) => (s.id === stueckId ? { ...s, fixiert } : s)),
             updatedAt: new Date().toISOString(),
           },
+    )
+    set({ loads: next })
+    sichern(next)
+  },
+
+  setRasterModus: (id, modus) => {
+    const next = get().loads.map((l) =>
+      l.id === id ? { ...l, rasterModus: modus, updatedAt: new Date().toISOString() } : l,
     )
     set({ loads: next })
     sichern(next)

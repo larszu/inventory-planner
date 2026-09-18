@@ -42,6 +42,7 @@ const stueck = (
   position,
   sizeMm: size,
   lage: 'upright',
+  imRaster: false,
   verankert,
   ladeSchritt: 1,
 })

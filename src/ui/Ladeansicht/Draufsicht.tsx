@@ -61,6 +61,15 @@ interface Props {
   /** Beschriftung des engsten Schnitts weiter oben. Fehlt er, wird er nicht
    *  gezeichnet — eine Linie ohne Erklärung ist ein Rätsel. */
   engsteText?: string
+  /**
+   * Das Packmass-Raster des Fahrzeugs in mm (#21). 0 = keines.
+   *
+   * Es wird als feine Längslinie je Rasterbreite gezeichnet — das Raster
+   * teilt QUER —, und das ist die Antwort auf „welches Stück sitzt im
+   * Raster": man sieht es, statt es zu lesen. Es ist NICHT dasselbe wie
+   * `rasterMm`, das den Finger beim Ziehen einrastet.
+   */
+  gitterMm?: number
 }
 
 /** Rand um die Ladefläche, in Laderaum-Millimetern. */
@@ -97,6 +106,7 @@ export function Draufsicht({
   rasterMm,
   oeffnungText,
   engsteText,
+  gitterMm = 0,
 }: Props) {
   const { t } = useT()
   const svg = useRef<SVGSVGElement>(null)
@@ -203,6 +213,29 @@ export function Draufsicht({
     >
       {/* Der Laderaum am BODEN — der Umriss und nicht das Rechteck. */}
       <polygon points={alsPfad(boden)} fill="#24405F" stroke="#8C9CB3" strokeWidth={6} />
+
+      {/* Das Packmass-Raster, fein und leise: es ist ein Hintergrund und
+          keine Aussage. Wer eine Kiste darauf stehen sieht, hat die Antwort
+          auf „sitzt sie in der Reihe" ohne ein Wort.
+
+          NUR LÄNGSLINIEN, weil das Raster quer teilt: die Reihe läuft quer
+          durchs Fahrzeug, in der Länge läuft sie durch. Ein Netz zeichnete
+          eine Teilung, nach der der Packer gar nicht setzt. */}
+      {gitterMm > 0 && (
+        <g stroke="#8C9CB3" strokeWidth={3} opacity={0.5}>
+          {/* Eine Linie WENIGER als Teilungen: die letzte läge auf der Wand,
+              und eine Linie auf der Wand teilt nichts. */}
+          {Array.from({ length: Math.ceil(raum.x / gitterMm) - 1 }, (_, i) => (
+            <line
+              key={`gx${i}`}
+              x1={RAND + (i + 1) * gitterMm}
+              y1={RAND}
+              x2={RAND + (i + 1) * gitterMm}
+              y2={RAND + raum.z}
+            />
+          ))}
+        </g>
+      )}
 
       {/* Der engste Schnitt weiter oben. Gestrichelt, weil er nichts ist,
           worauf man etwas stellt — er sagt, wie weit es nach oben eng wird. */}

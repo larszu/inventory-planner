@@ -23,6 +23,7 @@
 // aussieht.
 // ───────────────────────────────────────────────────────────────────────────
 
+import type { RasterModus } from '../lib/loadPacker'
 import type { PhysicalDimensions } from './inventory'
 import type { CaseOrientation, TransportSpec } from './transport'
 
@@ -91,6 +92,15 @@ export interface Ladung {
    * eine eingehalten.
    */
   gruppenReihenfolge?: string[]
+  /**
+   * Wie streng das Raster des Fahrzeugs für DIESE Ladung gilt (#21).
+   *
+   * Es hängt an der Ladung und nicht am Fahrzeug: derselbe LKW fährt heute
+   * Packmass-Cases in Reihen und morgen eine Bühne aus Einzelteilen. Fehlt
+   * der Eintrag, gilt „gemischt“, sobald das Fahrzeug ein Raster hat —
+   * Packmass-Cases in die Reihe, alles andere frei in die Reste.
+   */
+  rasterModus?: RasterModus
   createdAt: string
   updatedAt: string
 }

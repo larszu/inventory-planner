@@ -983,4 +983,22 @@ export const de: Record<string, string> = {
   'out.dock': 'Dock-Checkliste',
   'out.labels': 'Case-Etiketten',
   'out.csv': 'CSV',
+
+  // ── Das Packmass-Raster (#21) ───────────────────────────────────────────
+  //
+  // „Packmass" ist der Branchenbegriff und bleibt stehen. Der Schalter
+  // heisst „Raster" und nicht „Snap": den Finger rastet die Leiste darüber
+  // ein, hier geht es um die Reihen im Laderaum.
+  'vehicle.grid': 'Packmass-Raster (mm)',
+  'vehicle.gridNone': 'ohne Raster',
+  'vehicle.gridMm': '{n} mm',
+  'vehicle.gridDefault':
+    'Üblich für diese Klasse: {n} mm — 1200 × 600er Cases stehen darauf in Reihen.',
+  'vehicle.gridNoDefault':
+    'Für diese Klasse ist kein Raster üblich: der Laderaum ist keine 2,40 m breit, die Reihe geht nicht auf.',
+  'plan.rasterMode': 'Raster ({n} mm)',
+  'plan.rasterMixed': 'Gemischt',
+  'plan.rasterStrict': 'Nur im Raster',
+  'plan.rasterFree': 'Frei',
+  'plan.onGrid': 'vom Packer gesetzt, im Raster',
 }

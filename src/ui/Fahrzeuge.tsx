@@ -16,7 +16,7 @@ import { useState } from 'react'
 import { useT } from '../i18n'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
-import type { VehicleKind } from '../domain/types/vehicle'
+import { rasterVon, vorgabeRasterMm, type VehicleKind } from '../domain/types/vehicle'
 import { Kantenformen } from './Kantenform'
 import { Wiegedaten } from './Wiegedaten'
 
@@ -160,6 +160,34 @@ export function Fahrzeuge() {
                     h: v.aperture.heightMm,
                   })
                 : t('vehicle.notMeasured', 'not measured — nothing can be checked against it')}
+            </p>
+            {/* Das Packmass-Raster (#21). Es steht NEBEN der Ladebreite und
+                nicht in den Wiegedaten: es ist eine Eigenschaft des Aufbaus,
+                und wer es ändert, ändert die Reihen und nicht das Gewicht. */}
+            <label className="raster-wahl">
+              {t('vehicle.grid', 'Packing grid (mm)')}
+              <select
+                value={String(rasterVon(v))}
+                onChange={(e) => updateVehicle(v.id, { rasterMm: Number(e.target.value) })}
+              >
+                <option value="0">{t('vehicle.gridNone', 'no grid')}</option>
+                {[400, 600, 800].map((r) => (
+                  <option key={r} value={r}>
+                    {format(t('vehicle.gridMm', '{n} mm'), { n: r })}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="leise">
+              {vorgabeRasterMm(v.kind) > 0
+                ? format(
+                    t('vehicle.gridDefault', 'Usual for this class: {n} mm — 1200 x 600 cases stand in rows on it.'),
+                    { n: vorgabeRasterMm(v.kind) },
+                  )
+                : t(
+                    'vehicle.gridNoDefault',
+                    'No grid is usual for this class: the cargo is not 2.40 m wide, so the row does not come out even.',
+                  )}
             </p>
             <p>
               {t('vehicle.licence', 'Licence class:')}{' '}

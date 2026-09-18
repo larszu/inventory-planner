@@ -88,6 +88,16 @@ export interface Placement {
    * und ist ausdrücklich nicht null.
    */
   weightKg?: number
+  /**
+   * Sitzt das Stück auf dem Raster? (#21)
+   *
+   * Sichtbar zu machen, WELCHES Stück im Raster sitzt und welches frei, ist
+   * eine Anforderung und kein Beiwerk: im gemischten Lauf steht beides
+   * nebeneinander, und wer die Reihe nachzählt, will wissen, welche Kiste
+   * dazugehört. Ohne Raster ist das Feld `false` und sagt damit nichts
+   * Falsches — „im Raster" heisst nicht „ordentlich".
+   */
+  imRaster: boolean
   /** Von Hand gesetzt; der Packer hat es nur übernommen. */
   verankert: boolean
   /**
@@ -144,6 +154,8 @@ export interface LoadPlan {
   ohneGewicht: number
 }
 
+export type RasterModus = 'frei' | 'raster' | 'gemischt'
+
 export interface PackOptions {
   /**
    * Wieviel der Grundfläche unterstützt sein muss, damit ein Stück steht.
@@ -157,8 +169,30 @@ export interface PackOptions {
    * Die erste kommt an die Öffnung, die letzte nach hinten.
    */
   gruppenReihenfolge?: readonly string[]
-  /** Raster, auf das Positionen gerundet werden. 0 = frei. */
+  /**
+   * Raster, auf das Kandidatenpositionen gelegt werden. 0 = frei.
+   *
+   * Das Packmass der Branche ist 1200 × 600 und 1200 × 800, gerechnet auf
+   * 2,40 m Ladebreite: 4 × 600 quer oder 2 × 1200 längs, und es geht auf.
+   * Wo das gilt, ist freies Packen nicht unnötig, sondern FALSCH — die Crew
+   * erwartet saubere Reihen und keine optimal verkeilte Wand, die sich nicht
+   * abladen lässt.
+   */
   rasterMm?: number
+  /**
+   * Wie streng das Raster gilt (#21).
+   *
+   *   frei      das Raster wird ignoriert
+   *   raster    jedes Stück muss auf dem Raster sitzen
+   *   gemischt  Packmass-Cases ins Raster, alles andere frei in die Reste —
+   *             der Alltagsfall
+   *
+   * Das Raster ist KEIN zweiter Solver, sondern ein Filter auf die
+   * Kandidatenpositionen des Kerns. Kollision, Stützfläche, Stapelregeln und
+   * Öffnung bleiben identisch; sonst gäbe es zwei Antworten auf die Frage,
+   * ob etwas passt.
+   */
+  rasterModus?: RasterModus
 }
 
 export const VORGABE_STUETZUNG = 0.8

@@ -51,6 +51,7 @@ import {
   type LoadPlan,
   type PackBefund,
   type PackOptions,
+  type RasterModus,
   type PackStueck,
   type Placement,
   type Quader,
@@ -162,6 +163,26 @@ function wunschTiefe(gruppe: string | undefined, reihenfolge: readonly string[],
  *      (First-Fit-Decreasing) und an den ersten gültigen Absetzpunkt gesetzt.
  *   4. Was nicht passt, wird benannt, MIT GRUND.
  */
+/**
+ * Ist das Stück ein PACKMASS-Stück?
+ *
+ * ─── DAS RASTER LIEGT QUER UND NICHT LÄNGS ─────────────────────────────────
+ *
+ * Gemessen wird nur die BREITE. Die Reihe, die eine Crew erwartet, läuft
+ * quer durchs Fahrzeug: 4 × 600 oder 3 × 800 auf 2,40 m, und dann geht es
+ * auf. In der LÄNGE läuft die Reihe durch, so weit der Laderaum reicht —
+ * ein 1200 mm tiefes Case auf einem 800er Raster steht sauber in seiner
+ * Reihe, obwohl 1200 kein Vielfaches von 800 ist.
+ *
+ * Der erste Anlauf verlangte beide Achsen, und damit fiel genau der
+ * Normalfall durch: 1200 × 800 auf 800er Raster galt als krumm. Gemessen am
+ * Testfall, nicht im Kopf gerechnet.
+ *
+ * Die Höhe zählt ohnehin nicht mit — gestapelt wird auf dem, was darunter
+ * steht.
+ */
+const aufsRaster = (masse: Vec3, raster: number): boolean => raster > 0 && masse.x % raster === 0
+
 export function packe(
   v: Vehicle,
   stuecke: readonly PackStueck[],
@@ -173,6 +194,7 @@ export function packe(
   const mindest = options.mindestStuetzung ?? VORGABE_STUETZUNG
   const reihenfolge = options.gruppenReihenfolge ?? []
   const raster = options.rasterMm ?? 0
+  const rasterModus: RasterModus = options.rasterModus ?? (raster > 0 ? 'raster' : 'frei')
 
   const placements: Placement[] = []
   const unplaced: Unplaced[] = []
@@ -259,6 +281,10 @@ export function packe(
       lage: fix.lage,
       gruppe: s.gruppe,
       weightKg: s.weightKg,
+      // Von Hand gesetzt heisst frei gesetzt: wer eine Kiste hinschiebt,
+      // trifft das Raster höchstens zufällig, und „im Raster" zu behaupten,
+      // wo jemand 40 mm danebenliegt, wäre eine Auskunft über nichts.
+      imRaster: raster > 0 && fix.position.x % raster === 0,
       verankert: true,
       ladeSchritt: 0,
     })
@@ -316,9 +342,16 @@ export function packe(
         continue
       }
 
+      // AUFS RASTER HEISST AUFWÄRTS UND NICHT ZUM NÄCHSTEN. Hier stand
+      // `Math.round`, und das ist die falsche Richtung: die Kandidaten sind
+      // die AUSSENECKEN der schon gesetzten Quader, und wer eine davon
+      // abrundet, schiebt das Stück in seinen Nachbarn hinein. Der Platz
+      // fiel dann als Überlapp durch — unsichtbar, und er wäre eine
+      // Rasterbreite weiter frei gewesen.
+      const imRaster = rasterModus === 'raster' || (rasterModus === 'gemischt' && aufsRaster(lv.masse, raster))
       for (const p of punkte) {
-        const pos = raster > 0
-          ? { x: Math.round(p.x / raster) * raster, y: p.y, z: Math.round(p.z / raster) * raster }
+        const pos = imRaster && raster > 0
+          ? { x: Math.ceil(p.x / raster) * raster, y: p.y, z: p.z }
           : p
         const q = quader(pos, lv.masse)
         if (!liegtInnerhalb(q, raum)) continue
@@ -360,6 +393,7 @@ export function packe(
           lage: lv.lage,
           gruppe: s.gruppe,
           weightKg: s.weightKg,
+          imRaster: imRaster && raster > 0,
           verankert: false,
           ladeSchritt: 0,
         }

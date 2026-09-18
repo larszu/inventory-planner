@@ -167,6 +167,13 @@ export const healVehicle = (raw: unknown): Vehicle | null => {
     zulGesamtgewichtKg: num(r.zulGesamtgewichtKg),
     axles: Array.isArray(r.axles) ? r.axles.map(healAxle).filter((a): a is Axle => a !== null) : undefined,
     ladeflaecheAbVorderachseMm: num(r.ladeflaecheAbVorderachseMm),
+    // 0 überlebt hier ABSICHTLICH als 0 und nicht als `undefined`: „ohne
+    // Raster" ist eine Entscheidung und muss die Vorgabe der Klasse
+    // überschreiben können.
+    rasterMm:
+      typeof r.rasterMm === 'number' && Number.isFinite(r.rasterMm) && r.rasterMm >= 0
+        ? r.rasterMm
+        : undefined,
     flatFloor: typeof r.flatFloor === 'boolean' ? r.flatFloor : undefined,
     hebebuehneKg: num(r.hebebuehneKg),
     fuehrerscheinKlasse: KLASSEN.has(r.fuehrerscheinKlasse as NonNullable<Vehicle['fuehrerscheinKlasse']>)

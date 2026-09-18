@@ -305,6 +305,34 @@ selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
 rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
 sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
 
+### Das Packmass-Raster
+
+Das Packmass der Branche ist **1200 × 600 und 1200 × 800**, gerechnet auf
+2,40 m Ladebreite: 4 × 600 quer oder 3 × 800 quer, und beides geht auf. Wo
+das gilt, ist freies Packen nicht unnötig, sondern **falsch** — die Crew
+erwartet saubere Reihen und keine optimal verkeilte Wand, die sich nicht
+abladen lässt.
+
+**Das Raster ist kein zweiter Solver**, sondern ein Filter auf die
+Kandidatenpositionen des Kerns. Kollision, Stützfläche, Stapelregeln und
+Öffnung bleiben identisch; sonst gäbe es zwei Antworten auf die Frage, ob
+etwas passt.
+
+Es **teilt quer und nicht längs**: die Reihe läuft quer durchs Fahrzeug, in
+der Länge läuft sie durch. Ein 1200 mm tiefes Case steht auf einem 800er
+Raster sauber in seiner Reihe, obwohl 1200 kein Vielfaches von 800 ist.
+
+**600 und 800 sind zwei Raster und nicht eines.** Ihr grösster gemeinsamer
+Teiler ist 200, und ein 200er-Netz ist fast dasselbe wie frei. Ein Haus fährt
+das eine oder das andere; das Raster steht deshalb am **Fahrzeug** (Vorgabe:
+LKW und Sattelzug 600 mm, Transporter keines — dort ist der Laderaum keine
+2,40 m breit).
+
+Wie streng es gilt, steht an der **Ladung**: *Gemischt* (Packmass-Cases in
+die Reihe, alles andere frei in die Reste — der Alltagsfall), *nur im Raster*
+oder *frei*. Die Draufsicht zeichnet die Rasterlinien, und die Auswahlzeile
+sagt je Stück, ob es in der Reihe sitzt.
+
 ### Was am Dock an der Bordwand hängt
 
 Am Dock steht niemand mit der 3D-Ansicht. Vier Ausgaben, alle ohne Electron —
@@ -402,8 +430,7 @@ was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
 noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
 sagt, wird umgangen und weiss danach gar nichts mehr.
 
-**Noch nicht gebaut:** das Packmass-Raster als Kandidatenfilter (#21),
-Fahrzeug-Stammdaten mit Quelle (#19 — die Gewichte und Achsen daraus stehen
+**Noch nicht gebaut:** Fahrzeug-Stammdaten mit Quelle (#19 — die Gewichte und Achsen daraus stehen
 seit #24, die Herkunftsangabe noch nicht). Aus #25 fehlt XLSX; CSV ist da,
 und eine zweite Tabellenfassung wäre eine zweite Wahrheit über dieselbe
 Ladung.
