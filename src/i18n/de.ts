@@ -766,6 +766,29 @@ export const de: Record<string, string> = {
   'code.labelled': '{n} von {m} Lagerorten ohne Kennung beschriftet.',
   'code.clashes': 'Doppelt vergebene Kennungen',
 
+  // ── Flächen der Halle: Stellfläche, Pickzone, Verkehrsweg, Tor ──────────
+  //
+  // „Verkehrsweg" ist der Begriff der Arbeitssicherheit (ASR A1.8) und nicht
+  // eine Übersetzung von „aisle": ein Gang ist, wo man geht, ein Verkehrsweg
+  // ist, was frei bleiben MUSS. Der Unterschied ist genau das, was diese
+  // Fläche prüft.
+  'area.staging': 'Stellfläche',
+  'area.pick': 'Pickzone',
+  'area.aisle': 'Verkehrsweg',
+  'area.gate': 'Tor',
+  'area.blockedArea': 'Sperrfläche',
+  'area.new': 'Fläche anlegen',
+  'area.add': 'In den Grundriss',
+  'area.name': 'Name',
+  'area.remove': 'Fläche entfernen',
+  'area.clearWidth': 'Lichte Breite (mm)',
+  'area.clearHeight': 'Lichte Höhe (mm)',
+  'area.blocked': '{node} steht auf {area} — das muss frei bleiben.',
+  'area.blockedHead': 'Steht, wo es frei bleiben muss',
+  'area.blockedHint':
+    'Gemeldet, nicht verboten — beim Umbau steht ein Regal im Gang, weil es gerade nirgendwo anders hin kann. Es steht dort aber nicht still.',
+  'area.narrowest': 'Alles muss durch {name}: {w} x {h} mm lichte Weite.',
+
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
   'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',

@@ -35,6 +35,10 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import { quader, ueberlappt } from '../domain/lib/loadPacker'
 import { nodePathLabel } from '../domain/lib/storageTree'
 import { hallenUmriss } from '../domain/lib/hallenumriss'
+import { flaechenName } from '../lib/kennungsablage'
+import { engstesTor, verstellt, verstelltText } from '../domain/lib/hallenflaechen'
+import { useHallenStore } from '../domain/store/hallenStore'
+import { FLAECHEN_ARTEN, type FlaechenArt } from '../domain/types/halle'
 import type { StorageNode, Stellplatz } from '../domain/types/inventory'
 
 /** Rand um die Halle, in Millimetern. */
@@ -47,6 +51,8 @@ const ERST_BREITE = 2000
 const ERST_TIEFE = 1000
 
 interface Zug {
+  /** Ein Lagerort oder eine Fläche — beide liegen im selben Plan. */
+  art: 'node' | 'flaeche'
   id: string
   /** Griff-Versatz in Hallen-Millimetern. */
   dx: number
@@ -64,6 +70,11 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
   const { t, format } = useT()
   const nodes = useInventoryStore((s) => s.nodes)
   const updateNode = useInventoryStore((s) => s.updateNode)
+  const flaechen = useHallenStore((s) => s.flaechen)
+  const addFlaeche = useHallenStore((s) => s.addFlaeche)
+  const updateFlaeche = useHallenStore((s) => s.updateFlaeche)
+  const removeFlaeche = useHallenStore((s) => s.removeFlaeche)
+  const [neueArt, setNeueArt] = useState<FlaechenArt>('stellflaeche')
 
   const svg = useRef<SVGSVGElement>(null)
   const zugRef = useRef<Zug | null>(null)
@@ -85,6 +96,8 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
    * Meter grösser als der Umriss).
    */
   const halle = useMemo(() => hallenUmriss(nodes, RAND), [nodes])
+  const imWeg = useMemo(() => verstellt(nodes, flaechen), [nodes, flaechen])
+  const tor = useMemo(() => engstesTor(flaechen), [flaechen])
 
   /** Überschneidungen — gemeldet, nicht verboten. */
   const ueberschneidungen = useMemo(() => {
@@ -130,9 +143,29 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
     zugRef.current = null
     setZug(null)
     if (!z) return
+    if (z.art === 'flaeche') {
+      const f = flaechen.find((x) => x.id === z.id)
+      if (f) updateFlaeche(f.id, { stellplatz: { ...f.stellplatz, xMm: z.xMm, zMm: z.zMm } })
+      return
+    }
     const n = nodes.find((x) => x.id === z.id)
     if (!n?.stellplatz) return
     updateNode(n.id, { stellplatz: { ...n.stellplatz, xMm: z.xMm, zMm: z.zMm } })
+  }
+
+  /** Eine neue Fläche in die Halle legen. */
+  const flaecheAnlegen = () => {
+    const basis = halle ?? { xMm: 0, zMm: 0 }
+    addFlaeche({
+      name: flaechenName(neueArt, t),
+      art: neueArt,
+      stellplatz: {
+        xMm: raste(basis.xMm + RAND),
+        zMm: raste(basis.zMm + RAND),
+        breiteMm: neueArt === 'tor' ? 3000 : 4000,
+        tiefeMm: neueArt === 'tor' ? 400 : 2500,
+      },
+    })
   }
 
   /** Einen bisher ungestellten Lagerplatz zum ersten Mal in die Halle setzen. */
@@ -155,6 +188,13 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
   }
 
   const gewaehlt = auswahl ? nodes.find((n) => n.id === auswahl) : undefined
+  const gewaehlteFlaeche = auswahl ? flaechen.find((f) => f.id === auswahl) : undefined
+
+  const flaecheMass = (id: string, feld: keyof Stellplatz, wert: number) => {
+    const f = flaechen.find((x) => x.id === id)
+    if (!f || !(wert > 0)) return
+    updateFlaeche(id, { stellplatz: { ...f.stellplatz, [feld]: wert } })
+  }
 
   return (
     <div className="grundriss-rahmen">
@@ -169,6 +209,19 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
             ))}
           </select>
         </label>
+        <label>
+          {t('area.new', 'Add area')}
+          <select value={neueArt} onChange={(e) => setNeueArt(e.target.value as FlaechenArt)}>
+            {FLAECHEN_ARTEN.map((a) => (
+              <option key={a} value={a}>
+                {flaechenName(a, t)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className="knopf-primaer" onClick={flaecheAnlegen}>
+          {t('area.add', 'Put it on the plan')}
+        </button>
       </div>
 
       {offen.length > 0 && (
@@ -228,12 +281,69 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
               strokeDasharray={halle.vermessen ? undefined : '200 160'}
             />
 
+            {/* Die Flächen liegen UNTER den Lagerorten: sie sind der Boden,
+                auf dem die Regale stehen — und ein Tor, das ein Regal
+                verdeckt, verschweigt genau den Befund, um den es geht. */}
+            {flaechen.map((f) => {
+              const aktiv = zug?.art === 'flaeche' && zug.id === f.id
+              const x = aktiv ? zug.xMm : f.stellplatz.xMm
+              const z = aktiv ? zug.zMm : f.stellplatz.zMm
+              const strich = Math.max(14, halle.breiteMm / 600)
+              const farbe = flaechenFarbe(f.art)
+              return (
+                <g
+                  key={f.id}
+                  onPointerDown={(e) => {
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                    const p = ausZeiger(e)
+                    if (!p) return
+                    setAuswahl(f.id)
+                    const next: Zug = {
+                      art: 'flaeche',
+                      id: f.id,
+                      dx: p.xMm - f.stellplatz.xMm,
+                      dz: p.zMm - f.stellplatz.zMm,
+                      xMm: f.stellplatz.xMm,
+                      zMm: f.stellplatz.zMm,
+                    }
+                    zugRef.current = next
+                    setZug(next)
+                  }}
+                  style={{ cursor: 'grab' }}
+                >
+                  <rect
+                    x={x}
+                    y={z}
+                    width={f.stellplatz.breiteMm}
+                    height={f.stellplatz.tiefeMm}
+                    fill={farbe}
+                    fillOpacity={f.art === 'tor' ? 0.9 : 0.16}
+                    stroke={farbe}
+                    strokeWidth={f.id === auswahl ? strich * 2 : strich}
+                    strokeDasharray={f.art === 'verkehrsweg' ? `${strich * 8} ${strich * 6}` : undefined}
+                  />
+                  <text
+                    x={x + f.stellplatz.breiteMm / 2}
+                    y={z + f.stellplatz.tiefeMm / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={beschriftungsGroesse(halle) * 0.8}
+                    fill={f.art === 'tor' ? '#132040' : farbe}
+                  >
+                    {f.name}
+                  </text>
+                </g>
+              )
+            })}
+
             {gestellt.map((n) => {
               const s = n.stellplatz!
               const aktiv = zug?.id === n.id
               const x = aktiv ? zug.xMm : s.xMm
               const z = aktiv ? zug.zMm : s.zMm
-              const kaputt = ueberschneidungen.some(([a, b]) => a.id === n.id || b.id === n.id)
+              const kaputt =
+                ueberschneidungen.some(([a, b]) => a.id === n.id || b.id === n.id) ||
+                imWeg.some((v) => v.node.id === n.id)
               // Räume und Depots sind Umrisse, keine Flächen: sie umschliessen
               // die Regale, statt sie zu verdecken.
               const umriss = n.kind === 'room' || n.kind === 'depot'
@@ -246,7 +356,14 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
                     const p = ausZeiger(e)
                     if (!p) return
                     setAuswahl(n.id)
-                    const next: Zug = { id: n.id, dx: p.xMm - s.xMm, dz: p.zMm - s.zMm, xMm: s.xMm, zMm: s.zMm }
+                    const next: Zug = {
+                      art: 'node',
+                      id: n.id,
+                      dx: p.xMm - s.xMm,
+                      dz: p.zMm - s.zMm,
+                      xMm: s.xMm,
+                      zMm: s.zMm,
+                    }
                     zugRef.current = next
                     setZug(next)
                   }}
@@ -300,6 +417,32 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
         </>
       )}
 
+      {imWeg.length > 0 && (
+        <div className="block">
+          <h3>{t('area.blockedHead', 'Standing where it has to stay clear')}</h3>
+          <p className="hinweis">
+            {t(
+              'area.blockedHint',
+              'Reported, not forbidden — during a rebuild a rack stands in the aisle because it cannot go anywhere else yet. But it does not stand there silently.',
+            )}
+          </p>
+          {imWeg.map((v) => (
+            <p key={`${v.node.id}-${v.flaeche.id}`} className="warnung">
+              {verstelltText(v, t)}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {tor && (
+        <p className="leise">
+          {format(
+            t('area.narrowest', 'Everything has to fit through {name}: {w} x {h} mm clear.'),
+            { name: tor.name, w: tor.breiteMm, h: tor.hoeheMm },
+          )}
+        </p>
+      )}
+
       {ueberschneidungen.length > 0 && (
         <div className="block">
           <h3>{t('floor.clashes', 'Overlapping on the plan')}</h3>
@@ -314,6 +457,74 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
               {format(t('floor.clash', '{a} and {b} overlap.'), { a: a.name, b: b.name })}
             </p>
           ))}
+        </div>
+      )}
+
+      {gewaehlteFlaeche && (
+        <div className="block">
+          <h3>{gewaehlteFlaeche.name}</h3>
+          <div className="zeile">
+            <label>
+              {t('area.name', 'Name')}
+              <input
+                value={gewaehlteFlaeche.name}
+                onChange={(e) => updateFlaeche(gewaehlteFlaeche.id, { name: e.target.value })}
+              />
+            </label>
+            <label>
+              {t('floor.width', 'Width (mm)')}
+              <input
+                type="number"
+                value={gewaehlteFlaeche.stellplatz.breiteMm}
+                onChange={(e) => flaecheMass(gewaehlteFlaeche.id, 'breiteMm', Number(e.target.value))}
+              />
+            </label>
+            <label>
+              {t('floor.depth', 'Depth (mm)')}
+              <input
+                type="number"
+                value={gewaehlteFlaeche.stellplatz.tiefeMm}
+                onChange={(e) => flaecheMass(gewaehlteFlaeche.id, 'tiefeMm', Number(e.target.value))}
+              />
+            </label>
+          </div>
+
+          {/* Das LICHTE Mass steht nur am Tor — und nur dort ist es eine
+              Auskunft. Es ist NICHT die Höhe des Bauteils: bei einem
+              Sektionaltor sind das zwei Zahlen, und die falsche kostet ein
+              Case. */}
+          {gewaehlteFlaeche.art === 'tor' && (
+            <div className="zeile">
+              <label>
+                {t('area.clearWidth', 'Clear width (mm)')}
+                <input
+                  type="number"
+                  value={gewaehlteFlaeche.lichtBreiteMm ?? ''}
+                  onChange={(e) =>
+                    updateFlaeche(gewaehlteFlaeche.id, {
+                      lichtBreiteMm: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                {t('area.clearHeight', 'Clear height (mm)')}
+                <input
+                  type="number"
+                  value={gewaehlteFlaeche.lichtHoeheMm ?? ''}
+                  onChange={(e) =>
+                    updateFlaeche(gewaehlteFlaeche.id, {
+                      lichtHoeheMm: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                    })
+                  }
+                />
+              </label>
+            </div>
+          )}
+
+          <button type="button" className="still" onClick={() => removeFlaeche(gewaehlteFlaeche.id)}>
+            {t('area.remove', 'Remove the area')}
+          </button>
         </div>
       )}
 
@@ -354,6 +565,31 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
  */
 const beschriftungsGroesse = (halle: { breiteMm: number; tiefeMm: number }): number =>
   Math.max(120, Math.min(halle.breiteMm, halle.tiefeMm) / 22)
+
+/**
+ * Die Farbe einer Fläche.
+ *
+ * Aus der Marken-Palette und nicht frei gewählt: Stahlblau für alles, was
+ * Struktur ist, die Meldefarben nur dort, wo eine Fläche eine AUSSAGE über
+ * Zulässigkeit macht — ein Verkehrsweg und eine Sperrfläche sagen „hier
+ * nicht". Tally-Rot kommt nicht vor; das Signal dieser Ansicht ist der Punkt
+ * im Primärknopf.
+ */
+function flaechenFarbe(art: FlaechenArt): string {
+  switch (art) {
+    case 'tor':
+      // Das Tor ist die Öffnung — hell, wie die Ladeöffnung im Laderaum.
+      return '#F6F5F0'
+    case 'verkehrsweg':
+      return '#C8892B'
+    case 'sperrflaeche':
+      return '#B04A3F'
+    case 'pickzone':
+      return '#2F7D5C'
+    default:
+      return '#8C9CB3'
+  }
+}
 
 const alsQuader = (s: Stellplatz) =>
   quader({ x: s.xMm, y: 0, z: s.zMm }, { x: s.breiteMm, y: 1, z: s.tiefeMm })

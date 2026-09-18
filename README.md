@@ -142,6 +142,34 @@ gemessen ist (`domain/lib/hallenumriss.ts`, eine Rechnung für beide
 Ansichten). Ein Lagerort ohne Grundfläche ist nicht falsch; es hat nur
 niemand gemessen, wo er steht.
 
+### Flächen: Stellfläche, Pickzone, Verkehrsweg, Tor
+
+Im Grundriss steht nicht nur, was etwas **aufnimmt**. Eine Halle hat Flächen,
+die nichts aufnehmen und trotzdem den Betrieb bestimmen:
+
+| Fläche | Was sie sagt |
+|---|---|
+| **Stellfläche** | hier darf etwas stehen — Anlieferung, Paletten, Cases |
+| **Pickzone** | hier wird zusammengestellt, nicht gelagert |
+| **Verkehrsweg** | muss frei bleiben (ASR A1.8) |
+| **Tor** | der Weg hinein und hinaus, mit lichtem Mass |
+| **Sperrfläche** | darf nicht genutzt werden — Löschbereich, Tropfstelle |
+
+Sie sind **keine Lagerorte**: ein Tor nimmt nichts auf, ein Verkehrsweg soll
+nichts aufnehmen. Beides als Lager-Knoten zu führen hiesse, dass der Baum
+„Halle 1 › Tor Nord › Shure SM58" anbietet — eine Adresse, die es nicht gibt.
+
+**Und sie sind mehr als Bild.** Ein Lagerort auf einem Verkehrsweg, vor einem
+Tor oder in einer Sperrfläche ist ein **Befund** — gemeldet, nicht verboten,
+denn beim Umbau steht das Regal im Gang, weil es gerade nirgendwo anders hin
+kann. Es steht dort aber nicht still.
+
+**Das engste Tor sind zwei Tore.** Das schmalste und das niedrigste können
+verschiedene sein, und was durch beide muss, muss durch beide Masse. Eines
+davon „das engste" zu nennen wäre eine Auskunft über ein Tor, das es so nicht
+gibt. Das lichte Mass steht ausserdem getrennt von der Bauteilhöhe: bei einem
+Sektionaltor sind das zwei Zahlen, und die falsche kostet ein Case.
+
 ### Kennungen: A1, A-01-02 — nach dem Schema des Hauses
 
 **Dafür gibt es keine Norm.** Gasse, Feld und Ebene ist die verbreitete

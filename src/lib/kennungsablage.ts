@@ -11,6 +11,7 @@
 // Adressierung. Es liegt deshalb unter einem eigenen Schlüssel — wie der
 // Scan-Prefix der Inventur und die Fristarten.
 // ───────────────────────────────────────────────────────────────────────────
+import type { FlaechenArt } from '../domain/types/halle'
 import {
   SCHEMA_A1,
   STUFEN_ARTEN,
@@ -49,4 +50,27 @@ export function liesSchema(): Kennungsschema {
  */
 export function planBeschriftung(n: { code?: string; name: string }): string {
   return n.code?.trim() || n.name
+}
+
+/**
+ * Wie eine Hallenfläche heisst.
+ *
+ * Als FUNKTION und nicht als Tabelle: eine Beschriftungs-Tabelle auf
+ * Modulebene wird beim Laden einmal gebaut und bliebe in der Sprache stehen,
+ * die damals galt (CLAUDE.md). Sie steht hier und nicht in der Ansicht, weil
+ * der Grundriss sie zum Zeichnen braucht und die Anlege-Leiste zum Benennen.
+ */
+export function flaechenName(art: FlaechenArt, t: (k: string, en: string) => string): string {
+  switch (art) {
+    case 'tor':
+      return t('area.gate', 'Gate')
+    case 'verkehrsweg':
+      return t('area.aisle', 'Traffic route')
+    case 'sperrflaeche':
+      return t('area.blockedArea', 'No-go area')
+    case 'pickzone':
+      return t('area.pick', 'Picking zone')
+    default:
+      return t('area.staging', 'Staging area')
+  }
 }

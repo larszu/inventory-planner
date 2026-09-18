@@ -45,4 +45,12 @@ export const STORAGE_KEYS = {
    * Begruendung wie bei den Ausgabescheinen.
    */
   loads: 'inventory-planner:loads',
+  /**
+   * Die Flaechen der Halle: Stellflaechen, Pickzonen, Verkehrswege, Tore.
+   *
+   * Eigener Schluessel aus demselben Grund wie die Fahrzeuge: Stammdaten des
+   * Hauses, kein Bestand. Wer alle Artikel loescht, hat immer noch dieselbe
+   * Halle mit denselben Toren.
+   */
+  hallenflaechen: 'inventory-planner:hallenflaechen',
 } as const
