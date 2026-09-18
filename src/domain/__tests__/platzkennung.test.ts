@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   ausBuchstabe,
+  ebenenKennungen,
   buchstabe,
   kennung,
   kollisionen,
@@ -177,5 +178,34 @@ describe('Die Stufen heissen etwas', () => {
   it('englisch als Quelle, übersetzbar', () => {
     expect(stufenName('gasse')).toBe('Aisle')
     expect(stufenName('ebene', (k, en) => (k === 'code.stage.level' ? 'Ebene' : en))).toBe('Ebene')
+  })
+})
+
+describe('Die Ebenen eines Regals setzen seine Kennung fort', () => {
+  it('hängt die Ebene mit dem Trenner des Hauses an', () => {
+    expect(ebenenKennungen('A-01', 3, GROSS)).toEqual({
+      kennungen: ['A-01-01', 'A-01-02', 'A-01-03'],
+      mitBindestrich: false,
+    })
+  })
+
+  it('ergänzt einen Bindestrich, wo das Schema keinen Trenner hat — und sagt es', () => {
+    // Ohne ihn wäre „A1" + Ebene 2 gleich „A12", und das ist unter diesem
+    // Schema Regal A, Feld 12. Zwei Plätze mit derselben Adresse sind
+    // schlimmer als eine hässliche Adresse.
+    expect(ebenenKennungen('A1', 2, SCHEMA_A1)).toEqual({
+      kennungen: ['A1-1', 'A1-2'],
+      mitBindestrich: true,
+    })
+  })
+
+  it('liefert nichts ohne Regal-Kennung, statt eine zu erfinden', () => {
+    expect(ebenenKennungen(undefined, 3, SCHEMA_A1).kennungen).toEqual([])
+    expect(ebenenKennungen('  ', 3, SCHEMA_A1).kennungen).toEqual([])
+    expect(ebenenKennungen('A1', 0, SCHEMA_A1).kennungen).toEqual([])
+  })
+
+  it('benutzt die Auffüllung der Ebenen-Stufe, wenn es eine gibt', () => {
+    expect(ebenenKennungen('A', 2, GROSS).kennungen).toEqual(['A-01', 'A-02'])
   })
 })

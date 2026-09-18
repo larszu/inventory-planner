@@ -110,6 +110,17 @@ export default function Lagerraum3D({ beschriftung }: Props) {
             const z = mm(s.zMm + s.tiefeMm / 2 - mitte.z)
             const voll = itemsInNode(items, nodes, n.id, { recursive: true }).length > 0
             const ebenen = s.ebenen ?? 0
+            // Welche Ebene trägt etwas? Die Ebenen sind Kinder des Regals,
+            // nach ihrer Kennung sortiert — dieselbe Reihenfolge, in der sie
+            // angelegt wurden, also von unten nach oben.
+            const ebenenKnoten = nodes
+              .filter((k) => k.parentId === n.id)
+              .sort((a, b) => (a.code ?? a.name).localeCompare(b.code ?? b.name))
+            const belegt = new Set(
+              ebenenKnoten
+                .map((k, i) => (itemsInNode(items, nodes, k.id, { recursive: true }).length > 0 ? i : -1))
+                .filter((i) => i >= 0),
+            )
 
             if (hoehe <= 0) {
               // Ohne Hoehe bleibt die Grundflaeche als Umriss stehen. Sie
@@ -149,6 +160,20 @@ export default function Lagerraum3D({ beschriftung }: Props) {
                     </mesh>
                   )
                 })}
+
+                {/* Eine belegte Ebene bekommt eine FLÄCHE — das ist die eine
+                    Aussage, die der Grundriss nicht machen kann: „in Regal A
+                    liegt etwas, und zwar auf Ebene 2". Ohne Ebenen-Knoten
+                    gibt es sie nicht, und dann steht hier auch nichts. */}
+                {[...belegt].map((i) => (
+                  <mesh
+                    key={`voll-${i}`}
+                    position={[0, mm((hoehe / ebenen) * (i + 0.5)), 0]}
+                  >
+                    <boxGeometry args={[mm(s.breiteMm) * 0.94, mm(hoehe / ebenen) * 0.8, mm(s.tiefeMm) * 0.9]} />
+                    <meshStandardMaterial color="#8C9CB3" opacity={0.75} transparent roughness={0.8} />
+                  </mesh>
+                ))}
               </group>
             )
           })}
@@ -171,6 +196,10 @@ export default function Lagerraum3D({ beschriftung }: Props) {
                     e: n.stellplatz!.ebenen ?? 1,
                   })
                 : t('room.flat', 'no height recorded')}
+              {' · '}
+              {format(t('room.holds', 'articles inside: {n}'), {
+                n: itemsInNode(items, nodes, n.id, { recursive: true }).length,
+              })}
             </span>
           </li>
         ))}

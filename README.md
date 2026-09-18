@@ -191,6 +191,65 @@ noch keine trägt — eine Kennung, die schon auf einem Aufkleber steht, wird
 nicht still geändert. Doppelt vergebene Kennungen werden gemeldet, nicht
 verhindert.
 
+### Die Kennung ist die Adresse — überall dieselbe
+
+Der Lagerort steht nicht nur in diesem Werkzeug. Er steht auf einem Aufkleber
+am Regal, in einer CSV-Spalte, im Kabelplan als Freitext — und überall als
+**Text**. Damit derselbe Text überall denselben Platz meint, löst genau eine
+Stelle ihn auf: `domain/lib/platzAufloesen.ts`, über vier Wege in dieser
+Reihenfolge — die Kennung am Knoten, die Kennung nach dem Hausschema, der
+Pfad („Regal A / Ebene 2", auch mit `›`, `>` oder `|`), zuletzt der Name.
+
+**Der Aufkleber schlägt den Namen.** Wer ein Regal umbenennt, ändert nicht das
+Etikett, das daran klebt. Und der Name hängt ausserdem an der Sprache von
+damals: eine Ebene, die bei englischer Oberfläche entsteht, heisst „Level 2" —
+auch für jemanden, der später „Ebene 2" tippt. Die Kennung „A1-2" ist in jeder
+Sprache dieselbe. Wer über Werkzeuggrenzen hinweg auf einen Platz zeigt, zeigt
+auf die Kennung.
+
+**Mehrdeutig ist ein Ergebnis und kein Fehler.** Zwei Regale heissen „Regal A"?
+Dann gibt es keine Antwort, sondern die Frage „welcher?" mit beiden Pfaden.
+
+In der Bestands-Tabelle steht der Lagerort deshalb als **Kennung mit Pfad**
+und ist dort auch **eintippbar** — Umräumen geht durch `moveItem`, wird also
+geprüft und ins Journal geschrieben.
+
+### Ebenen sind echte Lagerplätze
+
+Ein Regal mit vier Ebenen trägt im Grundriss die Zahl 4 — und einen Knopf, der
+daraus vier Lagerplätze macht: `A1-1` bis `A1-4`, die Kennung des Regals
+fortgesetzt. **Ohne sie kann „Regal A Ebene 1" auf nichts zeigen:** solange die
+Ebene nur eine Zahl ist, gibt es dort keinen Platz, in den etwas gelegt werden
+kann — weder von Hand, noch aus einem anderen Werkzeug, noch per Scan.
+
+Der Trenner ist dabei nicht verhandelbar: ohne ihn wäre „A1" + Ebene 2 gleich
+„A12", und das ist unter einem Schema aus Reihe und Feld die Kennung von Regal
+A, Feld 12. Hat das Hausschema keinen Trenner, ergänzt das Werkzeug den
+Bindestrich — und sagt es.
+
+**In der 3D-Ansicht** bekommt eine belegte Ebene eine Fläche. Das ist die eine
+Aussage, die der Grundriss nicht machen kann: „in Regal A liegt etwas, und zwar
+auf Ebene 2".
+
+### Etiketten für die Regale
+
+Ein A4-Bogen zum Ausdrucken, in drei Grössen (Regalschild, Fachschild, klein),
+die A4 **kacheln** — 2, 3 oder 4 je Reihe.
+
+Die Form folgt einem gemessenen Bedarf und nicht dem Geschmack: Nr. 70 der
+Suite-Recherche („Labels that survive the warehouse"), belegt an offenen
+Snipe-IT-Issues — eine Vorlage für alle Grössen führt dazu, dass Etiketten mit
+der Schere beschnitten werden, und ein fehlender Klartext lässt keinen Rückweg,
+wenn der Code zerkratzt ist. Deshalb: **die Kennung gross als Text** (ein
+Regalschild wird aus fünf Metern gelesen, nicht gescannt), der Pfad darunter,
+drei Grössen.
+
+**Kein Strichcode in diesem Bogen**, und das ist eine Entscheidung: er müsste
+hier erzeugt werden — mit einer Bibliothek, die dieses Repo nicht hat, oder als
+Bild aus dem Netz, was offline-first verbietet. Ein falsch gerasterter Code,
+der beim Scannen versagt, ist schlimmer als keiner: er sieht aus, als müsste er
+gehen.
+
 Noch ohne Bedienung bleiben `addSet` und `addUnit`: ein Kit ist keine
 Lagerstelle und eine serialisierte Einheit ist ein Stück mit Seriennummer —
 zwei andere Fragen, die nicht in denselben Baum gehören, nur weil sie im

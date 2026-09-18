@@ -25,10 +25,12 @@
 // will, macht ihn sichtbar Platz für Platz. Ein Knopf, der still hundert
 // Etiketten ungültig macht, ist genau der, nach dem niemand gefragt hat.
 // ───────────────────────────────────────────────────────────────────────────
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { liesSchema, schemaSchluessel } from '../lib/kennungsablage'
+import { buildRegalEtikettenHtml, type EtikettGroesse } from '../domain/lib/regalEtiketten'
+import { locale } from '../i18n'
 import {
   kollisionen,
   kollisionText,
@@ -43,7 +45,7 @@ import {
 
 
 export function Kennungsschemata() {
-  const { t, format } = useT()
+  const { t, format, sprache } = useT()
   const nodes = useInventoryStore((s) => s.nodes)
   const updateNode = useInventoryStore((s) => s.updateNode)
 
@@ -51,6 +53,8 @@ export function Kennungsschemata() {
   const [ziel, setZiel] = useState('')
   const [grenzen, setGrenzen] = useState<Partial<Record<StufenArt, number>>>({})
   const [meldung, setMeldung] = useState<string | null>(null)
+  const [groesse, setGroesse] = useState<EtikettGroesse>('regal')
+  const [drucken, setDrucken] = useState<ReadonlySet<string>>(new Set())
 
   const sichern = (next: Kennungsschema) => {
     setSchema(next)
@@ -67,6 +71,31 @@ export function Kennungsschemata() {
   }
 
   const doppelt = kollisionen(nodes)
+  const mitKennung = useMemo(() => nodes.filter((n) => n.code?.trim()), [nodes])
+
+  /**
+   * Der Etiketten-Bogen.
+   *
+   * Er wird in einem Fenster geöffnet und vom Browser gedruckt — wie die
+   * Packliste. Ein eigener Druckpfad wäre ein zweiter Ort für dieselbe
+   * Ausgabe.
+   */
+  const bogenOeffnen = () => {
+    const html = buildRegalEtikettenHtml(
+      nodes,
+      [...drucken],
+      groesse,
+      new Date().toLocaleDateString(locale(sprache)),
+      t,
+    )
+    const w = window.open('', '_blank')
+    if (!w) {
+      setMeldung(t('label.blocked', 'The sheet could not be opened — the browser blocked the window.'))
+      return
+    }
+    w.document.write(html)
+    w.document.close()
+  }
   const beispiel = schemaBeispiel(schema)
 
   /**
@@ -213,6 +242,65 @@ export function Kennungsschemata() {
       </button>
 
       {meldung && <p className="befund ja">{meldung}</p>}
+
+      <h4>{t('label.head', 'Print the labels')}</h4>
+      <p className="hinweis">
+        {t(
+          'label.hint',
+          'The code is printed as text, large, with its path beside it — a shelf label is read from five metres, not scanned. Only locations that carry a code are printed: a label without one is an empty sticker.',
+        )}
+      </p>
+      {mitKennung.length === 0 ? (
+        <p className="leise">{t('label.nothing', 'No location carries a code yet.')}</p>
+      ) : (
+        <>
+          <div className="ladeplan-leiste">
+            <label>
+              {t('label.size', 'Size')}
+              <select value={groesse} onChange={(e) => setGroesse(e.target.value as EtikettGroesse)}>
+                <option value="regal">{t('label.size.shelf', 'Shelf sign (95 x 62 mm, 2 per row)')}</option>
+                <option value="fach">{t('label.size.bay', 'Bay label (62 x 33 mm, 3 per row)')}</option>
+                <option value="klein">{t('label.size.small', 'Small (46 x 20 mm, 4 per row)')}</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              className="still"
+              onClick={() => setDrucken(new Set(mitKennung.map((n) => n.id)))}
+            >
+              {t('label.all', 'Select all')}
+            </button>
+            <button type="button" className="still" onClick={() => setDrucken(new Set())}>
+              {t('label.none.select', 'Select none')}
+            </button>
+            <button type="button" className="knopf-primaer" onClick={bogenOeffnen} disabled={drucken.size === 0}>
+              {format(t('label.open', 'Open sheet ({n})'), { n: drucken.size })}
+            </button>
+          </div>
+          <ul className="etiketten-wahl">
+            {mitKennung.map((n) => (
+              <li key={n.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={drucken.has(n.id)}
+                    onChange={() =>
+                      setDrucken((s) => {
+                        const next = new Set(s)
+                        if (next.has(n.id)) next.delete(n.id)
+                        else next.add(n.id)
+                        return next
+                      })
+                    }
+                  />
+                  <strong>{n.code}</strong>
+                  <span className="leise">{n.name}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       {doppelt.length > 0 && (
         <>

@@ -35,7 +35,8 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import { quader, ueberlappt } from '../domain/lib/loadPacker'
 import { nodePathLabel } from '../domain/lib/storageTree'
 import { hallenUmriss } from '../domain/lib/hallenumriss'
-import { flaechenName } from '../lib/kennungsablage'
+import { flaechenName, liesSchema } from '../lib/kennungsablage'
+import { ebenenKennungen } from '../domain/lib/platzkennung'
 import { engstesTor, verstellt, verstelltText } from '../domain/lib/hallenflaechen'
 import { useHallenStore } from '../domain/store/hallenStore'
 import { FLAECHEN_ARTEN, type FlaechenArt } from '../domain/types/halle'
@@ -71,6 +72,7 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
   const nodes = useInventoryStore((s) => s.nodes)
   const updateNode = useInventoryStore((s) => s.updateNode)
   const flaechen = useHallenStore((s) => s.flaechen)
+  const addNode = useInventoryStore((s) => s.addNode)
   const addFlaeche = useHallenStore((s) => s.addFlaeche)
   const updateFlaeche = useHallenStore((s) => s.updateFlaeche)
   const removeFlaeche = useHallenStore((s) => s.removeFlaeche)
@@ -188,6 +190,35 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
   }
 
   const gewaehlt = auswahl ? nodes.find((n) => n.id === auswahl) : undefined
+
+  /**
+   * Die Ebenen eines Regals als echte Lagerplätze anlegen.
+   *
+   * WARUM SIE KNOTEN SEIN MÜSSEN und nicht eine Zahl am Regal bleiben: „Regal
+   * A Ebene 1" muss auf ETWAS zeigen können. Solange die Ebene nur eine Zahl
+   * ist, gibt es dort keinen Platz, in den ein Artikel gelegt werden kann —
+   * weder von Hand, noch aus einem anderen Werkzeug, noch durch einen Scan.
+   *
+   * Angelegt wird nur, was fehlt: wer zweimal drückt, bekommt keine zweite
+   * Garnitur.
+   */
+  const ebenenAnlegen = (regal: StorageNode) => {
+    const anzahl = regal.stellplatz?.ebenen ?? 0
+    const { kennungen } = ebenenKennungen(regal.code, anzahl, liesSchema())
+    if (kennungen.length === 0) return
+    const schon = new Set(
+      nodes.filter((n) => n.parentId === regal.id).map((n) => n.code?.trim().toUpperCase()),
+    )
+    kennungen.forEach((code, i) => {
+      if (schon.has(code.toUpperCase())) return
+      addNode({
+        name: format(t('floor.levelName', 'Level {n}'), { n: i + 1 }),
+        kind: 'bin',
+        parentId: regal.id,
+        code,
+      })
+    })
+  }
   const gewaehlteFlaeche = auswahl ? flaechen.find((f) => f.id === auswahl) : undefined
 
   const flaecheMass = (id: string, feld: keyof Stellplatz, wert: number) => {
@@ -543,6 +574,26 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
               </label>
             ))}
           </div>
+          {/* Die Ebenen als Lagerplätze — der Knopf steht hier, weil hier
+              die Zahl eingestellt wird, aus der sie entstehen. */}
+          {(gewaehlt.stellplatz.ebenen ?? 0) > 0 && (
+            <>
+              <button type="button" className="knopf-primaer" onClick={() => ebenenAnlegen(gewaehlt)}>
+                {format(t('floor.makeLevels', 'Create the {n} levels as locations'), {
+                  n: gewaehlt.stellplatz.ebenen!,
+                })}
+              </button>
+              {!gewaehlt.code && (
+                <p className="leise">
+                  {t(
+                    'floor.needsCode',
+                    'The shelf has no code yet — the levels continue it, so they cannot be named without it.',
+                  )}
+                </p>
+              )}
+            </>
+          )}
+
           <button
             type="button"
             className="still"

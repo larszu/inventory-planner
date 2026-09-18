@@ -269,3 +269,50 @@ export function stufenName(art: StufenArt, t: Uebersetzen = quelle): string {
 export function kollisionText(k: Kollision, t: Uebersetzen = quelle): string {
   return format(t('code.clash', 'Code {code} is used {n} times.'), { code: k.kennung, n: k.ids.length })
 }
+
+/**
+ * Die Kennungen der Ebenen EINES Regals.
+ *
+ * ─── WARUM DAS NICHT `reihe()` IST ─────────────────────────────────────────
+ *
+ * `reihe()` baut Kennungen aus dem Nichts, für ein noch unbeschriftetes
+ * Lager. Hier steht schon etwas: das Regal trägt „A1", und seine Ebenen
+ * heissen „A1-1", „A1-2". Die Kennung des Kindes SETZT die des Elters fort,
+ * statt neben ihr zu stehen — wer am Regal steht, liest oben A1 und am Fach
+ * A1-2, und die beiden gehören sichtbar zusammen.
+ *
+ * ─── DER TRENNER IST NICHT VERHANDELBAR ────────────────────────────────────
+ *
+ * Ohne ihn wäre „A1" + Ebene 2 gleich „A12" — und das ist unter einem
+ * Schema mit Reihe und Feld die Kennung von Regal A, Feld 12. Zwei
+ * verschiedene Plätze mit derselben Adresse sind schlimmer als eine
+ * hässliche Adresse. Hat das Hausschema keinen Trenner, nimmt diese Funktion
+ * den Bindestrich und sagt es über `mitBindestrich`.
+ */
+export interface EbenenKennungen {
+  kennungen: string[]
+  /** `true`, wenn der Trenner ergänzt wurde, weil das Schema keinen hat. */
+  mitBindestrich: boolean
+}
+
+export function ebenenKennungen(
+  regalCode: string | undefined,
+  anzahl: number,
+  schema: Kennungsschema,
+): EbenenKennungen {
+  const basis = regalCode?.trim()
+  if (!basis || !Number.isInteger(anzahl) || anzahl < 1) {
+    return { kennungen: [], mitBindestrich: false }
+  }
+
+  const ebenenStufe = schema.stufen.find((s) => s.art === 'ebene')
+  const trenner = schema.trenner === '' ? '-' : schema.trenner
+  const kennungen: string[] = []
+  for (let n = 1; n <= anzahl; n += 1) {
+    const teil = ebenenStufe
+      ? stufenText(ebenenStufe, n)
+      : String(n)
+    kennungen.push(`${basis}${trenner}${teil}`)
+  }
+  return { kennungen, mitBindestrich: schema.trenner === '' }
+}
