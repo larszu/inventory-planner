@@ -17,6 +17,13 @@ import { useT } from '../i18n'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
 import { rasterVon, vorgabeRasterMm, type VehicleKind } from '../domain/types/vehicle'
+import { FAHRZEUG_KATALOG } from '../domain/data/fahrzeugKatalog'
+import {
+  ausKatalog,
+  buildFahrzeugDatei,
+  parseFahrzeugDatei,
+  vermessen,
+} from '../domain/lib/fahrzeugStammdaten'
 import { Kantenformen } from './Kantenform'
 import { Wiegedaten } from './Wiegedaten'
 
@@ -60,6 +67,44 @@ export function Fahrzeuge() {
   const [laenge, setLaenge] = useState('')
   const [breite, setBreite] = useState('')
   const [hoehe, setHoehe] = useState('')
+
+  /** Was der letzte Im-/Export gesagt hat. Leer heisst: nichts passiert. */
+  const [meldung, setMeldung] = useState('')
+
+  const exportieren = () => {
+    const url = URL.createObjectURL(
+      new Blob([buildFahrzeugDatei(vehicles)], { type: 'application/json' }),
+    )
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'fahrzeuge.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const importieren = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const datei = e.target.files?.[0]
+    // Das Feld wird zurückgesetzt, damit dieselbe Datei ein zweites Mal
+    // gewählt werden kann — ohne das passiert beim zweiten Versuch nichts,
+    // und der Benutzer hält es für einen Fehlschlag.
+    e.target.value = ''
+    if (!datei) return
+    const gelesen = parseFahrzeugDatei(await datei.text())
+    if (!gelesen) {
+      setMeldung(t('fleet.importBad', 'That is not a vehicle file from this tool.'))
+      return
+    }
+    // Der Store heilt jeden Datensatz beim Anlegen — dieselbe Strenge wie
+    // beim Laden aus dem Speicher. Was durchfällt, fällt hier durch.
+    let uebernommen = 0
+    for (const v of gelesen) {
+      const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = v
+      if (!rest.name || !(rest.cargoMm?.lengthMm > 0)) continue
+      addVehicle(rest)
+      uebernommen += 1
+    }
+    setMeldung(format(t('fleet.imported', 'Taken over: {n}'), { n: uebernommen }))
+  }
 
   const anlegen = (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,7 +163,70 @@ export function Fahrzeuge() {
           </div>
           <button type="submit">{t('vehicle.add', 'Add vehicle')}</button>
         </form>
+
+        {/* Der Startsatz. Er ist heute leer, und das steht da — ein Menü mit
+            null Einträgen liesse den Benutzer suchen, wo nichts ist. */}
+        {FAHRZEUG_KATALOG.length > 0 ? (
+          <div className="zeile">
+            <label>
+              {t('fleet.fromCatalogue', 'Start from a master record')}
+              <select
+                value=""
+                onChange={(e) => {
+                  const eintrag = FAHRZEUG_KATALOG.find((k) => k.name === e.target.value)
+                  if (eintrag) addVehicle(ausKatalog(eintrag, name, t))
+                }}
+              >
+                <option value="">{t('fleet.pick', 'pick one')}</option>
+                {FAHRZEUG_KATALOG.map((k) => (
+                  <option key={k.name} value={k.name}>
+                    {k.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : (
+          <p className="leise">
+            {t(
+              'fleet.catalogueEmpty',
+              'There is no master-data set yet. It would have to carry a source per vehicle — a datasheet link or the registration document — and guessed interior dimensions read like measurements on a load plan.',
+            )}
+          </p>
+        )}
       </details>
+
+      {/* Die Ausmessen-Hilfe steht NEBEN dem Formular und nicht darin: wer
+          misst, hat das Fahrzeug offen und das Telefon in der Hand, und eine
+          Liste im Formular wäre beim Eintragen im Weg. */}
+      <details className="vermessen">
+        <summary>{t('measure.head', 'How to measure a vehicle')}</summary>
+        <p className="hinweis">
+          {t(
+            'measure.intro',
+            'Six measurements, in the order in which you walk around the vehicle once. The floor width between the wheel arches is a different figure from the width above them — and it is the one a Euro pallet fails on.',
+          )}
+        </p>
+        <ol className="messliste">
+          {vermessen(t).map((m) => (
+            <li key={m.was}>
+              <strong>{m.was}</strong>
+              <span className="leise"> {m.wo}</span>
+            </li>
+          ))}
+        </ol>
+      </details>
+
+      <div className="zeile">
+        <button type="button" className="still" onClick={exportieren} disabled={vehicles.length === 0}>
+          {t('fleet.export', 'Export vehicles')}
+        </button>
+        <label className="still dateiwahl">
+          {t('fleet.import', 'Import vehicles')}
+          <input type="file" accept="application/json,.json" onChange={importieren} />
+        </label>
+      </div>
+      {meldung && <p className="leise">{meldung}</p>}
 
       {vehicles.length === 0 && <p>{t('vehicle.none', 'No vehicles recorded yet.')}</p>}
 

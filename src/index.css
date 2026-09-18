@@ -1492,3 +1492,25 @@ p.warnung { color: var(--warn); }
 /* Der Achsname traegt die Zeile: er steht als einziges Wort links und
  * bekommt deshalb das Gewicht, das sonst eine Beschriftung haette. */
 .achse-name { font-weight: 700; }
+
+/* ── Fahrzeug-Stammdaten und Ausmessen (#19) ─────────────────────────────
+ *
+ * Die Messliste ist NUMMERIERT und bleibt es: die Reihenfolge ist die
+ * Aussage — man geht einmal ums Fahrzeug und nicht dreimal. */
+.messliste { margin: var(--steg-2) 0; padding-left: var(--steg-4); }
+.messliste li { margin: var(--steg-1) 0; }
+
+/* Ein Datei-Feld sieht in jedem Browser anders aus. Es bekommt deshalb die
+ * Form des stillen Knopfes daneben und versteckt sein eigenes Feld — sonst
+ * stehen zwei verschiedene Bedienelemente nebeneinander, die dasselbe tun. */
+/* `.zeile label` macht aus jedem Label eine dehnbare Spalte mit Beschriftung
+ * ÜBER dem Feld — hier gibt es kein Feld, also stand die Beschriftung allein
+ * und eine halbe Zeile tiefer als der Knopf daneben. */
+.zeile .dateiwahl,
+.dateiwahl {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.dateiwahl input[type='file'] { display: none; }

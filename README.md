@@ -305,6 +305,32 @@ selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
 rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
 sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
 
+### Fahrzeuge: ausmessen, ableiten, weitergeben
+
+**Wie man ein Fahrzeug ausmisst** steht in der Ansicht selbst: sechs Masse,
+in der Reihenfolge, in der man einmal ums Fahrzeug geht, jedes mit der
+Stelle, an der angesetzt wird. Die wichtigste Zeile darin ist die vierte —
+die **Bodenbreite zwischen den Radkästen** ist eine andere Zahl als die
+Breite darüber, und sie ist die, an der eine Europalette scheitert. Im Modell
+ist die obere `cargoMm.widthMm`, die untere gehört als Radkasten unter die
+Hindernisse, dort, wo sie auch im Weg ist.
+
+**Eigene Fahrzeuge lassen sich aus- und einlesen** (`avplan-vehicles`, eine
+eigene Datei — ein Fahrzeug ist kein Lagerbestand, und das portable
+Lager-Format liegt byte-gleich in allen Planern).
+
+**Einen Startsatz mit belegten Zahlen gibt es noch nicht** (#19), und das ist
+kein Versäumnis, sondern die Hausregel: jeder Stammdatensatz müsste eine
+Quelle tragen — Datenblatt oder Zulassungsbescheinigung —, und die Quellen
+sind aus der Bauumgebung nicht erreichbar (gemessen 2026-09-18:
+`mercedes-benz.de` und selbst `wikipedia.org` antworten mit `EGRESS_BLOCKED`).
+Zahlen aus einer Suchergebnis-Zusammenfassung abzuschreiben, die niemand an
+der genannten Stelle nachlesen kann, wäre genau das, was die Regel verbietet.
+Das Gerüst steht: `src/domain/data/fahrzeugKatalog.ts` nimmt Einträge auf,
+`katalogMaengel` lässt keinen ohne Quelle und kein Pflichtmass auf 0 durch,
+und ein Test führt das bei jedem Lauf aus. Der erste Eintrag muss die
+Prüfung bestehen.
+
 ### Das Packmass-Raster
 
 Das Packmass der Branche ist **1200 × 600 und 1200 × 800**, gerechnet auf

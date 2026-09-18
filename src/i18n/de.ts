@@ -1001,4 +1001,38 @@ export const de: Record<string, string> = {
   'plan.rasterStrict': 'Nur im Raster',
   'plan.rasterFree': 'Frei',
   'plan.onGrid': 'vom Packer gesetzt, im Raster',
+
+  // ── Fahrzeug-Stammdaten und Ausmessen (#19) ─────────────────────────────
+  //
+  // „Radkasten", „Ladekante", „Trennwand" sind Werkstattbegriffe und bleiben
+  // stehen. Der Satz zur Bodenbreite ist der wichtigste dieser Gruppe: an
+  // ihr scheitert die Europalette, und wer nur oben misst, misst die
+  // falsche Zahl.
+  'fleet.derivedFrom': 'abgeleitet von {source}',
+  'fleet.fromCatalogue': 'Von einem Stammdatensatz ableiten',
+  'fleet.pick': 'auswählen',
+  'fleet.catalogueEmpty':
+    'Es gibt noch keinen Startsatz. Er müsste je Fahrzeug eine Quelle tragen — einen Link aufs Datenblatt oder die Zulassungsbescheinigung —, und geratene Innenmasse lesen sich auf einem Ladeplan wie Messungen.',
+  'fleet.export': 'Fahrzeuge ausgeben',
+  'fleet.import': 'Fahrzeuge einlesen',
+  'fleet.importBad': 'Das ist keine Fahrzeug-Datei dieses Werkzeugs.',
+  'fleet.imported': 'Übernommen: {n}',
+  'measure.head': 'Wie man ein Fahrzeug ausmisst',
+  'measure.intro':
+    'Sechs Masse, in der Reihenfolge, in der man einmal ums Fahrzeug geht. Die Bodenbreite zwischen den Radkästen ist eine andere Zahl als die Breite darüber — und sie ist die, an der eine Europalette scheitert.',
+  'measure.apertureW': 'Breite der Hecköffnung',
+  'measure.apertureW.where': 'Zwischen den Türdichtungen an der engsten Stelle, nicht die Aussenbreite.',
+  'measure.apertureH': 'Höhe der Hecköffnung',
+  'measure.apertureH.where': 'Von der Ladekante bis zum tiefsten Punkt des Rahmens.',
+  'measure.length': 'Laderaumlänge',
+  'measure.length.where':
+    'Von der Trennwand bis zu den geschlossenen Türen, auf Bodenhöhe. Der Boden ist das, worauf ein Case steht.',
+  'measure.widthFloor': 'Bodenbreite zwischen den Radkästen',
+  'measure.widthFloor.where':
+    'Die engste Stelle auf Bodenhöhe. An dieser Zahl scheitert die Europalette — den Radkasten selbst als Hindernis eintragen.',
+  'measure.widthTop': 'Breite über den Radkästen',
+  'measure.widthTop.where': 'Etwa auf Hüfthöhe, von Wand zu Wand. Das ist die Laderaumbreite im Modell.',
+  'measure.height': 'Laderaumhöhe',
+  'measure.height.where':
+    'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
 }
