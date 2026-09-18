@@ -1075,3 +1075,51 @@ p.warnung { color: var(--warn); }
 .gruppen-liste button {
   margin-left: var(--steg-2);
 }
+
+/* ── Beladen: die Ansicht am Heck ────────────────────────────────────────
+ *
+ * DIE SCHRIFT IST HIER GROESSER ALS SONST, und das ist kein Stilmittel: man
+ * liest im Stehen, mit einem Case in der Hand, im Gegenlicht des Rolltors.
+ * Eine Zeile, die am Schreibtisch angenehm ist, ist dort nicht zu lesen. */
+.naechstes {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-3);
+  padding: var(--steg-3);
+  /* Der Warnton rahmt, weil dieser Kasten das eine ist, worauf man schauen
+   * soll — nicht weil etwas nicht stimmt. `--signal` waere falsch: das ist
+   * der Fokusring und der laufende Vorgang. */
+  border: 1px solid var(--warn);
+  background: var(--erhoben);
+  margin: var(--steg-3) 0;
+}
+
+.naechstes strong { font-size: 1.25rem; }
+
+/* Die Schrittzahl ist das, was man von weitem sucht. */
+.naechstes-schritt {
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 2ch;
+  text-align: center;
+  color: var(--warn);
+}
+
+.naechstes button { margin-left: auto; }
+
+.beladen .sucher { margin: var(--steg-2) 0; }
+
+.schicht { margin: var(--steg-3) 0; }
+.schicht h4 { margin: 0 0 var(--steg-1); font-size: 0.95rem; color: var(--leise); }
+.schicht ol { margin: 0; padding-left: 1.6em; }
+.schicht li { padding: var(--steg-1) 0; }
+
+/* Was schon drin ist, tritt zurueck — aber es verschwindet NICHT. Wer eine
+ * Kiste zurueckholen muss, muss sie noch finden. */
+.schicht li.drin { color: var(--leise); text-decoration: line-through; }
+.schicht li.drin .gruppen-punkt { opacity: 0.5; }
+
+.schicht li button { margin-left: var(--steg-2); }
+
+.modus-schalter { display: flex; gap: 2px; }

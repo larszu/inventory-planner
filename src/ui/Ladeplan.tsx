@@ -28,6 +28,7 @@ import type { Ladung } from '../domain/types/load'
 import { gruppen as gruppenDerLadung } from '../domain/lib/ladung'
 import { Draufsicht } from './Ladeansicht/Draufsicht'
 import { gruppenFarbe } from './Ladeansicht/farben'
+import { Beladen } from './Beladen'
 
 // Three liegt hinter dieser Grenze und nur hinter ihr. Wer `Ladeansicht3D`
 // irgendwo statisch importiert, zieht es in den Start des Lagers — in
@@ -45,6 +46,15 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
   const [auswahl, setAuswahl] = useState<string | undefined>()
   const [raster, setRaster] = useState(100)
   const [zeige3d, setZeige3d] = useState(false)
+  /**
+   * PLANEN oder BELADEN.
+   *
+   * Zwei Modi und nicht zwei Reiter: es ist derselbe Plan, nur einmal vom
+   * Schreibtisch aus und einmal vom Heck. Ein eigener Reiter machte daraus
+   * zwei Werkzeuge, zwischen denen jemand den Stand von Hand übertragen
+   * müsste.
+   */
+  const [modus, setModus] = useState<'planen' | 'beladen'>('planen')
 
   const fahrzeug = vehicles.find((v) => v.id === ladung.vehicleId)
   const gruppen = ladung.gruppenReihenfolge ?? gruppenDerLadung(ladung)
@@ -102,6 +112,31 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
   return (
     <div className="ladeplan">
       <div className="ladeplan-leiste">
+        <div className="modus-schalter" role="group" aria-label={t('plan.mode', 'Mode')}>
+          <button
+            type="button"
+            aria-pressed={modus === 'planen'}
+            className={modus === 'planen' ? 'reiter aktiv' : 'reiter'}
+            onClick={() => setModus('planen')}
+          >
+            {t('plan.modePlan', 'Plan')}
+          </button>
+          <button
+            type="button"
+            aria-pressed={modus === 'beladen'}
+            className={modus === 'beladen' ? 'reiter aktiv' : 'reiter'}
+            onClick={() => setModus('beladen')}
+          >
+            {t('plan.modeLoad', 'Load it')}
+          </button>
+        </div>
+      </div>
+
+      {modus === 'beladen' ? (
+        <Beladen ladung={ladung} vehicle={fahrzeug} plan={plan} gruppen={gruppen} />
+      ) : (
+      <>
+      <div className="ladeplan-leiste">
         <label>
           {t('plan.grid', 'Snap')}
           <select value={raster} onChange={(e) => setRaster(Number(e.target.value))}>
@@ -154,6 +189,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
             onWaehle={setAuswahl}
             onVerschiebe={absetzen}
             rasterMm={raster}
+            modus="planen"
           />
         </Suspense>
       )}
@@ -248,6 +284,8 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
             ))}
         </ol>
       </div>
+      </>
+      )}
     </div>
   )
 }

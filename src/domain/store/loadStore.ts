@@ -13,6 +13,26 @@ import type { Ladung, LadungsStueck } from '../types/load'
 
 const HERKUENFTE = new Set<LadungsStueck['herkunft']>(['container', 'artikel', 'bedarf', 'csv'])
 
+const LAGEN = new Set(['upright', 'onSide', 'onEnd'])
+
+/**
+ * Eine von Hand gesetzte Lage — oder nichts.
+ *
+ * HALB GÜLTIG GIBT ES NICHT. Eine Verankerung ohne vollständige Position
+ * wäre eine Kiste, die irgendwo steht; der Packer würde sie dort festhalten,
+ * und niemand könnte sagen, wo „dort" ist. Dieselbe Regel wie bei der halb
+ * vermessenen Ladeöffnung in `healVehicle`: lieber ganz verwerfen.
+ */
+const healFixierung = (raw: unknown): LadungsStueck['fixiert'] => {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as { position?: { x?: unknown; y?: unknown; z?: unknown }; lage?: unknown }
+  const { x, y, z } = r.position ?? {}
+  const zahl = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n) && n >= 0
+  if (!zahl(x) || !zahl(y) || !zahl(z)) return undefined
+  if (typeof r.lage !== 'string' || !LAGEN.has(r.lage)) return undefined
+  return { position: { x, y, z }, lage: r.lage as NonNullable<LadungsStueck['fixiert']>['lage'] }
+}
+
 const healStueck = (raw: unknown): LadungsStueck | null => {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Partial<LadungsStueck>
@@ -31,6 +51,24 @@ const healStueck = (raw: unknown): LadungsStueck | null => {
     dimensions: r.dimensions,
     transport: r.transport,
     gruppe: typeof r.gruppe === 'string' && r.gruppe.trim() ? r.gruppe.trim() : undefined,
+    // ─── DIE ZWEI FELDER, DIE HIER BIS 2026-09-18 VERLORENGINGEN ─────────
+    //
+    // Diese Funktion baut jedes Stück FELD FÜR FELD neu auf. Das ist
+    // Absicht — so kommt nichts Unbekanntes aus einer fremden Datei herein.
+    // Der Preis ist, dass ein neues Feld hier eingetragen werden MUSS, sonst
+    // fällt es beim Laden lautlos heraus.
+    //
+    // Genau das war passiert: `fixiert` (von Hand gesetzt) und `geladenAm`
+    // (schon verstaut) standen im Speicher und waren nach jedem Neuladen
+    // weg. Gemessen an einer Ladung mit drei verstauten Stücken: „0 von 10
+    // verstaut". Für den Ladenden heisst das, dass er von vorn anfängt,
+    // sobald jemand die Seite neu lädt — mitten im Beladen.
+    //
+    // Dieselbe Falle hat `healNode` schon einmal mit `transport` gestellt
+    // (Formatversion 7 -> 8). Wer hier ein Feld ergänzt, ergänzt es AUCH
+    // hier; `ladeplanUeberlebtLaden.test.ts` wird sonst rot.
+    fixiert: healFixierung(r.fixiert),
+    geladenAm: typeof r.geladenAm === 'string' && r.geladenAm ? r.geladenAm : undefined,
     notes: typeof r.notes === 'string' ? r.notes : undefined,
   }
 }
@@ -48,6 +86,12 @@ export const healLadung = (raw: unknown): Ladung | null => {
     stuecke: Array.isArray(r.stuecke)
       ? r.stuecke.map(healStueck).filter((s): s is LadungsStueck => s !== null)
       : [],
+    // Dieselbe Falle eine Ebene höher: ohne diese Zeile stünde nach jedem
+    // Neuladen wieder die alphabetische Reihenfolge der Gruppen da, und die
+    // von Hand gesetzte Abladereihenfolge wäre weg.
+    gruppenReihenfolge: Array.isArray(r.gruppenReihenfolge)
+      ? r.gruppenReihenfolge.filter((g): g is string => typeof g === 'string' && g.trim() !== '')
+      : undefined,
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : now,
     updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : now,
   }
@@ -97,6 +141,14 @@ interface LoadState {
   setGruppenReihenfolge: (id: string, gruppen: string[]) => void
   /** Die Abladegruppe eines Stücks setzen. */
   setGruppe: (ladungId: string, stueckId: string, gruppe: string | undefined) => void
+  /**
+   * Ein Stück als eingeladen vermerken — oder den Vermerk zurücknehmen.
+   *
+   * Der Zeitpunkt kommt von AUSSEN und wird hier nicht erzeugt. Dieselbe
+   * Trennung wie überall im Repo: der Store schreibt, die Uhr steht beim
+   * Aufrufer, und ein Test kann beides prüfen, ohne die Zeit anzuhalten.
+   */
+  setGeladen: (ladungId: string, stueckId: string, geladenAm: string | undefined) => void
   removeLadung: (id: string) => void
 }
 
@@ -157,6 +209,20 @@ export const useLoadStore = create<LoadState>((set, get) => ({
         : {
             ...l,
             stuecke: l.stuecke.map((s) => (s.id === stueckId ? { ...s, gruppe } : s)),
+            updatedAt: new Date().toISOString(),
+          },
+    )
+    set({ loads: next })
+    sichern(next)
+  },
+
+  setGeladen: (ladungId, stueckId, geladenAm) => {
+    const next = get().loads.map((l) =>
+      l.id !== ladungId
+        ? l
+        : {
+            ...l,
+            stuecke: l.stuecke.map((s) => (s.id === stueckId ? { ...s, geladenAm } : s)),
             updatedAt: new Date().toISOString(),
           },
     )

@@ -26,7 +26,7 @@ import { Edges, OrbitControls, TransformControls } from '@react-three/drei'
 import * as THREE from 'three'
 import type { LoadPlan, Placement, Vec3 } from '../../domain/lib/loadPacker'
 import type { Vehicle } from '../../domain/types/vehicle'
-import { blickAuf, FOV_GRAD, mm } from './kamera'
+import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
 import { gruppenFarbe } from './farben'
 import { Beschriftung } from './Beschriftung'
 
@@ -41,6 +41,22 @@ interface Props {
   onVerschiebe: (stueckId: string, position: Vec3) => void
   /** Raster in Millimetern, auf das der Griff einrastet. 0 = frei. */
   rasterMm: number
+  /**
+   * PLANEN oder BELADEN — zwei Ansichten desselben Plans, und der
+   * Unterschied ist nicht Kosmetik:
+   *
+   *   planen   Blick von schräg oben, alles sichtbar, Stücke verschiebbar.
+   *            Die Frage ist „was steht wo".
+   *   beladen  Blick AUS DER ÖFFNUNG, nur der erreichte Stand plus das
+   *            nächste Stück, nichts verschiebbar. Die Frage ist „wo kommt
+   *            DAS hier hin" — und jedes Case, das noch nicht dran ist,
+   *            steht dieser Frage im Bild im Weg.
+   */
+  modus: 'planen' | 'beladen'
+  /** Welche Stücke schon im Fahrzeug stehen (Belade-Ansicht). */
+  geladen?: ReadonlySet<string>
+  /** Das Stück, das als Nächstes hineingehört. */
+  naechstesId?: string
 }
 
 /** Mitte eines Quaders in Metern — Three setzt Boxen über ihren Mittelpunkt. */
@@ -50,21 +66,33 @@ const mitte = (pos: Vec3, size: Vec3, raum: Vec3): [number, number, number] => [
   mm(pos.z + size.z / 2 - raum.z / 2),
 ]
 
+/** Wie ein Stück in der Belade-Ansicht dasteht. */
+type LadeRolle = 'geladen' | 'naechstes' | 'offen'
+
 function Stueck({
   p,
   raum,
   gruppen,
   gewaehlt,
   onWaehle,
+  rolle,
 }: {
   p: Placement
   raum: Vec3
   gruppen: readonly string[]
   gewaehlt: boolean
   onWaehle: (id: string | undefined) => void
+  /** `undefined` heisst Planen — dort gibt es keine Rollen. */
+  rolle?: LadeRolle
 }) {
   const farbe = gruppenFarbe(p.gruppe, gruppen)
   const [x, y, z] = mitte(p.position, p.sizeMm, raum)
+
+  // Das nächste Stück ist ein ZIEL und kein Bestand: es steht als heller
+  // Umriss da, damit man die Lücke sieht und nicht ein Case, das schon drin
+  // wäre. Der Unterschied entscheidet, ob jemand zweimal lädt.
+  const istZiel = rolle === 'naechstes'
+  const deckkraft = istZiel ? 0.28 : rolle === 'geladen' ? 1 : p.verankert ? 1 : 0.85
 
   return (
     <group position={[x, y, z]}>
@@ -78,12 +106,12 @@ function Stueck({
         {/* Verankerte Stücke stehen voller da: sie sind eine Entscheidung
             eines Menschen und keine Rechnung. */}
         <meshStandardMaterial
-          color={farbe}
-          opacity={p.verankert ? 1 : 0.85}
-          transparent={!p.verankert}
+          color={istZiel ? '#E8B04B' : farbe}
+          opacity={deckkraft}
+          transparent={deckkraft < 1}
           roughness={0.7}
         />
-        <Edges threshold={15} color={gewaehlt ? '#E1ECEF' : '#132040'} />
+        <Edges threshold={15} color={istZiel ? '#E8B04B' : gewaehlt ? '#E1ECEF' : '#132040'} />
       </mesh>
       {/* Die Beschriftung liegt auf der Oberseite und nicht an der Flanke:
           von schräg oben ist das die Fläche, die man sieht. */}
@@ -98,7 +126,18 @@ function Stueck({
   )
 }
 
-function Szene({ vehicle, plan, gruppen, auswahl, onWaehle, onVerschiebe, rasterMm }: Props) {
+function Szene({
+  vehicle,
+  plan,
+  gruppen,
+  auswahl,
+  onWaehle,
+  onVerschiebe,
+  rasterMm,
+  modus,
+  geladen,
+  naechstesId,
+}: Props) {
   const raum: Vec3 = {
     x: vehicle.cargoMm.widthMm,
     y: vehicle.cargoMm.heightMm,
@@ -130,8 +169,13 @@ function Szene({ vehicle, plan, gruppen, auswahl, onWaehle, onVerschiebe, raster
       </mesh>
 
       {/* Die Öffnung liegt bei z = lengthMm (siehe `loadPacker/typen.ts`) und
-          wird markiert: ohne sie sieht niemand, wo vorn ist. */}
-      {vehicle.aperture && (
+          wird markiert: ohne sie sieht niemand, wo vorn ist.
+
+          BEIM BELADEN NICHT: dort steht die Kamera davor, und die Fläche läge
+          zwischen Auge und Ladung — sie hat im ersten Anlauf den ganzen
+          Innenraum abgedunkelt. Wer am Heck steht, braucht die Markierung
+          ohnehin nicht; er steht darin. */}
+      {modus === 'planen' && vehicle.aperture && (
         <mesh position={[0, mm(vehicle.aperture.heightMm / 2) - mm(raum.y) / 2, mm(raum.z) / 2 + 0.002]}>
           <planeGeometry args={[mm(vehicle.aperture.widthMm), mm(vehicle.aperture.heightMm)]} />
           <meshBasicMaterial color="#C8892B" transparent opacity={0.18} side={THREE.DoubleSide} />
@@ -148,22 +192,39 @@ function Szene({ vehicle, plan, gruppen, auswahl, onWaehle, onVerschiebe, raster
         )
       })}
 
-      {plan.placements.map((p) => (
-        <Stueck
-          key={p.stueckId}
-          p={p}
-          raum={raum}
-          gruppen={gruppen}
-          gewaehlt={p.stueckId === auswahl}
-          onWaehle={onWaehle}
-        />
-      ))}
+      {plan.placements
+        .filter((p) => {
+          if (modus === 'planen') return true
+          // Beim Laden bleibt weg, was weder steht noch dran ist. Ein Bild,
+          // das den ganzen Plan zeigt, beantwortet die Frage am Heck nicht —
+          // es verdeckt sie.
+          return geladen?.has(p.stueckId) || p.stueckId === naechstesId
+        })
+        .map((p) => (
+          <Stueck
+            key={p.stueckId}
+            p={p}
+            raum={raum}
+            gruppen={gruppen}
+            gewaehlt={p.stueckId === auswahl}
+            onWaehle={onWaehle}
+            rolle={
+              modus === 'planen'
+                ? undefined
+                : geladen?.has(p.stueckId)
+                  ? 'geladen'
+                  : p.stueckId === naechstesId
+                    ? 'naechstes'
+                    : 'offen'
+            }
+          />
+        ))}
 
       {/* Der Griff hängt an einer eigenen, unsichtbaren Gruppe und nicht am
           Stück selbst: `TransformControls` verschiebt das Objekt, an dem es
           hängt, sofort — die Wahrheit über die Position steht aber im Plan.
           Erst beim Loslassen wandert sie dorthin zurück. */}
-      {gewaehlt && (
+      {modus === 'planen' && gewaehlt && (
         <>
           {/* `key` auf die Stück-Id: bei einem Wechsel der Auswahl wird die
               Gruppe neu gebaut und steht damit an der richtigen Stelle,
@@ -210,20 +271,21 @@ function Szene({ vehicle, plan, gruppen, auswahl, onWaehle, onVerschiebe, raster
 }
 
 export default function Ladeansicht3D(props: Props) {
-  const { vehicle } = props
-  const blick = useMemo(
-    () =>
-      blickAuf(
-        mm(vehicle.cargoMm.lengthMm),
-        mm(vehicle.cargoMm.widthMm),
-        mm(vehicle.cargoMm.heightMm),
-      ),
-    [vehicle.cargoMm.lengthMm, vehicle.cargoMm.widthMm, vehicle.cargoMm.heightMm],
-  )
+  const { vehicle, modus } = props
+  const blick = useMemo(() => {
+    const l = mm(vehicle.cargoMm.lengthMm)
+    const b = mm(vehicle.cargoMm.widthMm)
+    const h = mm(vehicle.cargoMm.heightMm)
+    return modus === 'beladen' ? blickAusOeffnung(l, b, h) : blickAuf(l, b, h)
+  }, [modus, vehicle.cargoMm.lengthMm, vehicle.cargoMm.widthMm, vehicle.cargoMm.heightMm])
 
   return (
     <div className="ladeansicht-3d">
       <Canvas
+        // `key` auf den Modus: ein Wechsel baut die Kamera neu auf, statt die
+        // Stellung der vorigen Ansicht zu behalten. Ohne das steht man beim
+        // Umschalten auf „Beladen" weiter schräg über der Kiste.
+        key={modus}
         camera={{ position: blick.position, fov: FOV_GRAD, near: 0.05, far: 200 }}
         onPointerMissed={() => props.onWaehle(undefined)}
       >

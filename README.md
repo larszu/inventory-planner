@@ -129,6 +129,33 @@ Three.js liegt hinter einer `lazy`-Grenze und wird erst beim Klick auf
 „Show in 3D" geladen: Startpaket 356 kB, 3D-Ansicht 950 kB (gemessen
 2026-09-18). `dreiGrenze.node.test.ts` hält das fest.
 
+### Beladen — der Blick aus der Ladeöffnung
+
+Derselbe Plan hat einen zweiten Modus, und der ist für die andere Seite
+gedacht: nicht den Schreibtisch, sondern das Heck. Man schaut **aus der
+Ladeöffnung** in den Laderaum und sieht drei Dinge:
+
+* **was schon drin steht** — voll ausgefüllt,
+* **die eine Lücke**, in die das nächste Stück gehört — als heller Umriss,
+* **sonst nichts.** Kisten, die noch nicht dran sind, stehen dieser Frage im
+  Bild nur im Weg.
+
+Das Bild baut sich also Stück für Stück auf, während geladen wird. Vermerkt
+wird per **Scan** (dieselbe Kamera-Erkennung wie in der Inventur) oder mit
+einem Knopf, wenn der Aufkleber hinüber ist. Ein Code, der im Bestand steht
+aber nicht zu dieser Fahrt gehört, wird ausdrücklich so gemeldet — „falsches
+Fahrzeug?" ist der teurere Fall und darf nicht als „unbekannt" durchgehen.
+
+Daneben steht das **Schicht-Modell**: was in welcher Lage steht, und was davon
+schon verstaut ist. Beim Laden arbeitet man eine Lage ab und stellt dann die
+nächste darauf; wer nur eine Reihe sieht, merkt den Wechsel nicht.
+
+**Aus der Reihe laden ist erlaubt und wird gemeldet.** Wer ein Case einlädt,
+hat es in der Hand — vielleicht stand der Hänger im Weg. Das Werkzeug sagt,
+was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
+noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
+sagt, wird umgangen und weiss danach gar nichts mehr.
+
 **Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
 Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
 Fahrzeug-Stammdaten mit Quelle (#19).

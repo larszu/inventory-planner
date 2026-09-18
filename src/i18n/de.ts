@@ -572,4 +572,29 @@ export const de: Record<string, string> = {
   'plan.unplaced': 'Nicht eingeplant ({n})',
   'plan.order': 'Ladereihenfolge',
   'plan.orderHint': 'In dieser Reihenfolge laden. Das Abladen läuft rückwärts.',
+
+  // ── Beladen: der Blick aus der Ladeöffnung ──────────────────────────────
+  'plan.mode': 'Modus',
+  'plan.modePlan': 'Planen',
+  'plan.modeLoad': 'Beladen',
+
+  'loading.stow': 'Verstaut',
+  'loading.undo': 'Zurücknehmen',
+  'loading.done': 'Alles vom Plan ist verstaut.',
+  'loading.where': 'Lage {layer}, {x} mm von links, {z} mm tief',
+  'loading.progress': '{n} von {m} verstaut · {kg} kg',
+  'loading.noWeight': '{n} davon ohne Gewicht',
+  'loading.stowed': '{label} verstaut — Schritt {step}.',
+  'loading.already': '{label} ist schon verstaut.',
+  'loading.outOfOrder':
+    '{n} Stücke sollten vor diesem hinein — du musst später daran vorbeigreifen.',
+  'loading.missingBelow': 'Es steht auf {n} Stücken, die noch nicht geladen sind: {labels}',
+  'loading.unknownCode': 'Code „{code}" ist nicht im Bestand.',
+  'loading.notInLoad':
+    '{what} steht im Bestand — gehört aber nicht zu dieser Ladung. Falsches Fahrzeug?',
+  'loading.camOn': 'Case scannen',
+  'loading.camOff': 'Kamera aus',
+  'loading.camFailed': 'Die Kamera liess sich nicht starten.',
+  'loading.layers': 'Lagen',
+  'loading.layer': 'Lage {n} — {mm} mm über dem Boden',
 }

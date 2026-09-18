@@ -62,6 +62,18 @@ export interface LadungsStueck {
    * Koordinatensystem aus `domain/lib/loadPacker/typen.ts`.
    */
   fixiert?: { position: { x: number; y: number; z: number }; lage: CaseOrientation }
+  /**
+   * Wann dieses Stück WIRKLICH eingeladen wurde (ISO-Zeitpunkt).
+   *
+   * Ein Zeitpunkt und kein Haken: er beantwortet „wann", und er hält
+   * nebenbei die Reihenfolge fest, in der tatsächlich geladen wurde — die
+   * kann von der geplanten abweichen, und genau diese Abweichung ist beim
+   * nächsten Mal die interessantere Angabe.
+   *
+   * Fehlt er, ist das Stück NICHT geladen. Es ist nicht „vielleicht" — wer
+   * am Heck steht, braucht eine Liste, der er glauben kann.
+   */
+  geladenAm?: string
   notes?: string
 }
 
