@@ -22,7 +22,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const SRC = join(ROOT, 'src');
@@ -86,8 +86,22 @@ for (const datei of dateien) {
     }
     // Aus `src/` heraus greifen heisst, eine Datei zu benutzen, die kein
     // Wächter dieses Repos sieht.
-    if (/^\.\.\/\.\.\/\.\.\//.test(pfad)) {
-      funde.push(`${kurz}: greift aus src/ heraus ("${pfad}").`);
+    //
+    // AUFGELÖST UND NICHT GEZÄHLT. Hier stand `/^\.\.\/\.\.\/\.\.\//` — drei
+    // Schritte aufwärts als Ersatz für „raus aus src/". Das stimmte genau
+    // für Dateien in `domain/lib/`; sobald eine Datei einen Ordner tiefer
+    // liegt (`domain/lib/loadPacker/`), sind dieselben drei Schritte noch
+    // mitten in `src/`, und der Wächter meldete einen Verstoss, den es nicht
+    // gab (gemessen 2026-09-18 an `loadPacker/packen.ts`, das `i18n/quelle`
+    // importiert — den Übersetzer, den die Hausregel ausdrücklich verlangt).
+    //
+    // Ein Wächter, der an der falschen Stelle rot wird, ist schlimmer als
+    // keiner: er erzieht dazu, ihn zu umgehen.
+    if (pfad.startsWith('.')) {
+      const ziel = resolve(dirname(datei), pfad);
+      if (!ziel.startsWith(SRC)) {
+        funde.push(`${kurz}: greift aus src/ heraus ("${pfad}").`);
+      }
     }
   }
 }

@@ -80,6 +80,23 @@ interface LoadState {
   setStuecke: (id: string, stuecke: LadungsStueck[]) => void
   addStuecke: (id: string, stuecke: LadungsStueck[]) => void
   setVehicle: (id: string, vehicleId: string | undefined) => void
+  /**
+   * Ein Stück von Hand absetzen — oder die Verankerung wieder lösen.
+   *
+   * Eigener Vorgang und keine Nebenwirkung von `setStuecke`: dieselbe
+   * Funktion, die eine Gruppe ändert, verschöbe sonst auch Kisten, und keine
+   * der beiden Änderungen wäre von der anderen zu unterscheiden. Dieselbe
+   * Trennung wie bei `moveItem` gegen `updateItem` im Bestand (Bedarf 106).
+   */
+  setFixierung: (
+    ladungId: string,
+    stueckId: string,
+    fixiert: LadungsStueck['fixiert'],
+  ) => void
+  /** Die Abladegruppen in ihrer Reihenfolge setzen (#22). */
+  setGruppenReihenfolge: (id: string, gruppen: string[]) => void
+  /** Die Abladegruppe eines Stücks setzen. */
+  setGruppe: (ladungId: string, stueckId: string, gruppe: string | undefined) => void
   removeLadung: (id: string) => void
 }
 
@@ -106,6 +123,42 @@ export const useLoadStore = create<LoadState>((set, get) => ({
   addStuecke: (id, stuecke) => {
     const next = get().loads.map((l) =>
       l.id === id ? { ...l, stuecke: [...l.stuecke, ...stuecke], updatedAt: new Date().toISOString() } : l,
+    )
+    set({ loads: next })
+    sichern(next)
+  },
+
+  setFixierung: (ladungId, stueckId, fixiert) => {
+    const next = get().loads.map((l) =>
+      l.id !== ladungId
+        ? l
+        : {
+            ...l,
+            stuecke: l.stuecke.map((s) => (s.id === stueckId ? { ...s, fixiert } : s)),
+            updatedAt: new Date().toISOString(),
+          },
+    )
+    set({ loads: next })
+    sichern(next)
+  },
+
+  setGruppenReihenfolge: (id, gruppen) => {
+    const next = get().loads.map((l) =>
+      l.id === id ? { ...l, gruppenReihenfolge: gruppen, updatedAt: new Date().toISOString() } : l,
+    )
+    set({ loads: next })
+    sichern(next)
+  },
+
+  setGruppe: (ladungId, stueckId, gruppe) => {
+    const next = get().loads.map((l) =>
+      l.id !== ladungId
+        ? l
+        : {
+            ...l,
+            stuecke: l.stuecke.map((s) => (s.id === stueckId ? { ...s, gruppe } : s)),
+            updatedAt: new Date().toISOString(),
+          },
     )
     set({ loads: next })
     sichern(next)

@@ -1011,3 +1011,67 @@ p.warnung { color: var(--warn); }
    deshalb sichtbar anders da — nicht ausgegraut (sie ist nicht weniger
    vorhanden), sondern in der Warnfarbe der fehlenden Angabe. */
 .werte tr.ohne-wert td { color: var(--warn); }
+
+/* ── Ladeplan: Draufsicht, 3D, Gruppen (#20, #22, #23) ───────────────────
+ *
+ * DIE HOEHE IST BEGRENZT UND DAS IST DER PUNKT. Ein Laderaum ist 4 m lang
+ * und 1,8 m breit; ohne Deckel waere die Zeichnung im Bild sechsmal so hoch
+ * wie breit und schoebe alles darunter aus dem Fenster. Gemessen am
+ * 2026-09-18: die erste Fassung war auf 1440 px Breite 8.400 px hoch.
+ *
+ * `min()` und nicht `vh` allein: auf einem kurzen Fenster entscheidet die
+ * Fensterhoehe, auf einem langen die absolute Schranke. */
+.draufsicht {
+  display: block;
+  width: 100%;
+  max-height: min(70vh, 620px);
+  margin: var(--steg-3) 0;
+  touch-action: none; /* sonst scrollt das Telefon, statt die Kiste zu ziehen */
+}
+
+.ladeansicht-3d {
+  width: 100%;
+  height: min(60vh, 520px);
+  margin: var(--steg-3) 0;
+  border: 1px solid var(--rand);
+  background: var(--bg);
+}
+
+.ladeplan {
+  margin-top: var(--steg-4);
+  border-top: 1px solid var(--rand);
+  padding-top: var(--steg-3);
+}
+
+.ladeplan-leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-2);
+  align-items: end;
+}
+
+/* Der Farbpunkt einer Abladegruppe. Er traegt KEINE Bedeutung allein — neben
+ * ihm steht immer der Name, denn Farbe allein ist fuer einen Teil der Leute
+ * keine Information. */
+.gruppen-punkt {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.5em;
+  vertical-align: baseline;
+}
+
+.gruppen-liste,
+.lade-liste {
+  margin: var(--steg-2) 0;
+  padding-left: 1.6em;
+}
+
+.gruppen-liste li,
+.lade-liste li {
+  padding: var(--steg-1) 0;
+}
+
+.gruppen-liste button {
+  margin-left: var(--steg-2);
+}

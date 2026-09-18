@@ -19,6 +19,7 @@ import { useLoadStore } from '../domain/store/loadStore'
 import { CONTAINER_KINDS } from '../domain/types/inventory'
 import { gesamtGewicht, gruppen, stueckeAusContainern, unplanbar } from '../domain/lib/ladung'
 import { nutzlastFrei } from '../domain/lib/laderaum'
+import { Ladeplan } from './Ladeplan'
 
 export function Ladung() {
   const { t, format } = useT()
@@ -133,6 +134,11 @@ export function Ladung() {
             <button type="button" onClick={() => removeLadung(l.id)}>
               {t('load.remove', 'Remove load')}
             </button>
+
+            {/* Der Ladeplan steht IN der Ladung und nicht in einem eigenen
+                Reiter: er ist die Antwort auf die Frage, die diese Ansicht
+                stellt, und kein zweites Werkzeug. */}
+            {l.stuecke.length > 0 && <Ladeplan ladung={l} />}
           </div>
         )
       })}

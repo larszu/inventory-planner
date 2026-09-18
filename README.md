@@ -96,6 +96,43 @@ Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
 Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
 Downloads.
 
+## Ladeplanung
+
+Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Load** rechnet einen
+Ladeplan und zeigt ihn, statt Koordinaten aufzulisten.
+
+**Der Packer** (`src/domain/lib/loadPacker/`) rechnet **frei in 3D**, nicht im
+Raster: die Branche lädt Peli-Cases, weiche Taschen und Stative in Sprinter,
+Ducato und Kofferräume, und dort gibt es kein Packmass, sondern Radkästen und
+Reste. Verfahren ist eine Extreme-Point-Heuristik mit achsparallelen
+Hüllquadern; berücksichtigt werden Stützfläche, Stapelregeln des Cases
+(`noLoadOnTop`, `maxStackKg`, `maxLayers`), erlaubte Lagen, die Ladeöffnung,
+Hindernisse im Laderaum und das Gewicht.
+
+**Was nicht passt, wird benannt — mit Grund.** „Passt nicht durch die
+Heckklappe", „Stützfläche zu klein", „eine Stapelregel des Cases darunter
+verbietet es". Ein Plan, der Stücke stillschweigend weglässt, ist am Dock
+gefährlicher als gar keiner.
+
+**Die Reihenfolge zählt mehr als die Dichte.** Jedes Stück bekommt eine
+Abladegruppe; der Packer legt die zuerst gebrauchte an die Öffnung. Wo das mit
+der Passgenauigkeit kollidiert, sagt das Werkzeug, was es kostet, statt
+stillschweigend umzuräumen.
+
+**Bedient wird mit der Hand.** In der Draufsicht zieht man ein Case an seinen
+Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
+**verankert**: der Packer fasst es nicht mehr an. Auf Wunsch kommt die
+**3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
+mittlere Maustaste wird nirgends gebraucht).
+
+Three.js liegt hinter einer `lazy`-Grenze und wird erst beim Klick auf
+„Show in 3D" geladen: Startpaket 356 kB, 3D-Ansicht 950 kB (gemessen
+2026-09-18). `dreiGrenze.node.test.ts` hält das fest.
+
+**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
+Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
+Fahrzeug-Stammdaten mit Quelle (#19).
+
 ## Stand
 
 Erste Fassung. Übernommen ist die Domäne aus
