@@ -382,3 +382,41 @@ describe('Gebrochene und gerundete Kanten', () => {
     }
   })
 })
+
+// ───────────────────────────────────────────────────────────────────────────
+// Von Hand gesetzt heisst UNVERSCHOBEN, nicht ungeprüft (#23).
+//
+// Die Ansichten sagen beim Ziehen, dass eine Lage nicht geht. Wer trotzdem
+// loslässt, hätte sie sonst still im Plan: der Packer fasst ein verankertes
+// Stück nicht an, also fiele es keiner späteren Prüfung mehr auf. Der Befund
+// ist die laute Fassung davon — er bleibt stehen, solange die Lage drinsteht.
+// ───────────────────────────────────────────────────────────────────────────
+describe('verankerte Stücke, die nicht stehen können', () => {
+  const fix = (id: string, position: { x: number; y: number; z: number }) =>
+    stueck(id, 600, 600, 600, { fixiert: { position, lage: 'upright' } })
+
+  it('meldet ein von Hand gesetztes Stück, das aus dem Laderaum ragt', () => {
+    const plan = packe(auto(), [fix('a', { x: 1400, y: 0, z: 0 })])
+    const b = plan.befunde.find((x) => x.art === 'verankert-ungueltig')
+    expect(b?.text).toContain('a')
+  })
+
+  it('meldet zwei von Hand gesetzte Stücke, die ineinander stehen', () => {
+    const plan = packe(auto(), [fix('a', { x: 0, y: 0, z: 0 }), fix('b', { x: 300, y: 0, z: 0 })])
+    const befunde = plan.befunde.filter((x) => x.art === 'verankert-ungueltig')
+    expect(befunde).toHaveLength(1)
+    expect(befunde[0]!.text).toContain('b')
+  })
+
+  it('schweigt zu einer Lage, die geht', () => {
+    const plan = packe(auto(), [fix('a', { x: 0, y: 0, z: 0 }), fix('b', { x: 700, y: 0, z: 0 })])
+    expect(plan.befunde.filter((x) => x.art === 'verankert-ungueltig')).toHaveLength(0)
+    expect(plan.placements).toHaveLength(2)
+  })
+
+  it('verschiebt das Stück trotzdem nicht — der Mensch behält seine Lage', () => {
+    const plan = packe(auto(), [fix('a', { x: 1400, y: 0, z: 0 })])
+    expect(plan.placements[0]!.position.x).toBe(1400)
+    expect(plan.placements[0]!.verankert).toBe(true)
+  })
+})

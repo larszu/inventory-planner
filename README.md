@@ -292,7 +292,126 @@ stillschweigend umzuräumen.
 Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
 **verankert**: der Packer fasst es nicht mehr an. Auf Wunsch kommt die
 **3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
-mittlere Maustaste wird nirgends gebraucht).
+mittlere Maustaste wird nirgends gebraucht). Dort lassen sich die beiden
+Ziehrichtungen **einzeln sperren** — wer eine Kiste nur nach hinten schieben
+will, stösst sie sonst nebenbei zur Seite. Eine dritte Sperre für die Höhe
+gibt es nicht: die stapelt der Packer.
+
+**Was nicht geht, steht da, solange man zieht.** Beide Ansichten fragen
+dieselbe Stelle (`src/domain/lib/platzGueltig.ts`) und schreiben den Grund
+hin — „ragt heraus", „dort ist der Laderaum gerundet", „dort steht schon X".
+Unterschieden wird dabei, was wirklich im Weg ist: ein Stück, das der Packer
+selbst gesetzt hat, rückt zur Seite, und das Werkzeug sagt das auch so statt
+rot zu warnen. Wer trotz einer echten Warnung loslässt, behält seine Lage —
+sie ist verankert —, findet sie aber unter **Was es gekostet hat** wieder.
+
+### Fahrzeuge: ausmessen, ableiten, weitergeben
+
+**Wie man ein Fahrzeug ausmisst** steht in der Ansicht selbst: sechs Masse,
+in der Reihenfolge, in der man einmal ums Fahrzeug geht, jedes mit der
+Stelle, an der angesetzt wird. Die wichtigste Zeile darin ist die vierte —
+die **Bodenbreite zwischen den Radkästen** ist eine andere Zahl als die
+Breite darüber, und sie ist die, an der eine Europalette scheitert. Im Modell
+ist die obere `cargoMm.widthMm`, die untere gehört als Radkasten unter die
+Hindernisse, dort, wo sie auch im Weg ist.
+
+**Eigene Fahrzeuge lassen sich aus- und einlesen** (`avplan-vehicles`, eine
+eigene Datei — ein Fahrzeug ist kein Lagerbestand, und das portable
+Lager-Format liegt byte-gleich in allen Planern).
+
+**Einen Startsatz mit belegten Zahlen gibt es noch nicht** (#19), und das ist
+kein Versäumnis, sondern die Hausregel: jeder Stammdatensatz müsste eine
+Quelle tragen — Datenblatt oder Zulassungsbescheinigung —, und die Quellen
+sind aus der Bauumgebung nicht erreichbar (gemessen 2026-09-18:
+`mercedes-benz.de` und selbst `wikipedia.org` antworten mit `EGRESS_BLOCKED`).
+Zahlen aus einer Suchergebnis-Zusammenfassung abzuschreiben, die niemand an
+der genannten Stelle nachlesen kann, wäre genau das, was die Regel verbietet.
+Das Gerüst steht: `src/domain/data/fahrzeugKatalog.ts` nimmt Einträge auf,
+`katalogMaengel` lässt keinen ohne Quelle und kein Pflichtmass auf 0 durch,
+und ein Test führt das bei jedem Lauf aus. Der erste Eintrag muss die
+Prüfung bestehen.
+
+### Das Packmass-Raster
+
+Das Packmass der Branche ist **1200 × 600 und 1200 × 800**, gerechnet auf
+2,40 m Ladebreite: 4 × 600 quer oder 3 × 800 quer, und beides geht auf. Wo
+das gilt, ist freies Packen nicht unnötig, sondern **falsch** — die Crew
+erwartet saubere Reihen und keine optimal verkeilte Wand, die sich nicht
+abladen lässt.
+
+**Das Raster ist kein zweiter Solver**, sondern ein Filter auf die
+Kandidatenpositionen des Kerns. Kollision, Stützfläche, Stapelregeln und
+Öffnung bleiben identisch; sonst gäbe es zwei Antworten auf die Frage, ob
+etwas passt.
+
+Es **teilt quer und nicht längs**: die Reihe läuft quer durchs Fahrzeug, in
+der Länge läuft sie durch. Ein 1200 mm tiefes Case steht auf einem 800er
+Raster sauber in seiner Reihe, obwohl 1200 kein Vielfaches von 800 ist.
+
+**600 und 800 sind zwei Raster und nicht eines.** Ihr grösster gemeinsamer
+Teiler ist 200, und ein 200er-Netz ist fast dasselbe wie frei. Ein Haus fährt
+das eine oder das andere; das Raster steht deshalb am **Fahrzeug** (Vorgabe:
+LKW und Sattelzug 600 mm, Transporter keines — dort ist der Laderaum keine
+2,40 m breit).
+
+Wie streng es gilt, steht an der **Ladung**: *Gemischt* (Packmass-Cases in
+die Reihe, alles andere frei in die Reste — der Alltagsfall), *nur im Raster*
+oder *frei*. Die Draufsicht zeichnet die Rasterlinien, und die Auswahlzeile
+sagt je Stück, ob es in der Reihe sitzt.
+
+### Was am Dock an der Bordwand hängt
+
+Am Dock steht niemand mit der 3D-Ansicht. Vier Ausgaben, alle ohne Electron —
+das Repo liefert auch als Web-Seite aus:
+
+* **Ladeplan** — je Lage eine Draufsicht im Umriss des Laderaums (nicht im
+  Rechteck des Hüllquaders), Stücke in Ladereihenfolge nummeriert, Legende
+  nach Abladegruppe. SVG und kein Bildschirmfoto: ein Rasterbild hat die
+  Auflösung des Bildschirms, ein SVG die des Druckers.
+* **Dock-Checkliste** — eine Zeile je Stück mit Kästchen, in 13 pt für
+  schlechtes Hallenlicht. Auf demselben Blatt die **Rückladeliste**: dieselbe
+  Liste rückwärts, denn der Abbau läuft so.
+* **Case-Etiketten** — Nummer gross, darunter Ladung, Gruppe und Platz.
+* **CSV** der Ladung für die Weitergabe.
+
+**Jedes Blatt trägt Fahrzeug, Datum, gesetztes Gewicht und den
+Haftungshinweis** — und was nicht eingeplant werden konnte, steht **mit
+Grund** darauf und nicht nur im Werkzeug. Wer am Dock ein Case vermisst, soll
+auf dem Papier lesen, warum, statt es im Lager zu suchen.
+
+### Gewicht, Schwerpunkt, Achslast
+
+**Gewicht ist die härtere Grenze.** Ein 3,5-Tonner ist oft bei unter 1.200 kg
+Zuladung am Ende — wer nach Volumen packt, ist überladen, bevor der Laderaum
+voll ist. Die Positionen stehen nach dem Packen fest; Schwerpunkt und
+Achslast fallen als Hebelrechnung daraus heraus
+(`src/domain/lib/lastverteilung.ts`).
+
+Der **Lastverteilungsplan** ist in Deutschland das Papier, nach dem bei einer
+Kontrolle gefragt wird. Er lässt sich drucken, mit Fahrzeug, Ladung,
+Schwerpunkt, Achslasten, Merkliste der Sicherungsmittel und Datum.
+
+**Er erteilt keine Freigabe.** Das Werkzeug rechnet und zeigt; die
+Verantwortung für die Ladungssicherung bleibt bei Fahrer und Verlader, und
+der Satz steht im Kopf des Blattes und nicht im Kleingedruckten.
+
+**Vier Stellen, an denen geschwiegen wird, obwohl gerechnet werden könnte:**
+kein einziges gewogenes Stück · ein gesetztes Stück ohne Gewicht (der
+Schwerpunkt kommt trotzdem, mit der Zahl der ungewogenen daneben — die
+Achslast nicht) · mehr als zwei Achsen (statisch überbestimmt, das hängt an
+der Federung) · keine gewogene Leerlast je Achse (dann steht da, was die
+Ladung beiträgt, und ausdrücklich nicht, ob die Achse überladen ist). Eine
+Achslast aus geschätzten Fahrzeugdaten sähe auf dem Ausdruck aus wie eine
+Messung, und bei der Kontrolle wiegt die Waage.
+
+Eingetragen werden die Zahlen am Fahrzeug unter **Gewichte und Achsen** —
+zulässige Gesamtmasse, Leermasse, Nutzlast, je Achse die zulässige Achslast
+und die gewogene Leerlast, dazu die eine Zahl, die niemand erwartet: wie weit
+die Ladefläche hinter der Vorderachse liegt. Ohne sie steht der Laderaum
+nirgends am Fahrzeug, und ohne das gibt es keinen Hebelarm. **Nichts davon
+wird aus etwas anderem gerechnet** — Nutzlast ist nicht zGG minus Leermasse,
+sobald ein Aufbau, eine Hebebühne oder eine volle Tankfüllung dazwischen
+liegt.
 
 Three.js liegt hinter einer `lazy`-Grenze und wird erst geladen, wenn eine
 3D-Ansicht geöffnet wird. Gemessen 2026-09-18: Startpaket **408 kB**
@@ -337,9 +456,10 @@ was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
 noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
 sagt, wird umgangen und weiss danach gar nichts mehr.
 
-**Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
-Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
-Fahrzeug-Stammdaten mit Quelle (#19).
+**Noch nicht gebaut:** Fahrzeug-Stammdaten mit Quelle (#19 — die Gewichte und Achsen daraus stehen
+seit #24, die Herkunftsangabe noch nicht). Aus #25 fehlt XLSX; CSV ist da,
+und eine zweite Tabellenfassung wäre eine zweite Wahrheit über dieselbe
+Ladung.
 
 ## Marke
 

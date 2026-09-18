@@ -19,16 +19,19 @@
 // quadratisch wird.
 // ───────────────────────────────────────────────────────────────────────────
 import { lazy, Suspense, useMemo, useState } from 'react'
-import { useT } from '../i18n'
+import { locale, useT } from '../i18n'
 import { useLoadStore } from '../domain/store/loadStore'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { packe } from '../domain/lib/loadPacker'
-import type { PackStueck, Vec3 } from '../domain/lib/loadPacker'
+import type { PackStueck, RasterModus, Vec3 } from '../domain/lib/loadPacker'
+import { rasterVon } from '../domain/types/vehicle'
 import type { Ladung } from '../domain/types/load'
 import { gruppen as gruppenDerLadung } from '../domain/lib/ladung'
 import { Draufsicht } from './Ladeansicht/Draufsicht'
-import { gruppenFarbe } from './Ladeansicht/farben'
+import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { Beladen } from './Beladen'
+import { Lastverteilung } from './Lastverteilung'
+import { Ladeausgabe } from './Ladeausgabe'
 
 // Three liegt hinter dieser Grenze und nur hinter ihr. Wer `Ladeansicht3D`
 // irgendwo statisch importiert, zieht es in den Start des Lagers — in
@@ -39,9 +42,9 @@ const Ladeansicht3D = lazy(() => import('./Ladeansicht/Ladeansicht3D'))
 const RASTER = [0, 50, 100]
 
 export function Ladeplan({ ladung }: { ladung: Ladung }) {
-  const { t, format } = useT()
+  const { t, format, sprache } = useT()
   const vehicles = useVehicleStore((s) => s.vehicles)
-  const { setFixierung, setGruppenReihenfolge } = useLoadStore()
+  const { setFixierung, setGruppenReihenfolge, setRasterModus } = useLoadStore()
 
   const [auswahl, setAuswahl] = useState<string | undefined>()
   const [raster, setRaster] = useState(100)
@@ -55,6 +58,8 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
    * müsste.
    */
   const [modus, setModus] = useState<'planen' | 'beladen'>('planen')
+  /** Was schiefging, wenn es nicht am Plan liegt — heute nur der Druckbogen. */
+  const [fehler, setFehler] = useState('')
 
   const fahrzeug = vehicles.find((v) => v.id === ladung.vehicleId)
   const gruppen = ladung.gruppenReihenfolge ?? gruppenDerLadung(ladung)
@@ -77,9 +82,25 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
     [ladung.stuecke],
   )
 
+  // Das Raster kommt vom FAHRZEUG und der Modus von der LADUNG (#21) — der
+  // „Snap" der Leiste ist etwas anderes: er rastet den FINGER beim Ziehen
+  // ein und hat mit dem Packmass nichts zu tun. Beides in einem Regler wäre
+  // bequem und falsch: wer 50 mm zum Ziehen wählt, wollte nicht die Reihen
+  // umbauen.
+  const fahrzeugRaster = fahrzeug ? rasterVon(fahrzeug) : 0
+  const rasterModus: RasterModus = ladung.rasterModus ?? (fahrzeugRaster > 0 ? 'gemischt' : 'frei')
+
   const plan = useMemo(
-    () => (fahrzeug ? packe(fahrzeug, stuecke, { gruppenReihenfolge: gruppen, rasterMm: raster }, t) : null),
-    [fahrzeug, stuecke, gruppen, raster, t],
+    () =>
+      fahrzeug
+        ? packe(
+            fahrzeug,
+            stuecke,
+            { gruppenReihenfolge: gruppen, rasterMm: fahrzeugRaster, rasterModus },
+            t,
+          )
+        : null,
+    [fahrzeug, stuecke, gruppen, fahrzeugRaster, rasterModus, t],
   )
 
   if (!fahrzeug) {
@@ -111,6 +132,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
 
   return (
     <div className="ladeplan">
+      {fehler && <p className="ueberladen">{fehler}</p>}
       <div className="ladeplan-leiste">
         <div className="modus-schalter" role="group" aria-label={t('plan.mode', 'Mode')}>
           <button
@@ -147,6 +169,19 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
             ))}
           </select>
         </label>
+        {fahrzeugRaster > 0 && (
+          <label>
+            {format(t('plan.rasterMode', 'Grid ({n} mm)'), { n: fahrzeugRaster })}
+            <select
+              value={rasterModus}
+              onChange={(e) => setRasterModus(ladung.id, e.target.value as RasterModus)}
+            >
+              <option value="gemischt">{t('plan.rasterMixed', 'Mixed')}</option>
+              <option value="raster">{t('plan.rasterStrict', 'Grid only')}</option>
+              <option value="frei">{t('plan.rasterFree', 'Free')}</option>
+            </select>
+          </label>
+        )}
         <button type="button" className="still" onClick={() => setZeige3d((z) => !z)}>
           {zeige3d ? t('plan.hide3d', 'Hide 3D') : t('plan.show3d', 'Show in 3D')}
         </button>
@@ -176,6 +211,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
         onWaehle={setAuswahl}
         onVerschiebe={absetzen}
         rasterMm={raster}
+        gitterMm={rasterModus === 'frei' ? 0 : fahrzeugRaster}
         oeffnungText={t('plan.aperture', 'Loading aperture — what comes out first stands here')}
         engsteText={t('plan.narrowest', 'Dashed: the narrowest cross-section further up')}
       />
@@ -195,6 +231,23 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
         </Suspense>
       )}
 
+      <Ladeausgabe
+        ladungName={ladung.name}
+        vehicle={fahrzeug}
+        plan={plan}
+        gruppen={gruppen}
+        datum={new Date().toLocaleDateString(locale(sprache))}
+        onFehler={setFehler}
+      />
+
+      <Lastverteilung
+        ladungName={ladung.name}
+        vehicle={fahrzeug}
+        plan={plan}
+        datum={new Date().toLocaleDateString(locale(sprache))}
+        onFehler={setFehler}
+      />
+
       {auswahl && (
         <p className="leise">
           {(() => {
@@ -209,7 +262,9 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
                 z: p.position.z,
                 state: p.verankert
                   ? t('plan.anchored', 'placed by hand')
-                  : t('plan.byPacker', 'placed by the packer'),
+                  : p.imRaster
+                    ? t('plan.onGrid', 'placed by the packer, on the grid')
+                    : t('plan.byPacker', 'placed by the packer'),
               },
             )
           })()}

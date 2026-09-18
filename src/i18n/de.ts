@@ -607,6 +607,24 @@ export const de: Record<string, string> = {
   'pack.roomShape':
     'Es käme nur dort unter, wo der Laderaum gefast oder gerundet ist — das Kistenmass passt, das Fahrzeug nicht.',
   'plan.narrowest': 'Gestrichelt: der engste Querschnitt weiter oben',
+
+  // ── Die Lage am Griff (#23) ─────────────────────────────────────────────
+  //
+  // Drei Gründe und drei Sätze: „geht nicht" liesse den Menschen raten, ob es
+  // die Wand, die Rundung oder die Nachbarkiste ist. „Quer" und „längs" statt
+  // X und Z — am Dock spricht niemand von Achsen.
+  'plan.axes': 'Ziehrichtungen',
+  'plan.axisX': 'Quer',
+  'plan.axisZ': 'Längs',
+  // Der Befund bleibt, wenn jemand trotz der Warnung losgelassen hat — die
+  // Verankerung ist eine Entscheidung, eine unmögliche Lage ist keine.
+  'pack.anchoredOutside': '{label} steht von Hand dort, wo kein Laderaum ist — es ragt heraus.',
+  'pack.anchoredOverlap': '{label} steht von Hand dort, wo schon {other} steht.',
+  'pack.obstruction': 'ein fester Einbau des Fahrzeugs',
+  'place.outside': 'So ragt es aus dem Laderaum heraus.',
+  'place.shape': 'Dort ist der Laderaum gefast oder gerundet.',
+  'place.taken': 'Dort steht schon {what}.',
+  'place.gives': '{what} rückt dafür zur Seite.',
   'vehicle.edgeLoss': '{l} l gehen für Fasen und Rundungen ab',
 
   'edge.along': 'läuft über die ganze Länge',
@@ -831,4 +849,190 @@ export const de: Record<string, string> = {
   'loading.roleOpen': 'Folgt',
   'loading.stowOf': '{label} als verstaut vermerken',
   'loading.undoOf': '{label} wieder herausnehmen',
+
+  // ── Gewicht, Schwerpunkt, Achslast (#24) ────────────────────────────────
+  //
+  // Normbegriffe bleiben, wie sie heissen: zGG, Nutzlast, Achslast, kg, mm.
+  // Übersetzt wird, was das Werkzeug SAGT — nicht, wie die Papiere heissen.
+  // Die Sätze, die eine fehlende Angabe erklären, sind ausdrücklich SÄTZE
+  // und keine Kürzel: sie stehen an der Stelle einer Zahl, und dort liest
+  // jemand mit einer Frage.
+  'load.noWeights':
+    'Kein einziges gesetztes Stück ist gewogen — daraus lässt sich kein Schwerpunkt rechnen.',
+  'load.noAxles': 'Für dieses Fahrzeug sind keine Achsen eingetragen — es gibt nichts zu verteilen.',
+  'load.threeAxles':
+    'Mehr als zwei Achsen: wie sich die Last verteilt, hängt an der Federung und nicht allein an der Statik. Hier hilft nur die Waage.',
+  'load.noFloorOffset':
+    'Es ist nicht eingetragen, wie weit die Ladefläche hinter der Vorderachse liegt — ohne diese Zahl gibt es keinen Hebelarm.',
+  'load.someUnweighed':
+    'Es fahren Stücke ohne gewogenes Gewicht mit: {n}. Eine Achslast, die um sie herum gerechnet ist, läse sich wie eine Messung.',
+  'load.axlesSamePlace':
+    'Beide Achsen stehen mit demselben Abstand eingetragen — eine der beiden Zahlen stimmt nicht.',
+  'load.antiSlip': 'Antirutschmatten unter jedes Stück, das nicht verkeilt steht',
+  'load.straps': 'Zurrgurte, ein Paar je Reihe, mit abgelesener Zurrkraft',
+  'load.bars': 'Sperrstangen oder Ladungssicherungsnetz zur Tür hin',
+  'load.edges': 'Kantenschutz überall dort, wo ein Gurt über eine Ecke läuft',
+  'load.disclaimer':
+    'Dieses Blatt rechnet und zeigt. Es erteilt keine Freigabe: die Verantwortung für die Ladungssicherung bleibt bei Fahrer und Verlader.',
+
+  // Das Blatt
+  'sheet.vehicle': 'Fahrzeug',
+  'sheet.cargoSpace': 'Laderaum',
+  'sheet.cargoSpaceValue': '{l} × {w} × {h} mm',
+  'sheet.payload': 'Nutzlast',
+  'sheet.kg': '{n} kg',
+  'sheet.loaded': 'Gesetztes Gewicht',
+  'sheet.unweighed': 'Nicht gewogen',
+  'sheet.unweighedValue':
+    'Stücke an Bord ohne gewogenes Gewicht: {n}. Sie stecken in keiner Zahl weiter unten.',
+  'sheet.over': 'Über der Nutzlast',
+  'sheet.overValue': 'Um {n} kg — erreicht mit {label}, in Ladereihenfolge.',
+  'sheet.cogValue': '{z} mm ab der vorderen Kante der Ladefläche, {x} mm ab der linken Wand, {y} mm hoch',
+  'sheet.frontAxle': 'Vorderachse',
+  'sheet.rearAxle': 'Hinterachse',
+  'sheet.fromLoad': 'aus der Ladung {n} kg',
+  'sheet.noEmptyAxle': 'Leerlast nicht gewogen — keine Gesamtlast',
+  'sheet.total': 'gesamt {n} kg',
+  'sheet.permitted': 'zulässig {n} kg',
+  'sheet.axleOver': 'um {n} kg überschritten',
+  'sheet.axleLoads': 'Achslasten',
+  'sheet.title': 'Lastverteilungsplan — {name}',
+  'sheet.kicker': 'Lastverteilungsplan',
+  'sheet.vehicleAndLoad': 'Fahrzeug und Ladung',
+  'sheet.cog': 'Schwerpunkt',
+  // Die Zeile heisst nicht wie ihre Überschrift: „Schwerpunkt — Schwerpunkt"
+  // stand zweimal untereinander und sagte beim zweiten Mal nichts mehr.
+  'sheet.cogRow': 'Lage',
+  'sheet.securing': 'Sicherungsmittel — Merkliste',
+  'sheet.securingNote':
+    'Eine Liste, keine Rechnung: welches Mittel ein Stück braucht, hängt an Reibwert, Schwerpunkt und Aufbau — und keines davon kennt dieses Werkzeug.',
+
+  // Die Ansicht
+  'weight.printBlocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+  'weight.head': 'Gewicht und Achslasten',
+  'weight.placed': 'Gesetzt: {kg} kg',
+  'weight.unweighed': 'ohne gewogenes Gewicht: {n}',
+  'weight.over': 'Um {n} kg über der Nutzlast — erreicht mit {label}, in Ladereihenfolge.',
+  'weight.cog': 'Schwerpunkt:',
+  'weight.cogValue': '{z} mm ab der vorderen Kante, {x} mm ab der linken Wand, {y} mm hoch',
+  'weight.front': 'Vorderachse',
+  'weight.rear': 'Hinterachse',
+  'weight.fromLoad': 'aus der Ladung {n} kg',
+  'weight.noEmptyAxle': 'Leerlast nicht gewogen — keine Gesamtlast',
+  'weight.total': 'gesamt {n} kg von {max} zulässig',
+  'weight.axleOver': 'um {n} kg überschritten',
+  'weight.securing': 'Sicherungsmittel — Merkliste',
+  'weight.sheet': 'Lastverteilungsplan',
+
+  // Die Maske am Fahrzeug
+  'weigh.none': 'Gewichte und Achsen — nichts eingetragen',
+  'weigh.count': 'Gewichte und Achsen — {n} Achsen, davon {m} leer gewogen',
+  'weigh.intro':
+    'Gewicht ist die härtere Grenze: ein 3,5-Tonner ist oft bei unter 1.200 kg Zuladung am Ende. Nichts hier wird aus etwas anderem gerechnet — Nutzlast ist nicht zGG minus Leermasse, sobald ein Aufbau, eine Hebebühne oder eine volle Tankfüllung dazwischen liegt.',
+  'weigh.gross': 'Zulässige Gesamtmasse (kg)',
+  'weigh.kerb': 'Leermasse (kg)',
+  'weigh.payload': 'Nutzlast (kg)',
+  'weigh.floorOffset': 'Ladefläche hinter der Vorderachse (mm)',
+  'weigh.floorOffsetWhy':
+    'Gemessen von der Mitte der Vorderachse bis zur vorderen Kante der Ladefläche. Ohne sie steht der Laderaum nirgends am Fahrzeug, und ohne das gibt es keinen Hebelarm für eine Achslast.',
+  'weigh.front': 'Vorderachse',
+  'weigh.rear': 'Hinterachse',
+  'weigh.axlePos': 'Abstand von der Vorderachse (mm)',
+  'weigh.axleMax': 'Zulässige Achslast (kg)',
+  'weigh.axleEmpty': 'Leer gewogen (kg)',
+  'weigh.removeAxle': 'Achse entfernen',
+  'weigh.addAxle': 'Achse hinzufügen',
+  'weigh.axleWhy':
+    'Die Leerlast einer Achse kommt von der Brückenwaage und nicht aus den Papieren: die Papiere nennen, was eine Achse tragen DARF, nicht was sie leer trägt. Ohne sie sagt das Blatt, was die Ladung auf die Achse bringt, und schweigt dazu, ob die Achse überladen ist.',
+
+  // ── Die Ausgabe: was am Dock an der Bordwand hängt (#25) ────────────────
+  'out.totalWeight': '{kg} kg gesetzt',
+  'out.unweighed': 'ohne gewogenes Gewicht: {n}',
+  'out.layer': 'Lage {n} — {y} mm über der Ladefläche · Stücke: {c}',
+  'out.planTitle': 'Ladeplan — {name}',
+  'out.planKicker': 'Ladeplan',
+  'out.groups': 'Abladegruppen — die erste kommt zuerst heraus',
+  'out.notPlaced': 'Nicht eingeplant',
+  'out.dockTitle': 'Dock-Checkliste — {name}',
+  'out.dockKicker': 'Dock-Checkliste',
+  'out.loading': 'Laden — in dieser Reihenfolge',
+  'out.unloading': 'Abladen — dieselbe Liste rückwärts',
+  'out.returnKicker': 'Rückladeliste',
+  'out.noGroup': 'ohne Gruppe',
+  'out.spot': '{x}/{z} mm, Lage bei {y} mm',
+  'out.spotShort': '{x}/{z} mm',
+  'out.labelTitle': 'Case-Etiketten — {name}',
+  'out.labelKicker': 'Case-Etiketten',
+  'out.labelNone': 'Es ist nichts eingeplant — es gibt nichts zu beschriften.',
+  'out.csv.step': 'Reihenfolge',
+  'out.csv.label': 'Stück',
+  'out.csv.group': 'Abladegruppe',
+  'out.csv.weight': 'kg',
+  'out.csv.x': 'x mm',
+  'out.csv.y': 'y mm',
+  'out.csv.z': 'z mm',
+  'out.csv.size': 'B × H × T mm',
+  'out.csv.state': 'Stand',
+  'out.csv.byHand': 'von Hand gesetzt',
+  'out.csv.byPacker': 'vom Packer gesetzt',
+  'out.blocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+  'out.head': 'Fürs Dock',
+  'out.intro':
+    'Am Dock steht niemand mit der 3D-Ansicht. Jedes Blatt trägt Fahrzeug, Datum, gesetztes Gewicht und das, was nicht eingeplant werden konnte — mit Grund.',
+  'out.plan': 'Ladeplan',
+  'out.dock': 'Dock-Checkliste',
+  'out.labels': 'Case-Etiketten',
+  'out.csv': 'CSV',
+
+  // ── Das Packmass-Raster (#21) ───────────────────────────────────────────
+  //
+  // „Packmass" ist der Branchenbegriff und bleibt stehen. Der Schalter
+  // heisst „Raster" und nicht „Snap": den Finger rastet die Leiste darüber
+  // ein, hier geht es um die Reihen im Laderaum.
+  'vehicle.grid': 'Packmass-Raster (mm)',
+  'vehicle.gridNone': 'ohne Raster',
+  'vehicle.gridMm': '{n} mm',
+  'vehicle.gridDefault':
+    'Üblich für diese Klasse: {n} mm — 1200 × 600er Cases stehen darauf in Reihen.',
+  'vehicle.gridNoDefault':
+    'Für diese Klasse ist kein Raster üblich: der Laderaum ist keine 2,40 m breit, die Reihe geht nicht auf.',
+  'plan.rasterMode': 'Raster ({n} mm)',
+  'plan.rasterMixed': 'Gemischt',
+  'plan.rasterStrict': 'Nur im Raster',
+  'plan.rasterFree': 'Frei',
+  'plan.onGrid': 'vom Packer gesetzt, im Raster',
+
+  // ── Fahrzeug-Stammdaten und Ausmessen (#19) ─────────────────────────────
+  //
+  // „Radkasten", „Ladekante", „Trennwand" sind Werkstattbegriffe und bleiben
+  // stehen. Der Satz zur Bodenbreite ist der wichtigste dieser Gruppe: an
+  // ihr scheitert die Europalette, und wer nur oben misst, misst die
+  // falsche Zahl.
+  'fleet.derivedFrom': 'abgeleitet von {source}',
+  'fleet.fromCatalogue': 'Von einem Stammdatensatz ableiten',
+  'fleet.pick': 'auswählen',
+  'fleet.catalogueEmpty':
+    'Es gibt noch keinen Startsatz. Er müsste je Fahrzeug eine Quelle tragen — einen Link aufs Datenblatt oder die Zulassungsbescheinigung —, und geratene Innenmasse lesen sich auf einem Ladeplan wie Messungen.',
+  'fleet.export': 'Fahrzeuge ausgeben',
+  'fleet.import': 'Fahrzeuge einlesen',
+  'fleet.importBad': 'Das ist keine Fahrzeug-Datei dieses Werkzeugs.',
+  'fleet.imported': 'Übernommen: {n}',
+  'measure.head': 'Wie man ein Fahrzeug ausmisst',
+  'measure.intro':
+    'Sechs Masse, in der Reihenfolge, in der man einmal ums Fahrzeug geht. Die Bodenbreite zwischen den Radkästen ist eine andere Zahl als die Breite darüber — und sie ist die, an der eine Europalette scheitert.',
+  'measure.apertureW': 'Breite der Hecköffnung',
+  'measure.apertureW.where': 'Zwischen den Türdichtungen an der engsten Stelle, nicht die Aussenbreite.',
+  'measure.apertureH': 'Höhe der Hecköffnung',
+  'measure.apertureH.where': 'Von der Ladekante bis zum tiefsten Punkt des Rahmens.',
+  'measure.length': 'Laderaumlänge',
+  'measure.length.where':
+    'Von der Trennwand bis zu den geschlossenen Türen, auf Bodenhöhe. Der Boden ist das, worauf ein Case steht.',
+  'measure.widthFloor': 'Bodenbreite zwischen den Radkästen',
+  'measure.widthFloor.where':
+    'Die engste Stelle auf Bodenhöhe. An dieser Zahl scheitert die Europalette — den Radkasten selbst als Hindernis eintragen.',
+  'measure.widthTop': 'Breite über den Radkästen',
+  'measure.widthTop.where': 'Etwa auf Hüfthöhe, von Wand zu Wand. Das ist die Laderaumbreite im Modell.',
+  'measure.height': 'Laderaumhöhe',
+  'measure.height.where':
+    'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
 }

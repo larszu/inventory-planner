@@ -1060,12 +1060,46 @@ p.warnung { color: var(--warn); }
   touch-action: none; /* sonst scrollt das Telefon, statt die Kiste zu ziehen */
 }
 
+/* Der Grund, warum eine Lage nicht geht — solange gezogen wird (#23).
+ * Die Zeile steht IMMER da, auch leer: sonst springt das Bild darunter in
+ * dem Moment, in dem jemand zieht, und die Kiste rutscht unter dem Finger
+ * weg. `min-height` statt Einblenden. */
+.draufsicht-urteil,
+.ladeansicht-urteil {
+  margin: var(--steg-1) 0;
+  min-height: 1.3em;
+  font-size: 0.9rem;
+  /* Stahlblau als Vorgabe: die Zeile trägt auch die gute Nachricht („X rückt
+   * zur Seite"). Die Meldefarbe bekommt nur, was wirklich nicht geht. */
+  color: var(--leise);
+}
+
+.draufsicht-urteil.ungueltig,
+.ladeansicht-urteil.ungueltig { color: var(--gefahr); }
+
+/* Die 3D-Ansicht traegt zwei Bedienelemente ueber dem Bild: die Achsensperren
+ * und die Urteilszeile. Deshalb eine Spalte mit der Leinwand als dehnbarem
+ * Rest — mit fester Hoehe allein waere die Leinwand um genau diese beiden
+ * Zeilen zu hoch und liefe unten aus dem Rahmen. */
 .ladeansicht-3d {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: min(60vh, 520px);
   margin: var(--steg-3) 0;
   border: 1px solid var(--rand);
   background: var(--bg);
+}
+
+.ladeansicht-leinwand { flex: 1 1 auto; min-height: 0; }
+
+.ladeansicht-urteil { padding: 0 var(--steg-2); }
+
+.ladeansicht-achsen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-1);
+  padding: var(--steg-2) var(--steg-2) 0;
 }
 
 .ladeplan {
@@ -1429,3 +1463,54 @@ p.warnung { color: var(--warn); }
   gap: var(--steg-2);
   min-height: var(--ziel);
 }
+
+/* ── Gewicht, Schwerpunkt, Achslast (#24) ────────────────────────────────
+ *
+ * DIE ÜBERSCHREITUNG IST EINE ZAHL UND KEINE AMPEL. Sie steht in der
+ * Meldefarbe und fett, nie als Flaeche und nie als Punkt: Tally-Rot ist in
+ * diesem Haus das Aufnahmelicht, und eine Ampel neben einer Kiste naehme ihm
+ * den Rang. Eine Zahl sagt ohnehin mehr — „rot" laesst offen, ob es um 5 kg
+ * geht oder um 500. */
+.lastverteilung { margin-top: var(--steg-3); }
+
+.ueberladen { color: var(--gefahr); font-weight: 700; }
+
+.achslasten,
+.achsen-liste {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+}
+
+.achslasten li { padding: var(--steg-1) 0; border-top: 1px solid var(--rand); }
+
+.achsen-liste li {
+  padding: var(--steg-2) 0;
+  border-top: 1px solid var(--rand);
+}
+
+/* Der Achsname traegt die Zeile: er steht als einziges Wort links und
+ * bekommt deshalb das Gewicht, das sonst eine Beschriftung haette. */
+.achse-name { font-weight: 700; }
+
+/* ── Fahrzeug-Stammdaten und Ausmessen (#19) ─────────────────────────────
+ *
+ * Die Messliste ist NUMMERIERT und bleibt es: die Reihenfolge ist die
+ * Aussage — man geht einmal ums Fahrzeug und nicht dreimal. */
+.messliste { margin: var(--steg-2) 0; padding-left: var(--steg-4); }
+.messliste li { margin: var(--steg-1) 0; }
+
+/* Ein Datei-Feld sieht in jedem Browser anders aus. Es bekommt deshalb die
+ * Form des stillen Knopfes daneben und versteckt sein eigenes Feld — sonst
+ * stehen zwei verschiedene Bedienelemente nebeneinander, die dasselbe tun. */
+/* `.zeile label` macht aus jedem Label eine dehnbare Spalte mit Beschriftung
+ * ÜBER dem Feld — hier gibt es kein Feld, also stand die Beschriftung allein
+ * und eine halbe Zeile tiefer als der Knopf daneben. */
+.zeile .dateiwahl,
+.dateiwahl {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.dateiwahl input[type='file'] { display: none; }

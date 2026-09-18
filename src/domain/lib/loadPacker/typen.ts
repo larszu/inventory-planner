@@ -78,6 +78,26 @@ export interface Placement {
   sizeMm: Vec3
   lage: CaseOrientation
   gruppe?: string
+  /**
+   * Das Gewicht dieses Stücks in kg, soweit angegeben (#24).
+   *
+   * Es steht MIT, obwohl der Packer es nur summiert: Schwerpunkt und
+   * Achslast sind eine Hebelrechnung aus Position und Gewicht, und ohne
+   * diese Zeile müsste jeder Leser des Plans die Ladung daneben aufschlagen
+   * und die Stücke von Hand zuordnen. `undefined` heisst „nicht gewogen"
+   * und ist ausdrücklich nicht null.
+   */
+  weightKg?: number
+  /**
+   * Sitzt das Stück auf dem Raster? (#21)
+   *
+   * Sichtbar zu machen, WELCHES Stück im Raster sitzt und welches frei, ist
+   * eine Anforderung und kein Beiwerk: im gemischten Lauf steht beides
+   * nebeneinander, und wer die Reihe nachzählt, will wissen, welche Kiste
+   * dazugehört. Ohne Raster ist das Feld `false` und sagt damit nichts
+   * Falsches — „im Raster" heisst nicht „ordentlich".
+   */
+  imRaster: boolean
   /** Von Hand gesetzt; der Packer hat es nur übernommen. */
   verankert: boolean
   /**
@@ -114,7 +134,13 @@ export interface Unplaced {
  * ist; er sagt, was er tun musste, und der Mensch entscheidet.
  */
 export interface PackBefund {
-  art: 'reihenfolge-verletzt' | 'nutzlast-unbekannt' | 'nutzlast-ueberschritten' | 'oeffnung-unbekannt'
+  art:
+    | 'reihenfolge-verletzt'
+    | 'nutzlast-unbekannt'
+    | 'nutzlast-ueberschritten'
+    | 'oeffnung-unbekannt'
+    /** Von Hand an eine Stelle gesetzt, an der es nicht steht (#23). */
+    | 'verankert-ungueltig'
   text: string
 }
 
@@ -127,6 +153,8 @@ export interface LoadPlan {
   /** Wieviele gesetzte Stücke KEIN Gewicht tragen. */
   ohneGewicht: number
 }
+
+export type RasterModus = 'frei' | 'raster' | 'gemischt'
 
 export interface PackOptions {
   /**
@@ -141,8 +169,30 @@ export interface PackOptions {
    * Die erste kommt an die Öffnung, die letzte nach hinten.
    */
   gruppenReihenfolge?: readonly string[]
-  /** Raster, auf das Positionen gerundet werden. 0 = frei. */
+  /**
+   * Raster, auf das Kandidatenpositionen gelegt werden. 0 = frei.
+   *
+   * Das Packmass der Branche ist 1200 × 600 und 1200 × 800, gerechnet auf
+   * 2,40 m Ladebreite: 4 × 600 quer oder 2 × 1200 längs, und es geht auf.
+   * Wo das gilt, ist freies Packen nicht unnötig, sondern FALSCH — die Crew
+   * erwartet saubere Reihen und keine optimal verkeilte Wand, die sich nicht
+   * abladen lässt.
+   */
   rasterMm?: number
+  /**
+   * Wie streng das Raster gilt (#21).
+   *
+   *   frei      das Raster wird ignoriert
+   *   raster    jedes Stück muss auf dem Raster sitzen
+   *   gemischt  Packmass-Cases ins Raster, alles andere frei in die Reste —
+   *             der Alltagsfall
+   *
+   * Das Raster ist KEIN zweiter Solver, sondern ein Filter auf die
+   * Kandidatenpositionen des Kerns. Kollision, Stützfläche, Stapelregeln und
+   * Öffnung bleiben identisch; sonst gäbe es zwei Antworten auf die Frage,
+   * ob etwas passt.
+   */
+  rasterModus?: RasterModus
 }
 
 export const VORGABE_STUETZUNG = 0.8
