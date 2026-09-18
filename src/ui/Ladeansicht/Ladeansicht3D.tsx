@@ -31,6 +31,7 @@ import * as THREE from 'three'
 import type { LadeRolle } from '../../domain/lib/beladen'
 import type { LoadPlan, Placement, Vec3 } from '../../domain/lib/loadPacker'
 import type { Vehicle } from '../../domain/types/vehicle'
+import { konturBeiHoehe, konturHoehen, punktFrei, raumMasse, type Punkt2D } from '../../domain/lib/kontur'
 import { blickAuf, blickAusOeffnung, FOV_GRAD, mm } from './kamera'
 import { gruppenFarbe } from './farben'
 import { Beschriftung } from './Beschriftung'
@@ -128,6 +129,89 @@ function Stueck({
   )
 }
 
+/**
+ * Der Laderaum als Drahtmodell — mit seinen echten Kanten.
+ *
+ * ─── WARUM HÖHENRINGE UND KEIN QUADER ──────────────────────────────────────
+ *
+ * Ein Laderaum ist selten eine Schachtel: die Dachkante ist gerundet, die
+ * Wände laufen zusammen, der Kofferraum verjüngt sich zum Heck. Gezeichnet
+ * wird deshalb, was `konturBeiHoehe` auf mehreren Höhen ausrechnet — dieselbe
+ * Rechnung, die auch die Draufsicht zeigt und nach der der Packer packt.
+ *
+ * Ohne eingetragene Kanten gibt `konturHoehen` genau zwei Höhen zurück,
+ * Boden und Decke, und vier senkrechte Linien verbinden sie: dann steht hier
+ * exakt der Drahtkasten, der vorher hier stand. Der allgemeine Fall fällt auf
+ * den einfachen zurück, statt ihn zu ersetzen.
+ *
+ * ─── WARUM DRAHT UND KEINE WÄNDE ───────────────────────────────────────────
+ *
+ * Eine geschlossene Fläche nähme die Sicht in die Kiste, um die es geht. Das
+ * galt schon für den Quader und gilt für die Rundung erst recht.
+ */
+function Laderaum({ vehicle }: { vehicle: Vehicle }) {
+  const { ringe, senkrechte, boden, raum } = useMemo(() => {
+    const raum = raumMasse(vehicle)
+    const hoehen = konturHoehen(vehicle)
+    const konturen = hoehen.map((y) => ({ y, punkte: konturBeiHoehe(vehicle, y) }))
+    const alsWelt = (p: Punkt2D, y: number): [number, number, number] => [
+      mm(p.x) - mm(raum.x) / 2,
+      mm(y) - mm(raum.y) / 2,
+      mm(p.z) - mm(raum.z) / 2,
+    ]
+
+    const linien: number[] = []
+    for (const { y, punkte } of konturen) {
+      for (let i = 0; i < punkte.length; i += 1) {
+        linien.push(...alsWelt(punkte[i]!, y), ...alsWelt(punkte[(i + 1) % punkte.length]!, y))
+      }
+    }
+
+    // Senkrechte an den Ecken des Bodens — aber nur so weit hinauf, wie diese
+    // Stelle frei bleibt. Eine Linie, die durch die gerundete Dachkante nach
+    // draussen läuft, zeichnete einen Raum, den es nicht gibt.
+    const senkrecht: number[] = []
+    for (const p of konturen[0]?.punkte ?? []) {
+      let oben = 0
+      for (const y of hoehen) {
+        if (!punktFrei(vehicle.kanten, raum, { x: p.x, y, z: p.z })) break
+        oben = y
+      }
+      if (oben > 0) senkrecht.push(...alsWelt(p, 0), ...alsWelt(p, oben))
+    }
+
+    const form = new THREE.Shape(
+      (konturen[0]?.punkte ?? []).map(
+        (p) => new THREE.Vector2(mm(p.x) - mm(raum.x) / 2, mm(raum.z) / 2 - mm(p.z)),
+      ),
+    )
+    return { ringe: new Float32Array(linien), senkrechte: new Float32Array(senkrecht), boden: form, raum }
+  }, [vehicle])
+
+  return (
+    <>
+      <lineSegments>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[ringe, 3]} />
+        </bufferGeometry>
+        <lineBasicMaterial color="#8C9CB3" />
+      </lineSegments>
+      <lineSegments>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[senkrechte, 3]} />
+        </bufferGeometry>
+        <lineBasicMaterial color="#8C9CB3" />
+      </lineSegments>
+
+      {/* Ladefläche — in der Form des Bodens und nicht als Rechteck. */}
+      <mesh position={[0, -mm(raum.y) / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <shapeGeometry args={[boden]} />
+        <meshStandardMaterial color="#24405F" side={THREE.DoubleSide} />
+      </mesh>
+    </>
+  )
+}
+
 function Szene({
   vehicle,
   plan,
@@ -156,19 +240,7 @@ function Szene({
       <ambientLight intensity={0.85} />
       <directionalLight position={[3, 6, 4]} intensity={1.1} />
 
-      {/* Der Laderaum als Drahtkasten — eine Wand aus Flächen würde die
-          Sicht in die Kiste nehmen, um die es geht. */}
-      <mesh>
-        <boxGeometry args={[mm(raum.x), mm(raum.y), mm(raum.z)]} />
-        <meshBasicMaterial visible={false} />
-        <Edges threshold={15} color="#8C9CB3" />
-      </mesh>
-
-      {/* Ladefläche */}
-      <mesh position={[0, -mm(raum.y) / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[mm(raum.x), mm(raum.z)]} />
-        <meshStandardMaterial color="#24405F" />
-      </mesh>
+      <Laderaum vehicle={vehicle} />
 
       {/* Die Öffnung liegt bei z = lengthMm (siehe `loadPacker/typen.ts`) und
           wird markiert: ohne sie sieht niemand, wo vorn ist.

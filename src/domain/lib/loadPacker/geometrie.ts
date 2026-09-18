@@ -133,13 +133,35 @@ export function erlaubteLagen(transport?: TransportSpec): CaseOrientation[] {
  * Bestand muss denselben Plan ergeben (#20, „deterministisch"). Eine Crew
  * vertraut keinem Plan, der sich bei jedem Klick anders anordnet.
  */
-export function absetzPunkte(belegt: readonly Quader[], raum: Vec3): Vec3[] {
+export function absetzPunkte(
+  belegt: readonly Quader[],
+  raum: Vec3,
+  einzuege: { x: readonly number[]; z: readonly number[] } = { x: [], z: [] },
+): Vec3[] {
   const punkte: Vec3[] = [{ x: 0, y: 0, z: 0 }]
   for (const q of belegt) {
     const m = maxOf(q)
     punkte.push({ x: m.x, y: q.origin.y, z: q.origin.z })
     punkte.push({ x: q.origin.x, y: m.y, z: q.origin.z })
     punkte.push({ x: q.origin.x, y: q.origin.y, z: m.z })
+  }
+
+  // EINGERÜCKTE STARTPUNKTE, wenn der Raum an der Wand gebrochen oder
+  // gerundet ist. An einer runden unteren Kante ist der Ursprung kein Platz
+  // mehr, und ein Stück, das 60 mm weiter innen bequem stünde, fiele durch:
+  // die Heuristik kennt den Punkt nicht, an dem die Wand wieder senkrecht
+  // wird. Er wird ihr gegeben — geprüft wird er ohnehin wie jeder andere.
+  if (einzuege.x.length > 0 || einzuege.z.length > 0) {
+    for (const p of [...punkte]) {
+      for (const dx of [0, ...einzuege.x]) {
+        for (const dz of [0, ...einzuege.z]) {
+          if (dx === 0 && dz === 0) continue
+          if (p.x === 0 || p.z === 0) {
+            punkte.push({ x: p.x === 0 ? dx : p.x, y: p.y, z: p.z === 0 ? dz : p.z })
+          }
+        }
+      }
+    }
   }
   const gesehen = new Set<string>()
   return punkte

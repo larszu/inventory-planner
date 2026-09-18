@@ -95,6 +95,8 @@ export type UnplacedGrund =
   | 'stuetzflaeche'
   | 'stapelregel'
   | 'zu-gross'
+  /** Der Laderaum ist an der einzigen freien Stelle gebrochen oder gerundet. */
+  | 'raumform'
 
 export interface Unplaced {
   stueckId: string

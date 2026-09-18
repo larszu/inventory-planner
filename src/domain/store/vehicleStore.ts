@@ -16,7 +16,16 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_KEYS } from '../../lib/storageKeys'
-import type { Axle, CargoAperture, CargoObstruction, Vehicle, VehicleKind } from '../types/vehicle'
+import type {
+  Achse,
+  Axle,
+  CargoAperture,
+  CargoObstruction,
+  Kantenform,
+  Seite,
+  Vehicle,
+  VehicleKind,
+} from '../types/vehicle'
 
 export type VehicleInput = Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -92,6 +101,38 @@ const healAxle = (raw: unknown): Axle | null => {
 }
 
 /** Heilt ein geladenes Fahrzeug. Ohne Laderaum-Masse kein Fahrzeug. */
+const ACHSEN = new Set<Achse>(['x', 'y', 'z'])
+const SEITEN = new Set<Seite>(['min', 'max'])
+
+/**
+ * Eine gebrochene oder gerundete Kante lesen.
+ *
+ * HALB ANGEGEBEN HEISST GAR NICHT — dieselbe Regel wie bei der halb
+ * vermessenen Ladeöffnung und der halb gesetzten Lage eines Stücks. Eine
+ * Kante ohne Seite oder ohne Tiefe wäre eine Rundung an einer Stelle, die
+ * niemand benennen kann; im Zweifel bleibt die Kante scharf, und das ist die
+ * konservative Richtung: sie lässt höchstens Platz ungenutzt.
+ */
+export const healKante = (raw: unknown): Kantenform | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Partial<Kantenform>
+  if (!ACHSEN.has(r.achse as Achse)) return null
+  if (r.art !== 'fase' && r.art !== 'rundung') return null
+  if (!Array.isArray(r.seiten) || r.seiten.length !== 2) return null
+  if (!r.seiten.every((x) => SEITEN.has(x as Seite))) return null
+  const a = num(r.aMm)
+  const b = num(r.bMm)
+  if (a === undefined || b === undefined || a <= 0 || b <= 0) return null
+  return {
+    achse: r.achse as Achse,
+    seiten: [r.seiten[0] as Seite, r.seiten[1] as Seite],
+    art: r.art,
+    aMm: a,
+    bMm: b,
+    name: typeof r.name === 'string' && r.name.trim() ? r.name.trim() : undefined,
+  }
+}
+
 export const healVehicle = (raw: unknown): Vehicle | null => {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Partial<Vehicle>
@@ -110,6 +151,9 @@ export const healVehicle = (raw: unknown): Vehicle | null => {
     name: r.name.trim(),
     kind: r.kind as VehicleKind,
     cargoMm: { lengthMm: l, widthMm: w, heightMm: h },
+    kanten: Array.isArray(r.kanten)
+      ? r.kanten.map(healKante).filter((k): k is Kantenform => k !== null)
+      : undefined,
     obstructions: Array.isArray(r.obstructions)
       ? r.obstructions.map(healObstruction).filter((o): o is CargoObstruction => o !== null)
       : [],

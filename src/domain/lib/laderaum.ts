@@ -11,6 +11,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import type { CargoObstruction, Vehicle } from '../types/vehicle'
+import { kantenVerlustLiter } from './kontur'
 import type { CaseOrientation } from '../types/transport'
 import type { PhysicalDimensions } from '../types/inventory'
 import { quelle, type Uebersetzen } from '../../i18n/quelle'
@@ -33,6 +34,8 @@ export interface FreierRaum {
   bruttoLiter: number
   /** Was Radkästen, Sitzbank und Aufbau wegnehmen. */
   hindernisLiter: number
+  /** Was die gebrochenen und gerundeten Kanten wegnehmen. */
+  kantenLiter: number
   /** Brutto minus Hindernisse. */
   nettoLiter: number
   /**
@@ -55,6 +58,10 @@ export function freierRaum(v: Vehicle): FreierRaum {
   const { lengthMm, widthMm, heightMm } = v.cargoMm
   const brutto = literAusMm(lengthMm, widthMm, heightMm)
   const hindernis = v.obstructions.reduce((s, h) => s + hindernisLiter(h), 0)
+  // Der Laderaum ist selten eine Schachtel. Was die Kanten wegnehmen, ist
+  // kein Hindernis IM Raum, sondern Raum, den es nie gab — und es gehört
+  // deshalb in eine eigene Zeile und nicht in die der Radkästen.
+  const kanten = kantenVerlustLiter(v)
 
   // Radkästen kommen paarweise von beiden Seiten; die freie Bodenbreite ist
   // die Innenbreite minus dem, was von links und rechts hineinragt.
@@ -65,7 +72,8 @@ export function freierRaum(v: Vehicle): FreierRaum {
   return {
     bruttoLiter: brutto,
     hindernisLiter: hindernis,
-    nettoLiter: Math.max(0, brutto - hindernis),
+    kantenLiter: kanten,
+    nettoLiter: Math.max(0, brutto - hindernis - kanten),
     bodenBreiteMm: bodenBreite,
   }
 }
