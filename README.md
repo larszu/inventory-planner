@@ -283,10 +283,33 @@ Heckklappe", „Stützfläche zu klein", „eine Stapelregel des Cases darunter
 verbietet es". Ein Plan, der Stücke stillschweigend weglässt, ist am Dock
 gefährlicher als gar keiner.
 
+**Warum das hier liegt und nicht in einem eigenen Repo**, steht in
+[ADR-010 „Die Ladeplanung ist ein Modul des Lagers"](https://github.com/larszu/av-planner-suite/blob/main/docs/decisions/ADR-010-ladeplanung-im-lager.md).
+Kurz: die Case-Maße gehören dem Lager, und `CasePackedItem.itemId` zeigt auf
+echten Bestand — deshalb heißt „Case 7 fehlt" hier automatisch „die
+Ersatz-Funkstrecke fehlt auch". Ein Ladeplaner, der bei einer Tabelle
+anfängt, kann das nicht.
+
 **Die Reihenfolge zählt mehr als die Dichte.** Jedes Stück bekommt eine
 Abladegruppe; der Packer legt die zuerst gebrauchte an die Öffnung. Wo das mit
 der Passgenauigkeit kollidiert, sagt das Werkzeug, was es kostet, statt
 stillschweigend umzuräumen.
+
+**Die Gruppe setzt man am Stück** — ein Feld je Stück unter „Abladegruppe je
+Stück", mit Vorschlagsliste der schon vorhandenen Gruppen. Tippen legt eine
+neue an. Daneben steht ein Knopf, der die Gruppen **aus der Artikel-Kategorie**
+vorschlägt (Lighting → Licht, Microphones → Ton, Cameras/Lenses/Tripods →
+Video …). Er sagt vorher, was er tun wird („7 von 12 bekämen eine Gruppe, 3
+haben keine zu holen, 2 behalten die von Hand gesetzte"), und er fasst eine von
+Hand gesetzte Gruppe **nicht** an: die Abladereihenfolge ist eine Aussage über
+den Aufbau, nicht über den Artikel. Ein Artikel ohne passende Kategorie bekommt
+**keine** Gruppe — nicht „Sonstiges"; ohne Gruppe wird zuletzt abgeladen, und
+das ist die ehrliche Vorgabe.
+
+**Zwei Abladestellen an einer Fahrt** brauchen kein eigenes Feld: „Halle A ·
+Licht" vor „Halle B · Ton" ist genau die Ordnung, nach der der Packer
+schichtet. Ein zweites Feld „Stelle" wäre eine zweite Wahrheit über dieselbe
+Reihenfolge.
 
 **Bedient wird mit der Hand.** In der Draufsicht zieht man ein Case an seinen
 Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist

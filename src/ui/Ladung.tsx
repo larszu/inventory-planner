@@ -17,7 +17,11 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { useLoadStore } from '../domain/store/loadStore'
 import { CONTAINER_KINDS } from '../domain/types/inventory'
+import type { InventoryItem } from '../domain/types/inventory'
+import type { Ladung } from '../domain/types/load'
 import { gesamtGewicht, gruppen, stueckeAusContainern, unplanbar } from '../domain/lib/ladung'
+import { gruppenVorschlaege } from '../domain/lib/abladegruppen'
+import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { nutzlastFrei } from '../domain/lib/laderaum'
 import { Ladeplan } from './Ladeplan'
 
@@ -25,7 +29,9 @@ export function Ladung() {
   const { t, format } = useT()
   const nodes = useInventoryStore((s) => s.nodes)
   const vehicles = useVehicleStore((s) => s.vehicles)
-  const { loads, addLadung, addStuecke, setVehicle, removeLadung } = useLoadStore()
+  const { loads, addLadung, addStuecke, setVehicle, removeLadung, setGruppe, setGruppenReihenfolge } =
+    useLoadStore()
+  const items = useInventoryStore((s) => s.items)
 
   const container = useMemo(() => nodes.filter((n) => CONTAINER_KINDS.includes(n.kind)), [nodes])
 
@@ -128,6 +134,24 @@ export function Ladung() {
               </p>
             )}
 
+            {/* ─── DIE GRUPPE AM STUECK (#22) ────────────────────────────
+                Der Packer schichtet nach Abladegruppen von der Oeffnung nach
+                hinten, und die Reihenfolge der Gruppen laesst sich im
+                Ladeplan verschieben. Nur setzen liess sie sich nirgends — die
+                Zuordnung war ein Feld ohne Weg. Hier ist der Weg. */}
+            {l.stuecke.length > 0 && (
+              <details className="block">
+                <summary>{t('load.groupAssign', 'Unload groups per piece')}</summary>
+                <Gruppenzuordnung
+                  ladung={l}
+                  items={items}
+                  gruppen={gruppen(l)}
+                  setGruppe={setGruppe}
+                  setGruppenReihenfolge={setGruppenReihenfolge}
+                />
+              </details>
+            )}
+
             <button type="button" onClick={() => setOffen(l.id === offen ? '' : l.id)}>
               {l.id === offen ? t('load.closePick', 'Close picker') : t('load.openPick', 'Add containers')}
             </button>
@@ -159,5 +183,83 @@ export function Ladung() {
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * Die Zuordnung Stück → Abladegruppe.
+ *
+ * Ein Feld je Stück, mit `datalist` auf die schon vorhandenen Gruppen: Tippen
+ * legt eine neue an, Auswählen nimmt eine vorhandene. Ein reines Auswahlfeld
+ * ginge nicht — die Gruppen sind frei und entstehen erst bei der Arbeit.
+ *
+ * Der Knopf darüber sagt VORHER, was er tun wird. Bei einer Ladung mit
+ * sechzig Stücken ist ein Knopf, dessen Wirkung man erst am Ergebnis sieht,
+ * keine Bedienung, sondern ein Versuch.
+ */
+function Gruppenzuordnung({
+  ladung,
+  items,
+  gruppen: vorhandene,
+  setGruppe,
+  setGruppenReihenfolge,
+}: {
+  ladung: Ladung
+  items: readonly InventoryItem[]
+  gruppen: readonly string[]
+  setGruppe: (ladungId: string, stueckId: string, gruppe: string | undefined) => void
+  setGruppenReihenfolge: (id: string, gruppen: string[]) => void
+}) {
+  const { t, format } = useT()
+  const vorschlag = useMemo(() => gruppenVorschlaege(ladung, items, t), [ladung, items, t])
+
+  const uebernehmen = () => {
+    for (const v of vorschlag.setzen) setGruppe(ladung.id, v.stueckId, v.gruppe)
+    setGruppenReihenfolge(ladung.id, vorschlag.reihenfolge)
+  }
+
+  return (
+    <>
+      <p className="hinweis">
+        {format(
+          t(
+            'load.groupSuggest',
+            '{n} of {total} pieces would get a group from their category, {offen} have none to take, {behalten} keep the group you set.',
+          ),
+          {
+            n: vorschlag.setzen.length,
+            total: ladung.stuecke.length,
+            offen: vorschlag.offen,
+            behalten: vorschlag.behalten,
+          },
+        )}
+      </p>
+      <button type="button" onClick={uebernehmen} disabled={vorschlag.setzen.length === 0}>
+        {t('load.groupApply', 'Take the suggestion')}
+      </button>
+
+      <datalist id={`gruppen-${ladung.id}`}>
+        {vorhandene.map((g) => (
+          <option key={g} value={g} />
+        ))}
+      </datalist>
+
+      {ladung.stuecke.map((s) => (
+        <label key={s.id}>
+          <span
+            className="gruppen-punkt"
+            style={{ background: gruppenFarbe(s.gruppe, vorhandene) }}
+            aria-hidden="true"
+          />
+          {s.label}
+          <input
+            list={`gruppen-${ladung.id}`}
+            value={s.gruppe ?? ''}
+            placeholder={t('load.groupNone', 'no group — unloaded last')}
+            onChange={(e) => setGruppe(ladung.id, s.id, e.target.value.trim() || undefined)}
+          />
+        </label>
+      ))}
+    </>
   )
 }
