@@ -89,7 +89,10 @@ export function Ladestreifen({ eintraege, gruppen, onVerstauen, onZurueck }: Pro
           ) : (
             <button
               type="button"
-              className={rolle === 'aktuell' ? 'knopf-primaer' : 'still'}
+              /* Kein Primaerknopf: einer pro Abschnitt, und der steht auf
+                 der Karte darueber — dieselbe Handlung am selben Stueck. Die
+                 Kachel ist ueber ihre Kopflinie markiert. */
+              className="still"
               onClick={() => onVerstauen(p.stueckId)}
               aria-label={format(t('loading.stowOf', 'Mark {label} as stowed'), { label: p.label })}
             >

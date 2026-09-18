@@ -72,6 +72,20 @@ const mitte = (pos: Vec3, size: Vec3, raum: Vec3): [number, number, number] => [
   mm(pos.z + size.z / 2 - raum.z / 2),
 ]
 
+/**
+ * Die Farbe des Stücks, das ALS NÄCHSTES an seinen Platz kommt.
+ *
+ * Off-White und nicht der Bernstein, der hier stand: `#E8B04B` ist der erste
+ * Ton der Gruppen-Palette („Sand"). Gehört das nächste Stück zur ersten
+ * Gruppe, war der Geist damit exakt so eingefärbt wie die Kisten, von denen
+ * er sich abheben soll — gesehen hätte man das erst am Dock.
+ *
+ * Off-White ist ausserdem die richtige Antwort nach dem Handbuch: Struktur
+ * entsteht durch die Linie, Bedeutung durch den Punkt. Der Punkt steht auf
+ * der Karte darüber; hier trägt die helle Kante.
+ */
+const ZIEL_FARBE = '#F6F5F0'
+
 function Stueck({
   p,
   raum,
@@ -109,12 +123,12 @@ function Stueck({
         {/* Verankerte Stücke stehen voller da: sie sind eine Entscheidung
             eines Menschen und keine Rechnung. */}
         <meshStandardMaterial
-          color={istZiel ? '#E8B04B' : farbe}
+          color={istZiel ? ZIEL_FARBE : farbe}
           opacity={deckkraft}
           transparent={deckkraft < 1}
           roughness={0.7}
         />
-        <Edges threshold={15} color={istZiel ? '#E8B04B' : gewaehlt ? '#E1ECEF' : '#132040'} />
+        <Edges threshold={15} color={istZiel ? ZIEL_FARBE : gewaehlt ? '#E1ECEF' : '#132040'} />
       </mesh>
       {/* Die Beschriftung liegt auf der Oberseite und nicht an der Flanke:
           von schräg oben ist das die Fläche, die man sieht. */}
@@ -252,7 +266,13 @@ function Szene({
       {modus === 'planen' && vehicle.aperture && (
         <mesh position={[0, mm(vehicle.aperture.heightMm / 2) - mm(raum.y) / 2, mm(raum.z) / 2 + 0.002]}>
           <planeGeometry args={[mm(vehicle.aperture.widthMm), mm(vehicle.aperture.heightMm)]} />
-          <meshBasicMaterial color="#C8892B" transparent opacity={0.18} side={THREE.DoubleSide} />
+          {/* Eine LINIE und keine getönte Scheibe. Die Scheibe war doppelt
+              falsch: sie lag in `--warn`, einer Meldefarbe, und sie war eine
+              FLÄCHE vor der Ladung — im ersten Anlauf hat sie den ganzen
+              Innenraum abgedunkelt. Der Rahmen sagt dasselbe und nimmt
+              nichts weg. Das Signal für die Öffnung trägt die Draufsicht. */}
+          <meshBasicMaterial visible={false} />
+          <Edges threshold={15} color="#F6F5F0" />
         </mesh>
       )}
 

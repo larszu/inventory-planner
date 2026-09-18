@@ -15,6 +15,19 @@ import { resolve } from 'node:path'
 // denen jede Regel darunter ihre Farbe zieht. Er misst NICHT das gerenderte
 // Fenster; was Kontrast, Ueberlagerung und ein umgebendes `filter` daraus
 // machen, sieht er nicht.
+//
+// ─── UND SEIT 2026-09-18 AUCH DEN DRUCKBOGEN ──────────────────────────────
+//
+// Er las bis dahin NUR `index.css`. Ein Stilblatt in einer TS-Datei sah er
+// nicht — und genau dort lag der Bogen, den der Kunde als einziges in die
+// Hand bekommt: `domain/lib/inventoryPrint.ts` fuhr `#111`, `#555`, `#333`,
+// `#444` und einen Tailwind-Bernstein `#b45309`. Eine Grautreppe, die die
+// Marke nicht hat, in der einen Anwendung, die man anfassen kann.
+//
+// Der Bogen ist die HELLE Anwendung derselben Palette (Guide: Print 60 %
+// Off-White, Web 70 % Deep Navy — dieselben Farben, gedrehte Gewichtung).
+// Deshalb misst dieser Lauf ihn gegen dieselbe Liste und nicht gegen eine
+// zweite.
 // ───────────────────────────────────────────────────────────────────────────
 
 const css = readFileSync(resolve(__dirname, '..', '..', 'index.css'), 'utf8')
@@ -108,5 +121,113 @@ describe('Gegenprobe zum Lauf selbst', () => {
     // den es sicher gibt.
     expect(token('--gibt-es-nicht')).toBe('')
     expect(token('--bg')).not.toBe('')
+  })
+})
+
+// ───────────────────────────────────────────────────────────────────────────
+// Der Druckbogen (`inventoryPrint.ts`) — dieselbe Palette, helle Gewichtung.
+// ───────────────────────────────────────────────────────────────────────────
+const druck = readFileSync(resolve(__dirname, '..', 'lib', 'inventoryPrint.ts'), 'utf8')
+
+/** Nur der Inhalt des `<style>`-Blocks; der Rest der Datei ist TypeScript. */
+const druckStil = (): string => {
+  const m = /<style>([\s\S]*?)<\/style>/.exec(druck)
+  return (m?.[1] ?? '').replace(OHNE_KOMMENTAR, '')
+}
+
+/** Die Marken-Werte, die auf hellem Grund vorkommen duerfen. */
+const HELLE_PALETTE = new Set(['#F6F5F0', '#E1ECEF', '#1D324F', '#5C6B85', '#8C9CB3', '#132040'])
+
+describe('Der Druckbogen traegt die Marke', () => {
+  it('benutzt nur Farben aus der Palette', () => {
+    const fremd = [...druckStil().matchAll(/#[0-9A-Fa-f]{3,8}\b/g)]
+      .map((m) => m[0])
+      .filter((h) => !HELLE_PALETTE.has(h.toUpperCase()))
+
+    expect(fremd, `fremde Farben im Druckbogen: ${fremd.join(', ')}`).toEqual([])
+  })
+
+  it('steht auf Off-White und schreibt in Navy', () => {
+    expect(druckStil()).toMatch(/background:\s*#F6F5F0/)
+    expect(druckStil()).toMatch(/color:\s*#1D324F/)
+  })
+
+  it('traegt genau EINE Kopflinie', () => {
+    // Guide, Gestaltungssystem 1: Kicker, darunter die durchgehende Linie,
+    // eine pro Flaeche. Sie ist der Baustein, an dem ein Blatt dieses
+    // Hauses erkennbar ist — und der Ersatz fuer Rahmen und Ecken.
+    expect((druck.match(/class="kopflinie"/g) ?? []).length).toBe(1)
+    expect((druck.match(/class="kicker"/g) ?? []).length).toBe(1)
+    expect(druckStil()).toMatch(/\.kopflinie[^}]*border-top:\s*1px solid #8C9CB3/)
+  })
+
+  it('traegt KEIN Tally-Rot', () => {
+    // Der Punkt ist das Aufnahmelicht. Eine Packliste nimmt nichts auf.
+    expect(druck.toUpperCase()).not.toContain('#D6402E')
+  })
+
+  it('setzt die Hausschrift und keine Grautreppe', () => {
+    expect(druckStil()).toMatch(/'Public Sans'/)
+    // Gemessen am Stilblatt und NICHT an der Datei: der Kopf dieser Datei
+    // nennt die alten Werte, um zu erklaeren, was sie abloest. Ein Waechter,
+    // der an der Begruendung rot wird, zwingt dazu, die Begruendung zu
+    // loeschen — dieselbe Falle wie bei den Kommentaren in `index.css`.
+    for (const grau of ['#111', '#555', '#333', '#444', '#b45309']) {
+      expect(druckStil().toLowerCase().includes(grau), `${grau} steht noch im Druckbogen`).toBe(false)
+    }
+  })
+
+  it('hat keine Rundungen, Schatten oder Verlaeufe', () => {
+    expect(/border-radius:\s*(?!0)/.test(druckStil()), 'border-radius').toBe(false)
+    expect(/box-shadow:\s*(?!none)/.test(druckStil()), 'box-shadow').toBe(false)
+    expect(/linear-gradient|radial-gradient/.test(druckStil()), 'Verlauf').toBe(false)
+  })
+})
+
+describe('Die Hausschrift steht an einer Stelle', () => {
+  it('nennt Public Sans zuerst und faellt auf die Kette des Handbuchs zurueck', () => {
+    // Nicht aus dem Netz geladen — dieses Repo ist offline-first. Genannt
+    // wird sie trotzdem: wer sie installiert hat, bekommt sie.
+    expect(token('--font')).toBe("'Public Sans', system-ui, 'Segoe UI', Roboto, Arial, sans-serif")
+  })
+
+  it('zieht die Schrift aus dem Token und tippt sie nicht zweimal', () => {
+    const familien = css.replace(OHNE_KOMMENTAR, '').match(/font-family:\s*([^;]+);/g) ?? []
+    const eigene = familien.filter((f) => !f.includes('var(--font)') && !f.includes('monospace'))
+    expect(eigene, `font-family neben dem Token: ${eigene.join(' | ')}`).toEqual([])
+  })
+})
+
+describe('Das Signal bleibt Signal', () => {
+  it('Tally-Rot ist nie eine Flaeche', () => {
+    // „Nie Flaeche, nie Text, nie Rahmen" (Guide S. 9). Erlaubt sind der
+    // Punkt, der Fokusring und die Akzentlinie — alles drei sind keine
+    // `background`-Regeln ausser dem Punkt selbst, der genau so heisst.
+    const ohne = css.replace(OHNE_KOMMENTAR, '')
+    const flaechen = [...ohne.matchAll(/([.#][\w-]+(?:::?[\w-]+)?)\s*\{[^}]*background:\s*var\(--signal\)/g)].map(
+      (m) => m[1],
+    )
+    // Die eine erlaubte Stelle ist der Punkt IM Primaerknopf. Er ist kein
+    // Rahmen und keine Flaeche im Sinn des Handbuchs, sondern genau der
+    // Punkt, den es dort vorschreibt — deshalb steht er namentlich da und
+    // nicht als Ausnahme „irgendein `::before`".
+    expect(flaechen, `Flaeche in Tally-Rot: ${flaechen.join(', ')}`).toEqual(['.knopf-primaer::before'])
+  })
+
+  it('der Punkt ist geneigt und nicht rund', () => {
+    // Guide, Gestaltungssystem 2: eckig, geneigt wie das Monogramm. Ein
+    // runder Punkt waere ein Aufzaehlungszeichen und kein Tally-Licht.
+    expect(css).toMatch(/\.knopf-primaer::before \{[^}]*transform:\s*skewX\(-11deg\)/)
+  })
+
+  it('die Belade-Ansicht hat EINEN Primaerknopf, nicht einen je Kachel', () => {
+    // „Einer pro Abschnitt." Der Streifen zeigt dieselbe Handlung am selben
+    // Stueck wie die Karte darueber; ein zweiter roter Punkt daneben nimmt
+    // beiden den Rang.
+    const streifen = readFileSync(resolve(__dirname, '..', '..', 'ui', 'Ladeansicht', 'Ladestreifen.tsx'), 'utf8')
+    expect(streifen.includes('knopf-primaer'), 'Primaerknopf im Streifen').toBe(false)
+
+    const beladen = readFileSync(resolve(__dirname, '..', '..', 'ui', 'Beladen.tsx'), 'utf8')
+    expect((beladen.match(/knopf-primaer/g) ?? []).length).toBe(1)
   })
 })

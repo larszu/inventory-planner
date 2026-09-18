@@ -644,6 +644,11 @@ export const de: Record<string, string> = {
     'Ein gerader Schnitt von einer Wand zur anderen — gemessen wird, wie weit er in jede Richtung reicht.',
   'edge.add': 'Kante eintragen',
 
+  // ── Der Druckbogen ──────────────────────────────────────────────────────
+  'print.kicker': 'Packliste',
+  'print.packList': 'Packliste — {name}',
+  'print.positions': '{n} Positionen',
+
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.
   'loading.stripLabel': 'Ladereihenfolge mit aktuellem Stand',

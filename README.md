@@ -109,6 +109,16 @@ Hüllquadern; berücksichtigt werden Stützfläche, Stapelregeln des Cases
 (`noLoadOnTop`, `maxStackKg`, `maxLayers`), erlaubte Lagen, die Ladeöffnung,
 Hindernisse im Laderaum und das Gewicht.
 
+**Der Laderaum ist kein Quader.** Dachkanten sind gerundet, Wände laufen nach
+oben zusammen, ein Kofferraum verjüngt sich zur Heckklappe. Jede der zwölf
+Kanten lässt sich gefast (`fase`) oder gerundet (`rundung`) eintragen — bei
+den Fahrzeugen, mit zwei Massen und in der Sprache dessen, der misst
+(„Dachkante rechts", „Raumecke hinten links"). Packer, Draufsicht und
+3D-Ansicht lesen **dieselbe** Rechnung (`src/domain/lib/kontur.ts`): der
+Packer analytisch und exakt, die Bilder in Sehnen, die nach innen liegen —
+kein Bild zeigt mehr Platz, als es gibt. Ohne Eintrag bleibt die Kante
+scharf; Vorgabewerte je Fahrzeugklasse gibt es bewusst nicht.
+
 **Was nicht passt, wird benannt — mit Grund.** „Passt nicht durch die
 Heckklappe", „Stützfläche zu klein", „eine Stapelregel des Cases darunter
 verbietet es". Ein Plan, der Stücke stillschweigend weglässt, ist am Dock
@@ -146,6 +156,15 @@ einem Knopf, wenn der Aufkleber hinüber ist. Ein Code, der im Bestand steht
 aber nicht zu dieser Fahrt gehört, wird ausdrücklich so gemeldet — „falsches
 Fahrzeug?" ist der teurere Fall und darf nicht als „unbekannt" durchgehen.
 
+Darüber läuft der **Lade-Streifen**: der ganze Plan in Ladereihenfolge, jede
+Kachel mit ihrem Stand — *geladen · wird geladen · folgt*. Er rollt von selbst
+auf das laufende Stück und lässt sich mit dem Daumen schieben; verstaut und
+zurückgeholt wird direkt an der Kachel. Er zeigt **alles** und keinen
+Ausschnitt: wer eine Kiste sucht, die er vor zehn Minuten falsch abgestellt
+hat, findet sie sonst nicht mehr. „Wird geladen" ist dabei kein gespeicherter
+Zustand, sondern das nächste Stück nach Plan — eine Ableitung kann nicht
+hängenbleiben.
+
 Daneben steht das **Schicht-Modell**: was in welcher Lage steht, und was davon
 schon verstaut ist. Beim Laden arbeitet man eine Lage ab und stellt dann die
 nächste darauf; wer nur eine Reihe sieht, merkt den Wechsel nicht.
@@ -159,6 +178,29 @@ sagt, wird umgangen und weiss danach gar nichts mehr.
 **Noch nicht gebaut:** Ladeplan-PDF und Dock-Checkliste (#25), Achslast und
 Lastverteilungsplan (#24), das Packmass-Raster als Kandidatenfilter (#21),
 Fahrzeug-Stammdaten mit Quelle (#19).
+
+## Marke
+
+Die Oberfläche folgt dem Corporate Design der **Lars Zumpe Medienproduktion**
+(Brand Guide 2.0) und damit ADR-007 der Suite: Deep Navy als Grund, Zumpe Navy
+als Fläche, Off-White und Eisblau als Schrift, Stahlblau für Meta — **keine
+Rundungen, keine Schatten, keine Verläufe**. Struktur entsteht durch die
+Linie, Bedeutung durch den Punkt.
+
+**Tally-Rot ist Signal und sonst nichts:** der Punkt im Primärknopf, der
+Fokusring, die Öffnungskante in der Draufsicht. Nie Fläche, nie Text, nie
+Rahmen — und nie zweimal in einem Sichtfeld. Die Meldefarben (`--warn`,
+`--gefahr`, `--ok`) sind ausdrücklich **nicht** dasselbe; wer eine Warnung in
+Tally-Rot setzt, nimmt dem Aufnahmelicht seine Bedeutung.
+
+**Der Druckbogen ist die helle Anwendung derselben Palette** (Print 60 %
+Off-White, Web 70 % Deep Navy — dieselben Farben, gedrehte Gewichtung), mit
+Kicker und Kopflinie und ohne Rot. Hausschrift ist **Public Sans**; sie wird
+nicht aus dem Netz geladen, weil dieses Repo offline-first ist, sondern
+zuerst genannt und dann auf die Kette des Handbuchs zurückgefallen.
+
+Gemessen wird das von `markenPalette.node.test.ts` — Token-Schicht, Druckbogen,
+Schrift und die Regel „ein Signal pro Abschnitt".
 
 ## Stand
 
