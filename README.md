@@ -115,6 +115,141 @@ räumt jemand wieder von Hand um und trägt es nirgends ein.
 sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
+### Grundriss und Raum — wo die Regale wirklich stehen
+
+Der Baum sagt, wo etwas **hingehört**. Er sagt nicht, wo man **hinlaufen**
+muss: er kennt keine Gasse, keine Reihenfolge im Raum und keine Seite. Genau
+deshalb hängt in jedem Lager ein Plan an der Wand.
+
+Derselbe Reiter hat deshalb drei Ansichten auf dieselben Knoten — **Baum**
+(worin), **Grundriss** (wo) und **In 3D** (wie hoch):
+
+* Im **Grundriss** bekommt ein Lagerort eine Grundfläche und wird mit der Maus
+  oder mit dem Finger an seine Stelle geschoben, mit Raster. Räume und Depots
+  sind Umrisse, Regale gefüllte Flächen mit ihrer Kennung.
+* **In 3D** stehen dieselben Regale auf derselben Fläche, mit ihren Ebenen als
+  Fachboden-Linien. Das beantwortet die eine Frage, die der Grundriss nicht
+  beantwortet: wie hoch es wird.
+* **Überschneidungen werden gemeldet, nicht verboten** — beim Umbau steht das
+  neue Regal schon da, während das alte noch nicht weg ist. Gerechnet wird mit
+  `ueberlappt` aus dem Packer: eine Antwort im Haus auf „überschneidet sich
+  das".
+
+**Die Halle wird nicht erfunden.** Es gibt keine Vorgabe von zehn mal zehn
+Metern. Gezeichnet wird das vermessene Depot, sonst die Hülle dessen, was
+schon steht — und dann steht dabei, dass der Umriss gerechnet und nicht
+gemessen ist (`domain/lib/hallenumriss.ts`, eine Rechnung für beide
+Ansichten). Ein Lagerort ohne Grundfläche ist nicht falsch; es hat nur
+niemand gemessen, wo er steht.
+
+### Flächen: Stellfläche, Pickzone, Verkehrsweg, Tor
+
+Im Grundriss steht nicht nur, was etwas **aufnimmt**. Eine Halle hat Flächen,
+die nichts aufnehmen und trotzdem den Betrieb bestimmen:
+
+| Fläche | Was sie sagt |
+|---|---|
+| **Stellfläche** | hier darf etwas stehen — Anlieferung, Paletten, Cases |
+| **Pickzone** | hier wird zusammengestellt, nicht gelagert |
+| **Verkehrsweg** | muss frei bleiben (ASR A1.8) |
+| **Tor** | der Weg hinein und hinaus, mit lichtem Mass |
+| **Sperrfläche** | darf nicht genutzt werden — Löschbereich, Tropfstelle |
+
+Sie sind **keine Lagerorte**: ein Tor nimmt nichts auf, ein Verkehrsweg soll
+nichts aufnehmen. Beides als Lager-Knoten zu führen hiesse, dass der Baum
+„Halle 1 › Tor Nord › Shure SM58" anbietet — eine Adresse, die es nicht gibt.
+
+**Und sie sind mehr als Bild.** Ein Lagerort auf einem Verkehrsweg, vor einem
+Tor oder in einer Sperrfläche ist ein **Befund** — gemeldet, nicht verboten,
+denn beim Umbau steht das Regal im Gang, weil es gerade nirgendwo anders hin
+kann. Es steht dort aber nicht still.
+
+**Das engste Tor sind zwei Tore.** Das schmalste und das niedrigste können
+verschiedene sein, und was durch beide muss, muss durch beide Masse. Eines
+davon „das engste" zu nennen wäre eine Auskunft über ein Tor, das es so nicht
+gibt. Das lichte Mass steht ausserdem getrennt von der Bauteilhöhe: bei einem
+Sektionaltor sind das zwei Zahlen, und die falsche kostet ein Case.
+
+### Kennungen: A1, A-01-02 — nach dem Schema des Hauses
+
+**Dafür gibt es keine Norm.** Gasse, Feld und Ebene ist die verbreitete
+Adressierung, aber jedes Haus schneidet sie anders: „A1" im kleinen Lager,
+„A-01-02" mit führenden Nullen im grossen. Das Schema wird deshalb
+eingestellt und nicht angenommen — dieselbe Entscheidung wie beim
+Scan-Prefix der Inventur, der ausdrücklich „eine Hausregel, keine Norm" ist.
+
+Eine Stufe ist eine Art (Gasse, Reihe, Feld, Ebene, Platz), ein Zeichensatz
+(Buchstaben laufen wie Tabellenspalten: nach Z kommt AA) und eine Auffüllung.
+`domain/lib/platzkennung.ts` baut die Kennung **und liest sie zurück** — ohne
+den Rückweg wäre ein gescanntes „A-01-02" eine Zeichenkette, die zufällig wie
+eine Adresse aussieht. Wo zwei Lesarten möglich wären („1102" ist 1|102 und
+11|02 zugleich), entscheidet sich das Werkzeug nicht, sondern sagt nein.
+
+**Eine Reihe wird auf einmal beschriftet:** acht Felder und vier Ebenen sind
+zweiunddreissig Kennungen, und die tippt niemand ab. Angefasst wird nur, was
+noch keine trägt — eine Kennung, die schon auf einem Aufkleber steht, wird
+nicht still geändert. Doppelt vergebene Kennungen werden gemeldet, nicht
+verhindert.
+
+### Die Kennung ist die Adresse — überall dieselbe
+
+Der Lagerort steht nicht nur in diesem Werkzeug. Er steht auf einem Aufkleber
+am Regal, in einer CSV-Spalte, im Kabelplan als Freitext — und überall als
+**Text**. Damit derselbe Text überall denselben Platz meint, löst genau eine
+Stelle ihn auf: `domain/lib/platzAufloesen.ts`, über vier Wege in dieser
+Reihenfolge — die Kennung am Knoten, die Kennung nach dem Hausschema, der
+Pfad („Regal A / Ebene 2", auch mit `›`, `>` oder `|`), zuletzt der Name.
+
+**Der Aufkleber schlägt den Namen.** Wer ein Regal umbenennt, ändert nicht das
+Etikett, das daran klebt. Und der Name hängt ausserdem an der Sprache von
+damals: eine Ebene, die bei englischer Oberfläche entsteht, heisst „Level 2" —
+auch für jemanden, der später „Ebene 2" tippt. Die Kennung „A1-2" ist in jeder
+Sprache dieselbe. Wer über Werkzeuggrenzen hinweg auf einen Platz zeigt, zeigt
+auf die Kennung.
+
+**Mehrdeutig ist ein Ergebnis und kein Fehler.** Zwei Regale heissen „Regal A"?
+Dann gibt es keine Antwort, sondern die Frage „welcher?" mit beiden Pfaden.
+
+In der Bestands-Tabelle steht der Lagerort deshalb als **Kennung mit Pfad**
+und ist dort auch **eintippbar** — Umräumen geht durch `moveItem`, wird also
+geprüft und ins Journal geschrieben.
+
+### Ebenen sind echte Lagerplätze
+
+Ein Regal mit vier Ebenen trägt im Grundriss die Zahl 4 — und einen Knopf, der
+daraus vier Lagerplätze macht: `A1-1` bis `A1-4`, die Kennung des Regals
+fortgesetzt. **Ohne sie kann „Regal A Ebene 1" auf nichts zeigen:** solange die
+Ebene nur eine Zahl ist, gibt es dort keinen Platz, in den etwas gelegt werden
+kann — weder von Hand, noch aus einem anderen Werkzeug, noch per Scan.
+
+Der Trenner ist dabei nicht verhandelbar: ohne ihn wäre „A1" + Ebene 2 gleich
+„A12", und das ist unter einem Schema aus Reihe und Feld die Kennung von Regal
+A, Feld 12. Hat das Hausschema keinen Trenner, ergänzt das Werkzeug den
+Bindestrich — und sagt es.
+
+**In der 3D-Ansicht** bekommt eine belegte Ebene eine Fläche. Das ist die eine
+Aussage, die der Grundriss nicht machen kann: „in Regal A liegt etwas, und zwar
+auf Ebene 2".
+
+### Etiketten für die Regale
+
+Ein A4-Bogen zum Ausdrucken, in drei Grössen (Regalschild, Fachschild, klein),
+die A4 **kacheln** — 2, 3 oder 4 je Reihe.
+
+Die Form folgt einem gemessenen Bedarf und nicht dem Geschmack: Nr. 70 der
+Suite-Recherche („Labels that survive the warehouse"), belegt an offenen
+Snipe-IT-Issues — eine Vorlage für alle Grössen führt dazu, dass Etiketten mit
+der Schere beschnitten werden, und ein fehlender Klartext lässt keinen Rückweg,
+wenn der Code zerkratzt ist. Deshalb: **die Kennung gross als Text** (ein
+Regalschild wird aus fünf Metern gelesen, nicht gescannt), der Pfad darunter,
+drei Grössen.
+
+**Kein Strichcode in diesem Bogen**, und das ist eine Entscheidung: er müsste
+hier erzeugt werden — mit einer Bibliothek, die dieses Repo nicht hat, oder als
+Bild aus dem Netz, was offline-first verbietet. Ein falsch gerasterter Code,
+der beim Scannen versagt, ist schlimmer als keiner: er sieht aus, als müsste er
+gehen.
+
 Noch ohne Bedienung bleiben `addSet` und `addUnit`: ein Kit ist keine
 Lagerstelle und eine serialisierte Einheit ist ein Stück mit Seriennummer —
 zwei andere Fragen, die nicht in denselben Baum gehören, nur weil sie im
@@ -159,9 +294,12 @@ Platz — mit der Maus oder mit dem Finger. Ein von Hand gesetztes Stück ist
 **3D-Ansicht** dazu (Drehen links, Schieben rechts, Zoom auf dem Rad — die
 mittlere Maustaste wird nirgends gebraucht).
 
-Three.js liegt hinter einer `lazy`-Grenze und wird erst beim Klick auf
-„Show in 3D" geladen: Startpaket 356 kB, 3D-Ansicht 950 kB (gemessen
-2026-09-18). `dreiGrenze.node.test.ts` hält das fest.
+Three.js liegt hinter einer `lazy`-Grenze und wird erst geladen, wenn eine
+3D-Ansicht geöffnet wird. Gemessen 2026-09-18: Startpaket **408 kB**
+(gzip 126 kB), der gemeinsame Three-Brocken **916 kB** — und der steht in
+keinem Skript, das die Seite beim Start holt. `dreiGrenze.node.test.ts` misst
+nicht mehr den Ordner, sondern die Grenze: welche Dateien Three ziehen, wird
+gefunden statt aufgezählt, und jede davon muss über `lazy()` geholt werden.
 
 ### Beladen — der Blick aus der Ladeöffnung
 

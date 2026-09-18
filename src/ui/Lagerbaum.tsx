@@ -38,7 +38,7 @@
 // denselben Baum zu hängen hiesse, drei Dinge zu vermischen, weil sie im
 // selben Store liegen.
 // ───────────────────────────────────────────────────────────────────────────
-import { useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useStorageMoveStore } from '../domain/store/storageMoveStore'
@@ -48,6 +48,16 @@ import { moveRefusalLabel, moveSubjectLabel } from '../domain/types/storageMove'
 import { toCsv } from '../lib/csv'
 import type { InventoryItem, StorageNode, StorageNodeKind } from '../domain/types/inventory'
 import type { MoveRefusal, MoveSubjectKind } from '../domain/types/storageMove'
+import { Grundriss } from './Grundriss'
+import { Kennungsschemata } from './Kennungsschema'
+import { planBeschriftung } from '../lib/kennungsablage'
+
+/**
+ * Der Raum in 3D liegt hinter der Lazy-Grenze — genau wie die Ladeansicht.
+ * Three wiegt gemessen 950 kB; wer nur etwas in ein Case legen will, soll
+ * sie nicht laden.
+ */
+const Lagerraum3D = lazy(() => import('./Lagerraum3D'))
 
 const KINDS: StorageNodeKind[] = ['depot', 'room', 'shelf', 'bin', 'case', 'transportCase']
 
@@ -251,6 +261,15 @@ export function Lagerbaum() {
   const [zug, setZug] = useState<Zug | null>(null)
   const [meldung, setMeldung] = useState<{ art: 'ok' | 'nein'; text: string } | null>(null)
   const [zu, setZu] = useState<ReadonlySet<string>>(new Set())
+  /**
+   * BAUM, GRUNDRISS oder RAUM — drei Fragen an dieselben Knoten.
+   *
+   * Der Baum sagt „worin", der Grundriss „wo", der Raum „wie hoch". Drei
+   * Reiter daraus zu machen hiesse, dreimal dieselbe Auswahl zu treffen und
+   * den Stand von Hand zu übertragen; dieselbe Entscheidung wie beim
+   * Modus-Schalter der Ladeplanung.
+   */
+  const [modus, setModus] = useState<'baum' | 'grundriss' | 'raum'>('baum')
   const [name, setName] = useState('')
   const [kind, setKind] = useState<StorageNodeKind>('shelf')
   const [unter, setUnter] = useState('')
@@ -369,6 +388,41 @@ export function Lagerbaum() {
 
   return (
     <section className="lagerbaum">
+      <div className="ladeplan-leiste">
+        <div className="modus-schalter" role="group" aria-label={t('tree.mode', 'View')}>
+          {([
+            ['baum', t('tree.modeTree', 'Tree')],
+            ['grundriss', t('tree.modePlan', 'Floor plan')],
+            ['raum', t('tree.modeRoom', 'In 3D')],
+          ] as const).map(([id, titel]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={modus === id}
+              className={modus === id ? 'reiter aktiv' : 'reiter'}
+              onClick={() => setModus(id)}
+            >
+              {titel}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {modus === 'grundriss' && (
+        <>
+          <Grundriss beschriftung={planBeschriftung} />
+          <Kennungsschemata />
+        </>
+      )}
+
+      {modus === 'raum' && (
+        <Suspense fallback={<p className="hinweis">{t('plan.loading3d', 'Loading the 3D view…')}</p>}>
+          <Lagerraum3D beschriftung={planBeschriftung} />
+        </Suspense>
+      )}
+
+      {modus === 'baum' && (
+      <>
       <p className="hinweis">
         {t(
           'tree.intro',
@@ -482,6 +536,9 @@ export function Lagerbaum() {
           </>
         )}
       </div>
+
+      </>
+      )}
 
       {/* Der Geist am Finger. `pointer-events: none` ist Pflicht, sonst
           findet `elementFromPoint` immer nur ihn selbst. */}

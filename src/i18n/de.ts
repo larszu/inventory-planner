@@ -700,6 +700,128 @@ export const de: Record<string, string> = {
     'Jeder Umzug wird festgehalten. Das ist der Nachweis, der „wo war es zuletzt" beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.',
   'tree.journalEmpty': 'Noch nichts umgelagert.',
   'tree.csv': 'Umlagerungen als CSV',
+  'tree.mode': 'Ansicht',
+  'tree.modeTree': 'Baum',
+  'tree.modePlan': 'Grundriss',
+  'tree.modeRoom': 'In 3D',
+
+  // ── Grundriss, Raum und die Kennung des Lagerplatzes ────────────────────
+  //
+  // „Gasse", „Feld", „Ebene" sind die Begriffe der Lagertechnik und keine
+  // Übersetzung von aisle/bay/level: ein Lagerist sagt Feld, nicht Fach —
+  // ein Fach ist das, was in einem Case steckt.
+  'floor.unplaced': 'Nicht im Grundriss ({n})',
+  'floor.unplacedHint':
+    'Ein Lagerort ohne Grundriss-Eintrag ist nicht falsch — es hat nur niemand gemessen, wo er steht.',
+  'floor.place': 'In den Grundriss',
+  'floor.empty':
+    'Es steht noch nichts im Grundriss, und die Halle ist nicht vermessen — es gibt also nichts zu zeichnen. Setz einen Lagerort in den Grundriss, oder gib dem obersten Knoten seine eigene Grundfläche.',
+  'floor.derived':
+    'Der Umriss folgt dem, was im Grundriss steht, und nicht einer vermessenen Halle. Gib dem obersten Lagerort eine Grundfläche, dann steht die echte da.',
+  'floor.label': 'Grundriss des Lagers',
+  'floor.clashes': 'Überschneidungen im Grundriss',
+  'floor.clashHint':
+    'Gemeldet, nicht verboten — beim Umbau steht das neue Regal schon da, während das alte noch nicht weg ist.',
+  'floor.clash': '{a} und {b} überschneiden sich.',
+  'floor.unplace': 'Aus dem Grundriss nehmen',
+  'floor.width': 'Breite (mm)',
+  'floor.depth': 'Tiefe (mm)',
+  'floor.height': 'Höhe (mm)',
+  'floor.levels': 'Ebenen',
+  'floor.rotation': 'Drehung (°)',
+
+  'room.empty': 'Es steht noch nichts im Grundriss — im Raum ist dann auch nichts aufzustellen.',
+  'room.noHeight': 'Ohne erfasste Höhe: {n}. Die liegen flach im Bild — geraten wird hier nichts.',
+  'room.tall': '{h} mm hoch, {e} Ebenen',
+  'room.flat': 'keine Höhe erfasst',
+
+  'code.stage.aisle': 'Gasse',
+  'code.stage.row': 'Reihe',
+  'code.stage.bay': 'Feld',
+  'code.stage.level': 'Ebene',
+  'code.stage.slot': 'Platz',
+  'code.clash': 'Kennung {code} ist {n}-mal vergeben.',
+  'code.head': 'Hausschema für Lagerplatz-Kennungen',
+  'code.intro':
+    'Dafür gibt es keine Norm. Gasse, Feld und Ebene ist die verbreitete Adressierung, aber jedes Haus schneidet sie anders — deshalb wird sie hier eingestellt und nicht angenommen.',
+  'code.stage': 'Stufe',
+  'code.chars': 'Zeichen',
+  'code.letters': 'Buchstaben (A, B, … AA)',
+  'code.digits': 'Ziffern (1, 2, 3)',
+  'code.pad': 'Auffüllen auf',
+  'code.dropStage': 'Entfernen',
+  'code.addStage': 'Stufe hinzufügen',
+  'code.separator': 'Trenner',
+  'code.example': 'Sieht so aus: {code}',
+  'code.none': 'Keine Stufen — Lagerorte tragen dann keine Kennung aus diesem Schema.',
+  'code.batch': 'Eine Reihe auf einmal beschriften',
+  'code.batchHint':
+    'Acht Felder und vier Ebenen sind zweiunddreissig Kennungen, und die tippt niemand ab. Angefasst wird nur, was noch keine Kennung trägt — eine Kennung, die schon auf einem Aufkleber steht, wird nicht still geändert.',
+  'code.under': 'Unterhalb von',
+  'code.pick': '— Lagerort wählen —',
+  'code.howMany': '{stage} — wieviele?',
+  'code.label': 'Beschriften',
+  'code.allLabelled': 'Jeder Lagerort darunter trägt schon eine Kennung.',
+  'code.noRange': 'Gib erst für jede Stufe des Schemas eine Anzahl an.',
+  'code.labelled': '{n} von {m} Lagerorten ohne Kennung beschriftet.',
+  'code.clashes': 'Doppelt vergebene Kennungen',
+
+  // ── Flächen der Halle: Stellfläche, Pickzone, Verkehrsweg, Tor ──────────
+  //
+  // „Verkehrsweg" ist der Begriff der Arbeitssicherheit (ASR A1.8) und nicht
+  // eine Übersetzung von „aisle": ein Gang ist, wo man geht, ein Verkehrsweg
+  // ist, was frei bleiben MUSS. Der Unterschied ist genau das, was diese
+  // Fläche prüft.
+  'area.staging': 'Stellfläche',
+  'area.pick': 'Pickzone',
+  'area.aisle': 'Verkehrsweg',
+  'area.gate': 'Tor',
+  'area.blockedArea': 'Sperrfläche',
+  'area.new': 'Fläche anlegen',
+  'area.add': 'In den Grundriss',
+  'area.name': 'Name',
+  'area.remove': 'Fläche entfernen',
+  'area.clearWidth': 'Lichte Breite (mm)',
+  'area.clearHeight': 'Lichte Höhe (mm)',
+  'area.blocked': '{node} steht auf {area} — das muss frei bleiben.',
+  'area.blockedHead': 'Steht, wo es frei bleiben muss',
+  'area.blockedHint':
+    'Gemeldet, nicht verboten — beim Umbau steht ein Regal im Gang, weil es gerade nirgendwo anders hin kann. Es steht dort aber nicht still.',
+  'area.narrowest': 'Alles muss durch {name}: {w} x {h} mm lichte Weite.',
+
+  // ── Der Lagerort als Adresse, die überall gilt ──────────────────────────
+  'place.empty': 'Kein Lagerort angegeben.',
+  'place.ambiguous': 'Das passt auf {n} Lagerorte: {list}. Welcher?',
+  'place.unknown': 'Kein Lagerort mit diesem Namen oder dieser Kennung.',
+  'stock.nowhere': 'nicht eingeräumt',
+  'stock.setPlace': 'Kennung oder Pfad…',
+  'stock.setPlaceFor': 'Lagerort setzen',
+  'floor.levelName': 'Ebene {n}',
+  'floor.makeLevels': 'Die {n} Ebenen als Lagerorte anlegen',
+  'floor.needsCode':
+    'Das Regal hat noch keine Kennung — die Ebenen setzen sie fort und können ohne sie nicht benannt werden.',
+  'room.holds': 'Artikel darin: {n}',
+
+  // ── Regal-Etiketten ─────────────────────────────────────────────────────
+  //
+  // „Regalschild" und „Fachschild" sind die Begriffe am Lager: das eine
+  // hängt am Regalkopf und wird aus fünf Metern gelesen, das andere klebt am
+  // Fachboden. Ein Wort für beides gäbe es nur, wenn es dasselbe wäre.
+  'label.sheet': 'Lagerplatz-Etiketten',
+  'label.head': 'Etiketten drucken',
+  'label.hint':
+    'Die Kennung steht als Text da, gross, mit ihrem Pfad daneben — ein Regalschild wird aus fünf Metern gelesen und nicht gescannt. Gedruckt wird nur, was eine Kennung trägt: ein Etikett ohne Kennung ist ein leerer Aufkleber.',
+  'label.none': 'Nichts ausgewählt, was eine Kennung trägt — ein Etikett ohne Kennung ist ein leerer Aufkleber.',
+  'label.nothing': 'Noch trägt kein Lagerplatz eine Kennung.',
+  'label.count': '{n} Etiketten',
+  'label.blocked': 'Der Bogen liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+  'label.size': 'Grösse',
+  'label.size.shelf': 'Regalschild (95 x 62 mm, 2 je Reihe)',
+  'label.size.bay': 'Fachschild (62 x 33 mm, 3 je Reihe)',
+  'label.size.small': 'Klein (46 x 20 mm, 4 je Reihe)',
+  'label.all': 'Alle wählen',
+  'label.none.select': 'Keine wählen',
+  'label.open': 'Bogen öffnen ({n})',
 
   // Der Lade-Streifen. „Wird gerade geladen" ist bewusst kein eigener
   // Zustand, sondern das nächste Stück nach Plan — siehe `beladen.ts`.

@@ -1335,3 +1335,97 @@ p.warnung { color: var(--warn); }
 
 .umzug-liste { margin: 0 0 var(--steg-3); padding-left: 1.4em; }
 .umzug-liste li { padding: var(--steg-1) 0; }
+
+/* ── Grundriss und Lagerraum ─────────────────────────────────────────────
+ *
+ * Dieselbe Zeiger-Bedienung wie im Baum und in der Draufsicht der
+ * Ladeplanung: `touch-action: none`, sonst scrollt das Telefon, statt das
+ * Regal zu schieben. */
+.grundriss-rahmen { margin: var(--steg-3) 0; }
+
+.grundriss {
+  display: block;
+  width: 100%;
+  max-height: min(70vh, 620px);
+  margin: var(--steg-2) 0;
+  touch-action: none;
+}
+
+.grundriss-offen {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.grundriss-offen li {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  border-top: 1px solid var(--rand);
+}
+
+.grundriss-offen li button { margin-left: auto; }
+
+.stufen-liste {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+}
+
+.stufen-liste li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--steg-2);
+  padding: var(--steg-2) 0;
+  border-top: 1px solid var(--rand);
+}
+
+.raum-legende {
+  list-style: none;
+  margin: var(--steg-3) 0;
+  padding: 0;
+}
+
+.raum-legende li {
+  display: flex;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  align-items: center;
+  border-top: 1px solid var(--rand);
+}
+
+.raum-legende .leise { margin-left: auto; }
+
+/* Der Lagerort in der Bestands-Tabelle: Kennung fett, Pfad leise, darunter
+ * das Feld zum Eintippen. Zwei Zeilen und kein Dialog — der Ort kommt von
+ * einem Aufkleber oder aus einer Liste, und dafuer oeffnet niemand ein
+ * Fenster. */
+.lagerort-zelle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--steg-1);
+  min-width: 14rem;
+}
+
+.lagerort-kennung { margin-right: var(--steg-2); }
+.lagerort-zelle input { min-height: var(--ziel); }
+
+/* Die Etiketten-Auswahl: eine Zeile je Lagerplatz, Kennung fett voran. */
+.etiketten-wahl {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.etiketten-wahl li { border-top: 1px solid var(--rand); }
+
+.etiketten-wahl label {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+}
