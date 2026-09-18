@@ -870,6 +870,21 @@ export const de: Record<string, string> = {
     'Beide Achsen stehen mit demselben Abstand eingetragen — eine der beiden Zahlen stimmt nicht.',
   'load.antiSlip': 'Antirutschmatten unter jedes Stück, das nicht verkeilt steht',
   'load.straps': 'Zurrgurte, ein Paar je Reihe, mit abgelesener Zurrkraft',
+  // Abladegruppen (#22) — die Gewerke, in denen abgeladen wird. Sie werden
+  // EINMAL beim Setzen aufgeloest und dann als freier Text gespeichert: die
+  // Gruppe ist danach ein Name, den der Nutzer umbenennen darf.
+  'group.rigging': 'Rigging',
+  'group.light': 'Licht',
+  'group.power': 'Strom',
+  'group.sound': 'Ton',
+  'group.video': 'Video',
+  'group.control': 'Regie',
+  'group.cable': 'Kabel',
+  'load.groupAssign': 'Abladegruppe je Stück',
+  'load.groupSuggest':
+    '{n} von {total} Stücken bekämen eine Gruppe aus ihrer Kategorie, {offen} haben keine zu holen, {behalten} behalten die von Hand gesetzte.',
+  'load.groupApply': 'Vorschlag übernehmen',
+  'load.groupNone': 'keine Gruppe – wird zuletzt abgeladen',
   'load.bars': 'Sperrstangen oder Ladungssicherungsnetz zur Tür hin',
   'load.edges': 'Kantenschutz überall dort, wo ein Gurt über eine Ecke läuft',
   'load.disclaimer':
