@@ -472,6 +472,76 @@ export const de: Record<string, string> = {
   'vehicle.apertureSize': '{w} x {h} mm',
   'vehicle.create.head': 'Fahrzeug anlegen',
   'vehicle.head': 'Fahrzeuge',
+  // Einbauten und Laderaum-Bearbeitung (Nutzer-Frage 2026-09-19).
+  // „Radkasten", „Ersatzrad" sind Bauteile und keine Normbegriffe – sie
+  // werden übersetzt; die Reifengröße selbst (235/65 R16C) nicht.
+  'obstacle.kind.arch': 'Radkasten',
+  'obstacle.kind.bench': 'Sitzbank',
+  'obstacle.kind.spare': 'Ersatzrad',
+  'obstacle.kind.fitment': 'Aufbau',
+  'obstacle.kind.other': 'Sonstiges',
+  'obstacle.none': 'Einbauten – keine eingetragen',
+  'obstacle.count': 'Einbauten – {n} eingetragen',
+  'obstacle.intro':
+    'Radkästen, eine Sitzbank, das Ersatzrad: der Packer behandelt sie als belegten Raum, Draufsicht und 3D-Ansicht zeichnen sie. Der Ursprung ist die Ecke hinten links unten im Laderaum; x läuft quer, y nach oben, z nach vorn.',
+  'obstacle.name': 'Name',
+  'obstacle.kind': 'Art',
+  'obstacle.fromLeft': 'Von links (mm)',
+  'obstacle.fromFloor': 'Über dem Boden (mm)',
+  'obstacle.fromRear': 'Von hinten (mm)',
+  'obstacle.width': 'Breite (mm)',
+  'obstacle.height': 'Höhe (mm)',
+  'obstacle.depth': 'Tiefe (mm)',
+  'obstacle.remove': 'Einbau entfernen',
+  'obstacle.add': 'Einbau hinzufügen',
+  'obstacle.left': 'links',
+  'obstacle.right': 'rechts',
+  'obstacle.noName':
+    'Der Einbau hat keinen Namen. Auf einem Ladeplan wäre er ein Kasten, den niemand zuordnen kann.',
+  'obstacle.noSize':
+    'Ein Einbau ohne Maße nimmt keinen Platz weg – und dann ist er keiner.',
+  'obstacle.outside':
+    'Ragt aus dem Laderaum ({l} × {b} × {h} mm). Meist ein Tippfehler – der Packer rechnete mit Platz, den es nicht gibt.',
+  'obstacle.inShape':
+    'Reicht in eine Fase oder Rundung – dort ist ohnehin kein Raum.',
+  'obstacle.overlaps': 'Überschneidet „{name}" – der Platz ginge zweimal ab.',
+  'affected.outside': '{label} stünde außerhalb des Laderaums.',
+  'affected.shape': '{label} stünde in einer Fase oder Rundung.',
+  'affected.inObstacle': '{label} stünde in „{name}".',
+  'tyre.head': 'Radkasten aus der Reifengröße',
+  'tyre.intro':
+    'Eine Reifengröße ist eine genormte Angabe und keine Schätzung: 235/65 R16 gibt Breite und Außendurchmesser exakt. Die Höhe über dem Ladeboden folgt daraus nicht – sie hängt am Aufbau und wird deshalb gefragt.',
+  'tyre.size': 'Reifengröße',
+  'tyre.clearance': 'Zuschlag je Seite (mm)',
+  'tyre.outer': 'Außendurchmesser',
+  'tyre.unreadable':
+    'Keine metrische Reifengröße mit Verhältnis. Größen wie 7.50 R16 tragen die Flankenhöhe nicht – trage die Maße unten von Hand ein.',
+  'tyre.derived': 'Der Radkasten wäre {b} mm breit und {l} mm lang.',
+  'tyre.archHeight': 'Höhe über dem Boden (mm) – gemessen',
+  'tyre.fromRear': 'Von hinten (mm)',
+  'tyre.create': 'Beide Radkästen anlegen',
+  'tyre.needHeight':
+    'Die Höhe fehlt. Eine hergeleitete Höhe sähe auf dem Ladeplan aus wie eine gemessene – und der Packer stapelt darauf.',
+  'vehicle.edit': 'Stammdaten und Laderaum',
+  'vehicle.affected':
+    'Diese {n} Stücke wurden von Hand gesetzt und passten dann nicht mehr. Sie bleiben, wo sie sind – es wird nichts für dich verschoben:',
+  'vehicle.applySize': 'Laderaum übernehmen',
+  'common.discard': 'Verwerfen',
+  'vehicle.apertureHead': 'Ladeöffnung',
+  'vehicle.apertureWidth': 'Breite (mm)',
+  'vehicle.apertureHeight': 'Höhe (mm)',
+  'vehicle.sill': 'Ladekantenhöhe über Grund (mm)',
+  'vehicle.apertureClear': 'Doch nicht vermessen',
+  'vehicle.apertureMissing':
+    'Nicht vermessen. Es wird nichts dagegen geprüft – das ist besser, als eine Öffnung anzunehmen, die niemand gesehen hat.',
+  'vehicle.apertureAdd': 'Öffnung eintragen',
+  'vehicle.equipment': 'Ausstattung und Papiere',
+  'vehicle.flatFloor': 'Ebener Boden – sonst sind Rollen nutzlos',
+  'vehicle.tailLift': 'Hebebühne (kg)',
+  'vehicle.licenceClass': 'Führerscheinklasse',
+  'vehicle.source': 'Herkunft der Zahlen',
+  'vehicle.sourcePlaceholder': 'Datenblatt-Link oder Zulassungsbescheinigung',
+  'vehicle.notes': 'Notizen',
   'vehicle.height': 'Laderaum-Höhe (mm)',
   'vehicle.intro':
     'Ein Laderaum ist kein Quader: Radkästen verengen den Boden, und die Heckklappe ist kleiner als der Innenraum. Was nicht vermessen wurde, steht als nicht vermessen da.',

@@ -26,6 +26,8 @@ import {
 } from '../domain/lib/fahrzeugStammdaten'
 import { Kantenformen } from './Kantenform'
 import { Wiegedaten } from './Wiegedaten'
+import { Laderaumdaten } from './Laderaumdaten'
+import { Einbauten } from './Einbauten'
 
 const KINDS: VehicleKind[] = [
   'kofferraum',
@@ -301,6 +303,22 @@ export function Fahrzeuge() {
               {t('vehicle.licence', 'Licence class:')}{' '}
               {v.fuehrerscheinKlasse ?? t('vehicle.notGiven', 'not given')}
             </p>
+            {/* Alle Angaben änderbar (Nutzer-Frage 2026-09-19): Name,
+                Klasse, Laderaum-Masse, Ladeöffnung, Ausstattung, Quelle. */}
+            <Laderaumdaten
+              vehicle={v}
+              kinds={KINDS}
+              kindLabel={(k) => labels[k]}
+              onAendern={(patch) => updateVehicle(v.id, patch)}
+            />
+            {/* Die Einbauten liessen sich bisher gar nicht eintragen — das
+                Formular legte `obstructions: []` an, und hinein kamen sie nur
+                über den Import. Für einen ausgebauten Bus ist der Radkasten
+                die wichtigste Angabe überhaupt. */}
+            <Einbauten
+              vehicle={v}
+              onAendern={(obstructions) => updateVehicle(v.id, { obstructions })}
+            />
             <Kantenformen vehicle={v} onAendern={(kanten) => updateVehicle(v.id, { kanten })} />
             <Wiegedaten vehicle={v} onAendern={(patch) => updateVehicle(v.id, patch)} />
 
