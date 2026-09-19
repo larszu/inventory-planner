@@ -338,6 +338,44 @@ Breite darüber, und sie ist die, an der eine Europalette scheitert. Im Modell
 ist die obere `cargoMm.widthMm`, die untere gehört als Radkasten unter die
 Hindernisse, dort, wo sie auch im Weg ist.
 
+**Alles am Fahrzeug ist änderbar, nicht nur beim Anlegen.** Unter
+*Stammdaten und Laderaum* stehen Name, Klasse, die Maße des Laderaums, die
+Ladeöffnung, Hebebühne, ebener Boden, Führerscheinklasse, Herkunft der Zahlen
+und Notizen. Die Maße des Laderaums übernehmen erst auf Knopfdruck: bei jedem
+Tastendruck zu speichern hieße, den Plan während des Tippens dreimal neu zu
+rechnen.
+
+**Wer den Laderaum ändert, liest vorher, was es kostet.** Der Packer rechnet
+danach neu, und das kostet nichts — seine Platzierungen sind Vorschläge.
+*Verankerte* Stücke sind es nicht: sie stehen dort, weil jemand sie
+hingestellt hat. Passen sie nach der Änderung nicht mehr, werden sie **mit
+Namen und Grund genannt**, bevor übernommen wird — verschoben wird nichts.
+Diese Entscheidung gehört dem Menschen.
+
+**Einbauten lassen sich eintragen** — Radkasten, Sitzbank, Ersatzrad, Aufbau.
+Bis dahin kamen sie nur über den Import herein, obwohl der Packer mit ihnen
+rechnet und beide Ansichten sie zeichnen; für einen ausgebauten Bus ist der
+Radkasten die wichtigste Angabe überhaupt. Was nicht stimmt, wird **gemeldet
+und nicht verboten**: „ragt aus dem Laderaum", „reicht in eine Rundung",
+„überschneidet *Ersatzrad*". Ein Aufbau darf an der Öffnung überstehen, und
+wer gerade misst, hat Zwischenstände.
+
+**Der Radkasten lässt sich aus der Reifengröße herleiten.** `235/65 R16C` ist
+eine genormte Angabe und keine Schätzung: Nennbreite 235 mm, Flanke 65 %
+davon, Felge 16 Zoll — daraus folgt der Außendurchmesser exakt
+(`16 × 25,4 + 2 × 152,75 = 711,9 mm`). Breite und Länge des Kastens ergeben
+sich mit einem Zuschlag fürs Gehäuse, der als Feld dasteht (Vorgabe 30 mm,
+gemessen ist er nicht). **Die Höhe über dem Ladeboden wird gefragt und nicht
+gerechnet** — sie hängt daran, wie hoch der Boden über der Achse liegt, und
+das steht in keiner Reifengröße. Eine hergeleitete Höhe sähe im Ladeplan aus
+wie eine gemessene, und der Packer stapelt darauf. Ein Knopf legt beide
+Kästen an, links und rechts, auf dem Boden.
+
+**Im 3D-Bild lässt sich ein Einbau anfassen und schieben** — wer den Ladeplan
+offen hat, sieht, dass der Radkasten zu weit vorn sitzt, und zieht ihn an
+seinen Platz. Wie beim Case: x und z, mit denselben Achsensperren. Die Höhe
+wird gemessen und nicht geschoben.
+
 **Eigene Fahrzeuge lassen sich aus- und einlesen** (`avplan-vehicles`, eine
 eigene Datei — ein Fahrzeug ist kein Lagerbestand, und das portable
 Lager-Format liegt byte-gleich in allen Planern).

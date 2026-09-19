@@ -44,6 +44,7 @@ const RASTER = [0, 50, 100]
 export function Ladeplan({ ladung }: { ladung: Ladung }) {
   const { t, format, sprache } = useT()
   const vehicles = useVehicleStore((s) => s.vehicles)
+  const updateVehicle = useVehicleStore((s) => s.updateVehicle)
   const { setFixierung, setGruppenReihenfolge, setRasterModus } = useLoadStore()
 
   const [auswahl, setAuswahl] = useState<string | undefined>()
@@ -225,6 +226,17 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
             auswahl={auswahl}
             onWaehle={setAuswahl}
             onVerschiebe={absetzen}
+            // Einbauten lassen sich hier VERSCHIEBEN, nicht anlegen: wer im
+            // Ladeplan steht, hat das Fahrzeug vor sich und sieht, dass der
+            // Radkasten zu weit vorn sitzt. Die Masse selbst gehören in die
+            // Fahrzeug-Ansicht, wo der Zollstock danebenliegt.
+            onEinbauVerschiebe={(i, originMm) =>
+              updateVehicle(fahrzeug.id, {
+                obstructions: fahrzeug.obstructions.map((h, j) =>
+                  j === i ? { ...h, originMm } : h,
+                ),
+              })
+            }
             rasterMm={raster}
             modus="planen"
           />

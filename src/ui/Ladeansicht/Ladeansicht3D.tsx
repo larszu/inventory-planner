@@ -51,6 +51,16 @@ interface Props {
   onWaehle: (stueckId: string | undefined) => void
   /** Ein Stück wurde von Hand abgesetzt — Position in Millimetern. */
   onVerschiebe: (stueckId: string, position: Vec3) => void
+  /**
+   * Ein EINBAU wurde verschoben (Nutzer-Wunsch 2026-09-19: „3d Laderaum
+   * anpassen"). Fehlt der Rückweg, bleiben die Einbauten unbeweglich —
+   * die Ansicht wird dann nicht heimlich zur Bearbeitung.
+   *
+   * Nur x und z: die HÖHE eines Einbaus wird gemessen und nicht geschoben.
+   * Ein Radkasten, den jemand in der 3D-Ansicht auf 40 cm zieht, trüge
+   * danach eine Zahl, die wie ein Messwert aussieht.
+   */
+  onEinbauVerschiebe?: (index: number, originMm: Vec3) => void
   /** Raster in Millimetern, auf das der Griff einrastet. 0 = frei. */
   rasterMm: number
   /**
@@ -305,6 +315,7 @@ function Szene({
   auswahl,
   onWaehle,
   onVerschiebe,
+  onEinbauVerschiebe,
   rasterMm,
   modus,
   geladen,
@@ -321,6 +332,11 @@ function Szene({
   // Der Griff als ZUSTAND und nicht als Ref: `TransformControls` braucht das
   // Objekt beim Rendern, und eine Ref ist beim ersten Durchlauf noch leer.
   const [griff, setGriff] = useState<THREE.Group | null>(null)
+  // Der Griff des EINBAUS ist ein eigener: zwei Griffe an einem Objekt
+  // hingen übereinander, und ein gemeinsamer Zustand liesse die Auswahl
+  // zwischen Kiste und Radkasten hin- und herspringen.
+  const [einbauGriff, setEinbauGriff] = useState<THREE.Group | null>(null)
+  const [einbauAuswahl, setEinbauAuswahl] = useState<number | null>(null)
   const [zieht, setZieht] = useState(false)
   const [urteil, setUrteil] = useState<PlatzUrteil | null>(null)
   const gewaehlt = plan.placements.find((p) => p.stueckId === auswahl)
@@ -330,6 +346,16 @@ function Szene({
     x: Math.round((g.position.x + mm(raum.x) / 2) * 1000 - p.sizeMm.x / 2),
     y: p.position.y,
     z: Math.round((g.position.z + mm(raum.z) / 2) * 1000 - p.sizeMm.z / 2),
+  })
+
+  const einbau =
+    einbauAuswahl === null ? undefined : vehicle.obstructions[einbauAuswahl]
+
+  /** Wo der Einbau am Griff gerade stünde — in Laderaum-Millimetern. */
+  const amEinbauGriff = (g: THREE.Group, h: { originMm: Vec3; sizeMm: Vec3 }): Vec3 => ({
+    x: Math.round((g.position.x + mm(raum.x) / 2) * 1000 - h.sizeMm.x / 2),
+    y: h.originMm.y,
+    z: Math.round((g.position.z + mm(raum.z) / 2) * 1000 - h.sizeMm.z / 2),
   })
 
   const melde = (u: PlatzUrteil | null) => {
@@ -368,13 +394,60 @@ function Szene({
 
       {vehicle.obstructions.map((h, i) => {
         const [x, y, z] = mitte(h.originMm, h.sizeMm, raum)
+        const waehlbar = modus === 'planen' && !!onEinbauVerschiebe
         return (
-          <mesh key={`${h.name}-${i}`} position={[x, y, z]}>
+          <mesh
+            key={`${h.name}-${i}`}
+            position={[x, y, z]}
+            onClick={
+              waehlbar
+                ? (e) => {
+                    e.stopPropagation()
+                    setEinbauAuswahl(einbauAuswahl === i ? null : i)
+                  }
+                : undefined
+            }
+          >
             <boxGeometry args={[mm(h.sizeMm.x), mm(h.sizeMm.y), mm(h.sizeMm.z)]} />
-            <meshStandardMaterial color="#8C9CB3" opacity={0.55} transparent />
+            <meshStandardMaterial
+              color="#8C9CB3"
+              opacity={einbauAuswahl === i ? 0.8 : 0.55}
+              transparent
+            />
+            {einbauAuswahl === i && <Edges threshold={15} color="#F6F5F0" />}
           </mesh>
         )
       })}
+
+      {/* Der Griff am Einbau — dieselbe Mechanik wie am Stück: eine eigene,
+          unsichtbare Gruppe, und die Wahrheit wandert erst beim Loslassen in
+          das Fahrzeug zurück. */}
+      {modus === 'planen' && onEinbauVerschiebe && einbauAuswahl !== null && einbau && (
+        <>
+          <group
+            key={`einbau-${einbauAuswahl}`}
+            ref={setEinbauGriff}
+            position={mitte(einbau.originMm, einbau.sizeMm, raum)}
+          />
+          {einbauGriff && (
+            <TransformControls
+              object={einbauGriff}
+              mode="translate"
+              // Wie am Stück: X und Z. Die Höhe wird gemessen und nicht
+              // geschoben — sie hängt am Aufbau, nicht am Augenmass.
+              showX={freiX}
+              showZ={freiZ}
+              showY={false}
+              translationSnap={rasterMm > 0 ? mm(rasterMm) : null}
+              onMouseDown={() => setZieht(true)}
+              onMouseUp={() => {
+                setZieht(false)
+                onEinbauVerschiebe(einbauAuswahl, amEinbauGriff(einbauGriff, einbau))
+              }}
+            />
+          )}
+        </>
+      )}
 
       {plan.placements
         .filter((p) => {
