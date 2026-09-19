@@ -58,3 +58,12 @@ jobs:
       # (`ci:complete`) meldet genau das.
       - name: Tests + Waechter (Grenze zum Plan, Quellsprache)
         run: npm test
+
+      # Der Waechter ueber den Waechtern: jeder `*:check` aus package.json wird
+      # auch wirklich gefahren — als eigener Schritt hier oder angehaengt an
+      # `test`/`lint`. Ohne ihn ist diese Liste der Kenntnisstand dessen, der
+      # sie zuletzt angefasst hat. Im `multicam-planner` ist genau das am
+      # 2026-09-19 aufgefallen: `slider:check` stand seit sieben Tagen in
+      # package.json, war gruen und lief bei keinem Merge.
+      - name: Jeder Pruef-Lauf wird auch gefahren
+        run: npm run ci:complete
