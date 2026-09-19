@@ -48,6 +48,7 @@ npm run lint
 npm test        # vitest
 npm run grenze:check   # die Grenze zum Plan
 npm run lang:check     # Quellsprache (englisch, E-28)
+npm run ci:complete    # jeder *:check wird auch wirklich gefahren
 
 npm run electron:dev   # Desktop-Fassung lokal starten (baut vorher)
 npm run dist:win       # Windows: Setup + Portable nach release/

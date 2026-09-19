@@ -17,7 +17,8 @@
     "lint": "eslint .",
     "test": "vitest run && npm run grenze:check && npm run lang:check",
     "lang:check": "node --experimental-strip-types scripts/quellsprache-check.ts",
-    "grenze:check": "node --experimental-strip-types scripts/plan-grenze-check.ts"
+    "grenze:check": "node --experimental-strip-types scripts/plan-grenze-check.ts",
+    "ci:complete": "node scripts/ci-runs-every-check.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
