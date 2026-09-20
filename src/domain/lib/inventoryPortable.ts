@@ -100,7 +100,19 @@ export const INVENTORY_FORMAT = 'avplan-inventory'
 //
 // Aeltere Dateien (v1-v6) lesen wir unveraendert weiter; ihre Fristen tragen
 // eingebaute Arten, und eine Liste eigener Arten haben sie schlicht nicht.
-export const INVENTORY_FORMAT_VERSION = 7
+//
+// Version 8 (Ladeplanung): `transport` an `InventoryCase` und an `StorageNode`
+// -- Rollen, Rollenteller, zulaessige Lagen, Nachgeben (`types/transport.ts`).
+// Dieselbe Begruendung wie bei Version 2 und 3: die `heal*`-Funktionen bauen
+// jeden Knoten Feld fuer Feld neu auf, ein Stand ohne dieses Feld wuerde es
+// beim Re-Export STILL verlieren. Mit der Version weigert sich ein aelterer
+// Planer stattdessen.
+//
+// Die Felder stehen bewusst NICHT in `PhysicalDimensions`. Das liegt
+// byte-gleich in den Planern; es zu erweitern waere ein Versionssprung in
+// allen Repos fuer etwas, das nur die Ladeplanung braucht. Als eigener
+// optionaler Nachbar bleibt `PhysicalDimensions` unveraendert.
+export const INVENTORY_FORMAT_VERSION = 8
 
 export interface InventorySnapshot {
   items: InventoryItem[]

@@ -32,7 +32,14 @@
   --gefahr: #B04A3F;                    /* Status: Fehler */
   --ok: #2F7D5C;                        /* Status: Erfolg */
   --signal: #D6402E;                    /* Tally-Rot — Fokusring, laufender Vorgang */
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Public Sans ist die Hausschrift (Brand Guide 2.0). Sie wird NICHT aus
+   * dem Netz geladen: dieses Repo ist offline-first, das Lager steht im
+   * Keller. Genannt wird sie trotzdem zuerst — wer sie installiert hat,
+   * bekommt sie; alle anderen die Rückfallkette, die der Guide selbst
+   * vorgibt. Dieselbe Zeichenkette fährt `multicam-planner`, das einzige
+   * Repo der Suite, das die Regel bisher einhielt. */
+  --font: 'Public Sans', system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-family: var(--font);
   font-size: 14px;
 
   /* ── Das Bedien-Grundmass (suite#231) ────────────────────────────────
@@ -484,6 +491,9 @@ button.still:hover { border-color: var(--rand); color: var(--text); }
   width: 6px;
   height: 6px;
   background: var(--signal);
+  /* Geneigt wie das Monogramm, nicht rund und nicht gerade — der Punkt des
+   * Handbuchs ist ein Tally-Licht und kein Aufzaehlungszeichen. */
+  transform: skewX(-11deg);
   flex: none;
 }
 
@@ -915,7 +925,11 @@ p.warnung { color: var(--warn); }
    und genau das tut sie dann nicht. */
 .inventur .kamera { margin: var(--steg-3) 0; }
 
-.inventur .sucher {
+/* NICHT auf `.inventur` beschraenkt, und das ist eine Korrektur: das
+ * Beladen scannt mit derselben Maschinerie, und dort griff `….aus` nicht.
+ * Ein `<video>` ohne Regel ist 300x150 gross — gemessen am 2026-09-18 stand
+ * genau dieses schwarze Loch zwischen dem Scan-Knopf und der 3D-Ansicht. */
+.sucher {
   display: block;
   width: 100%;
   max-width: 22rem;
@@ -924,7 +938,7 @@ p.warnung { color: var(--warn); }
   border: 1px solid var(--rand);
 }
 
-.inventur .sucher.aus { display: none; }
+.sucher.aus { display: none; }
 
 /* ── Wareneingang ────────────────────────────────────────────────────────── */
 
@@ -1011,3 +1025,492 @@ p.warnung { color: var(--warn); }
    deshalb sichtbar anders da — nicht ausgegraut (sie ist nicht weniger
    vorhanden), sondern in der Warnfarbe der fehlenden Angabe. */
 .werte tr.ohne-wert td { color: var(--warn); }
+
+/* ── Ladeplan: Draufsicht, 3D, Gruppen (#20, #22, #23) ───────────────────
+ *
+ * DIE HOEHE IST BEGRENZT UND DAS IST DER PUNKT. Ein Laderaum ist 4 m lang
+ * und 1,8 m breit; ohne Deckel waere die Zeichnung im Bild sechsmal so hoch
+ * wie breit und schoebe alles darunter aus dem Fenster. Gemessen am
+ * 2026-09-18: die erste Fassung war auf 1440 px Breite 8.400 px hoch.
+ *
+ * `min()` und nicht `vh` allein: auf einem kurzen Fenster entscheidet die
+ * Fensterhoehe, auf einem langen die absolute Schranke. */
+/* Die Beschriftungen der Draufsicht stehen NEBEN dem Bild und nicht darin:
+ * ein `<text>` in Laderaum-Millimetern skaliert mit, bricht aber nicht um
+ * und lief auf dem Telefon rechts aus dem Bild. */
+.draufsicht-rahmen { margin: var(--steg-3) 0; }
+
+.draufsicht-legende,
+.draufsicht-oeffnung {
+  margin: var(--steg-1) 0;
+  font-size: 0.9rem;
+}
+
+.draufsicht-legende { color: var(--leise); }
+/* Stahlblau, nicht die Meldefarbe: eine Bildunterschrift ist Meta-Text, und
+ * die Meldefarben gehoeren Formularmeldungen. Das Signal dieser Zeichnung
+ * ist die rote Kante im Bild, nicht der Satz darunter. */
+.draufsicht-oeffnung { color: var(--leise); text-align: center; }
+
+.draufsicht {
+  display: block;
+  width: 100%;
+  max-height: min(70vh, 620px);
+  margin: 0;
+  touch-action: none; /* sonst scrollt das Telefon, statt die Kiste zu ziehen */
+}
+
+/* Der Grund, warum eine Lage nicht geht — solange gezogen wird (#23).
+ * Die Zeile steht IMMER da, auch leer: sonst springt das Bild darunter in
+ * dem Moment, in dem jemand zieht, und die Kiste rutscht unter dem Finger
+ * weg. `min-height` statt Einblenden. */
+.draufsicht-urteil,
+.ladeansicht-urteil {
+  margin: var(--steg-1) 0;
+  min-height: 1.3em;
+  font-size: 0.9rem;
+  /* Stahlblau als Vorgabe: die Zeile trägt auch die gute Nachricht („X rückt
+   * zur Seite"). Die Meldefarbe bekommt nur, was wirklich nicht geht. */
+  color: var(--leise);
+}
+
+.draufsicht-urteil.ungueltig,
+.ladeansicht-urteil.ungueltig { color: var(--gefahr); }
+
+/* Die 3D-Ansicht traegt zwei Bedienelemente ueber dem Bild: die Achsensperren
+ * und die Urteilszeile. Deshalb eine Spalte mit der Leinwand als dehnbarem
+ * Rest — mit fester Hoehe allein waere die Leinwand um genau diese beiden
+ * Zeilen zu hoch und liefe unten aus dem Rahmen. */
+.ladeansicht-3d {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: min(60vh, 520px);
+  margin: var(--steg-3) 0;
+  border: 1px solid var(--rand);
+  background: var(--bg);
+}
+
+.ladeansicht-leinwand { flex: 1 1 auto; min-height: 0; }
+
+.ladeansicht-urteil { padding: 0 var(--steg-2); }
+
+.ladeansicht-achsen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-1);
+  padding: var(--steg-2) var(--steg-2) 0;
+}
+
+.ladeplan {
+  margin-top: var(--steg-4);
+  border-top: 1px solid var(--rand);
+  padding-top: var(--steg-3);
+}
+
+.ladeplan-leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-2);
+  align-items: end;
+}
+
+/* Der Farbpunkt einer Abladegruppe. Er traegt KEINE Bedeutung allein — neben
+ * ihm steht immer der Name, denn Farbe allein ist fuer einen Teil der Leute
+ * keine Information. */
+.gruppen-punkt {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.5em;
+  vertical-align: baseline;
+}
+
+.gruppen-liste,
+.lade-liste {
+  margin: var(--steg-2) 0;
+  padding-left: 1.6em;
+}
+
+.gruppen-liste li,
+.lade-liste li {
+  padding: var(--steg-1) 0;
+}
+
+.gruppen-liste button {
+  margin-left: var(--steg-2);
+}
+
+/* ── Beladen: die Ansicht am Heck ────────────────────────────────────────
+ *
+ * DIE SCHRIFT IST HIER GROESSER ALS SONST, und das ist kein Stilmittel: man
+ * liest im Stehen, mit einem Case in der Hand, im Gegenlicht des Rolltors.
+ * Eine Zeile, die am Schreibtisch angenehm ist, ist dort nicht zu lesen. */
+.naechstes {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-3);
+  padding: var(--steg-3);
+  /* ── EIN TALLY PRO SICHTFELD ───────────────────────────────────────────
+   *
+   * Hier stand ein Rahmen in `--warn` mit der Begruendung, der Warnton
+   * rahme, „weil dieser Kasten das eine ist, worauf man schauen soll".
+   * Das war zweimal daneben. `--warn` ist im Handbuch eine MELDEFARBE und
+   * nur fuer Formularmeldungen da — ein Kasten, der keine Meldung ist,
+   * nimmt ihr die Bedeutung. Und ein RAHMEN ist genau das, was das
+   * Gestaltungssystem nicht hat: Struktur entsteht durch die Linie.
+   *
+   * Das Rot dieser Ansicht traegt der PRIMAERKNOPF und sonst nichts: „ein
+   * Primaerknopf pro Abschnitt", und sein Punkt ist im Handbuch die Stelle,
+   * an der Rot im Bedienelement vorkommt. Ein zweiter Punkt auf der Karte
+   * waere derselbe Fehler wie Signet und Claim nebeneinander. Der Streifen
+   * darunter markiert dasselbe Stueck ueber seine Kopflinie. */
+  border: 0;
+  border-top: 3px solid var(--text);
+  background: var(--erhoben);
+  margin: var(--steg-3) 0;
+}
+
+.naechstes strong { font-size: 1.25rem; }
+
+/* Die Schrittzahl ist das, was man von weitem sucht. */
+.naechstes-schritt {
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 2ch;
+  text-align: center;
+  color: var(--text);
+}
+
+.naechstes button { margin-left: auto; }
+
+.beladen .sucher { margin: var(--steg-2) 0; }
+
+/* ── Der Lade-Streifen ───────────────────────────────────────────────────
+ *
+ * Waagerecht und mit Fangpunkten, weil er am Telefon mit dem Daumen bedient
+ * wird. `scroll-snap` sorgt dafuer, dass eine Kachel stehen bleibt und nicht
+ * halb im Bild haengt — halb sichtbare Beschriftungen liest im Gegenlicht
+ * niemand.
+ *
+ * Die drei Rollen unterscheiden sich in HELLIGKEIT und Rahmen, nicht nur in
+ * der Farbe: das Rolltor steht offen, das Display ist entspiegelt, und eine
+ * Rot/Gruen-Unterscheidung traegt ohnehin nicht fuer jeden. */
+.ladestreifen {
+  display: flex;
+  gap: var(--steg-2);
+  list-style: none;
+  margin: var(--steg-3) 0;
+  padding: 0 0 var(--steg-2);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+
+.streifen-kachel {
+  flex: 0 0 auto;
+  min-width: 10rem;
+  max-width: 14rem;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--steg-1);
+  padding: var(--steg-2);
+  border: 1px solid var(--rand);
+  background: var(--flaeche);
+}
+
+.streifen-rolle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--leise);
+}
+
+.streifen-schritt { font-size: 1.6rem; font-weight: 600; line-height: 1; }
+.streifen-label { display: block; overflow-wrap: anywhere; }
+.streifen-kachel button { min-height: var(--ziel); margin-top: auto; }
+
+/* Erledigt tritt zurueck — aber bleibt lesbar und bedienbar. */
+.streifen-kachel.geladen { opacity: 0.62; }
+.streifen-kachel.geladen .streifen-schritt { color: var(--leise); }
+
+/* Das laufende Stueck traegt die KOPFLINIE und keinen zweiten Punkt: den
+ * Tally hat die Karte darueber, und es gibt einen pro Sichtfeld. Die Linie
+ * ist im Handbuch der Baustein, der Struktur traegt — sie darf so oft
+ * vorkommen, wie es Abschnitte gibt. */
+.streifen-kachel.aktuell {
+  border-color: var(--rand);
+  border-top: 3px solid var(--text);
+  background: var(--erhoben);
+}
+.streifen-kachel.aktuell .streifen-rolle { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ladestreifen { scroll-behavior: auto; }
+}
+
+.schicht { margin: var(--steg-3) 0; }
+.schicht h4 { margin: 0 0 var(--steg-1); font-size: 0.95rem; color: var(--leise); }
+.schicht ol { margin: 0; padding-left: 1.6em; }
+.schicht li { padding: var(--steg-1) 0; }
+
+/* Was schon drin ist, tritt zurueck — aber es verschwindet NICHT. Wer eine
+ * Kiste zurueckholen muss, muss sie noch finden. */
+.schicht li.drin { color: var(--leise); text-decoration: line-through; }
+.schicht li.drin .gruppen-punkt { opacity: 0.5; }
+
+.schicht li button { margin-left: var(--steg-2); }
+
+.modus-schalter { display: flex; gap: 2px; }
+
+/* ── Der Lagerbaum ───────────────────────────────────────────────────────
+ *
+ * Gezogen wird mit dem Finger (siehe Kopf von `Lagerbaum.tsx`). Daraus
+ * folgen drei Dinge im Stilblatt, und alle drei sind Bedienung:
+ *
+ *   `touch-action: none` am Griff — sonst scrollt das Telefon, statt die
+ *   Kiste zu bewegen. Dieselbe Zeile steht aus demselben Grund an der
+ *   Draufsicht der Ladeplanung.
+ *
+ *   `pointer-events: none` am Geist — `elementFromPoint` fände sonst immer
+ *   nur ihn und nie die Zeile darunter.
+ *
+ *   Der Griff ist ein EIGENES Element und nicht die ganze Zeile, damit der
+ *   Baum scrollbar bleibt.
+ *
+ * Markiert wird nach Handbuch ueber die LINIE und nicht ueber eine Flaeche:
+ * das gueltige Ziel bekommt eine helle Kante, das abgelehnte die Meldefarbe
+ * `--gefahr` — eine Absage IST eine Meldung, und dafuer sind die Meldefarben
+ * da. Tally-Rot kommt hier nicht vor; das Signal dieses Abschnitts ist der
+ * Punkt im Primaerknopf „Anlegen". */
+.baum-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.baum-liste.wurzel { margin: var(--steg-3) 0; }
+
+.baum-zeile {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  padding: var(--steg-1) var(--steg-2);
+  border-top: 1px solid var(--rand);
+}
+
+.baum-zeile.artikel { color: var(--text); }
+
+/* Das angepeilte Ziel: helle Kante rundum statt Farbflaeche. */
+.baum-zeile.ziel,
+.baum-wurzelablage.ziel {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+  background: var(--erhoben);
+}
+
+.baum-zeile.nein {
+  outline: 2px solid var(--gefahr);
+  outline-offset: -2px;
+}
+
+.baum-absage { margin: 0 0 var(--steg-1) var(--steg-5); }
+
+.baum-falten {
+  flex: none;
+  width: var(--ziel);
+  min-height: var(--ziel);
+  background: none;
+  border: 0;
+  color: var(--leise);
+  font-size: 1rem;
+}
+
+.baum-griff {
+  flex: none;
+  min-width: var(--ziel);
+  min-height: var(--ziel);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--leise);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.baum-griff:active { cursor: grabbing; }
+
+.baum-zeile .leise { margin-left: auto; }
+.baum-zeile button.still { margin-left: var(--steg-2); }
+
+/* „Aus allem heraus" — ohne diese Ablage gaebe es keinen Weg zurueck. */
+.baum-wurzelablage {
+  margin: var(--steg-3) 0;
+  padding: var(--steg-3);
+  border: 1px dashed var(--rand);
+  color: var(--leise);
+  text-align: center;
+}
+
+.baum-geist {
+  position: fixed;
+  z-index: 50;
+  transform: translate(12px, 12px);
+  padding: var(--steg-1) var(--steg-2);
+  background: var(--erhoben);
+  border-top: 3px solid var(--text);
+  color: var(--text);
+  pointer-events: none;
+}
+
+.umzug-liste { margin: 0 0 var(--steg-3); padding-left: 1.4em; }
+.umzug-liste li { padding: var(--steg-1) 0; }
+
+/* ── Grundriss und Lagerraum ─────────────────────────────────────────────
+ *
+ * Dieselbe Zeiger-Bedienung wie im Baum und in der Draufsicht der
+ * Ladeplanung: `touch-action: none`, sonst scrollt das Telefon, statt das
+ * Regal zu schieben. */
+.grundriss-rahmen { margin: var(--steg-3) 0; }
+
+.grundriss {
+  display: block;
+  width: 100%;
+  max-height: min(70vh, 620px);
+  margin: var(--steg-2) 0;
+  touch-action: none;
+}
+
+.grundriss-offen {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.grundriss-offen li {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  border-top: 1px solid var(--rand);
+}
+
+.grundriss-offen li button { margin-left: auto; }
+
+.stufen-liste {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+}
+
+.stufen-liste li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--steg-2);
+  padding: var(--steg-2) 0;
+  border-top: 1px solid var(--rand);
+}
+
+.raum-legende {
+  list-style: none;
+  margin: var(--steg-3) 0;
+  padding: 0;
+}
+
+.raum-legende li {
+  display: flex;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  align-items: center;
+  border-top: 1px solid var(--rand);
+}
+
+.raum-legende .leise { margin-left: auto; }
+
+/* Der Lagerort in der Bestands-Tabelle: Kennung fett, Pfad leise, darunter
+ * das Feld zum Eintippen. Zwei Zeilen und kein Dialog — der Ort kommt von
+ * einem Aufkleber oder aus einer Liste, und dafuer oeffnet niemand ein
+ * Fenster. */
+.lagerort-zelle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--steg-1);
+  min-width: 14rem;
+}
+
+.lagerort-kennung { margin-right: var(--steg-2); }
+.lagerort-zelle input { min-height: var(--ziel); }
+
+/* Die Etiketten-Auswahl: eine Zeile je Lagerplatz, Kennung fett voran. */
+.etiketten-wahl {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.etiketten-wahl li { border-top: 1px solid var(--rand); }
+
+.etiketten-wahl label {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+}
+
+/* ── Gewicht, Schwerpunkt, Achslast (#24) ────────────────────────────────
+ *
+ * DIE ÜBERSCHREITUNG IST EINE ZAHL UND KEINE AMPEL. Sie steht in der
+ * Meldefarbe und fett, nie als Flaeche und nie als Punkt: Tally-Rot ist in
+ * diesem Haus das Aufnahmelicht, und eine Ampel neben einer Kiste naehme ihm
+ * den Rang. Eine Zahl sagt ohnehin mehr — „rot" laesst offen, ob es um 5 kg
+ * geht oder um 500. */
+.lastverteilung { margin-top: var(--steg-3); }
+
+.ueberladen { color: var(--gefahr); font-weight: 700; }
+
+.achslasten,
+.achsen-liste {
+  list-style: none;
+  margin: var(--steg-2) 0;
+  padding: 0;
+}
+
+.achslasten li { padding: var(--steg-1) 0; border-top: 1px solid var(--rand); }
+
+.achsen-liste li {
+  padding: var(--steg-2) 0;
+  border-top: 1px solid var(--rand);
+}
+
+/* Der Achsname traegt die Zeile: er steht als einziges Wort links und
+ * bekommt deshalb das Gewicht, das sonst eine Beschriftung haette. */
+.achse-name { font-weight: 700; }
+
+/* ── Fahrzeug-Stammdaten und Ausmessen (#19) ─────────────────────────────
+ *
+ * Die Messliste ist NUMMERIERT und bleibt es: die Reihenfolge ist die
+ * Aussage — man geht einmal ums Fahrzeug und nicht dreimal. */
+.messliste { margin: var(--steg-2) 0; padding-left: var(--steg-4); }
+.messliste li { margin: var(--steg-1) 0; }
+
+/* Ein Datei-Feld sieht in jedem Browser anders aus. Es bekommt deshalb die
+ * Form des stillen Knopfes daneben und versteckt sein eigenes Feld — sonst
+ * stehen zwei verschiedene Bedienelemente nebeneinander, die dasselbe tun. */
+/* `.zeile label` macht aus jedem Label eine dehnbare Spalte mit Beschriftung
+ * ÜBER dem Feld — hier gibt es kein Feld, also stand die Beschriftung allein
+ * und eine halbe Zeile tiefer als der Knopf daneben. */
+.zeile .dateiwahl,
+.dateiwahl {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.dateiwahl input[type='file'] { display: none; }

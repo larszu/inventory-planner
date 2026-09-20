@@ -47,13 +47,25 @@
 // auflösen könnte.
 // ───────────────────────────────────────────────────────────────────────────
 
+import { quelle, type Uebersetzen } from '../../i18n/quelle'
+
 /** Was verschoben wurde. */
 export type MoveSubjectKind = 'node' | 'item' | 'unit'
 
-export const MOVE_SUBJECT_LABEL: Readonly<Record<MoveSubjectKind, string>> = {
-  node: 'Lagerort/Container',
-  item: 'Artikel',
-  unit: 'Einheit',
+/**
+ * Was verschoben wurde, als Beschriftung.
+ *
+ * ALS FUNKTION UND NICHT ALS TABELLE. Hier stand ein `Record` mit deutschen
+ * Zeichenketten — zweimal falsch: die Quellsprache dieses Repos ist `en`
+ * (E-28), und eine Beschriftungs-Tabelle auf Modulebene wird beim Laden
+ * EINMAL gebaut. Sie bliebe danach in der Sprache stehen, die damals galt;
+ * wer im Betrieb auf Deutsch umschaltet, bekäme sie nicht mit. Genau dafür
+ * steht die Regel in `CLAUDE.md`.
+ */
+export function moveSubjectLabel(kind: MoveSubjectKind, t: Uebersetzen = quelle): string {
+  if (kind === 'node') return t('move.subject.node', 'Location/container')
+  if (kind === 'item') return t('move.subject.item', 'Article')
+  return t('move.subject.unit', 'Unit')
 }
 
 /**
@@ -89,9 +101,16 @@ export interface StorageMove {
 /** Was das Verschieben verhindert hat. `null` heisst: es ging. */
 export type MoveRefusal = 'unknown-subject' | 'unknown-target' | 'cycle' | 'same-place'
 
-export const MOVE_REFUSAL_LABEL: Readonly<Record<MoveRefusal, string>> = {
-  'unknown-subject': 'Das Objekt gibt es nicht (mehr)',
-  'unknown-target': 'Den Ziel-Lagerort gibt es nicht',
-  cycle: 'Ein Container kann nicht in sich selbst',
-  'same-place': 'Liegt schon dort',
+/** Warum ein Umzug nicht geht — im Klartext. Siehe `moveSubjectLabel`. */
+export function moveRefusalLabel(refusal: MoveRefusal, t: Uebersetzen = quelle): string {
+  switch (refusal) {
+    case 'unknown-subject':
+      return t('move.refusal.subject', 'That object no longer exists.')
+    case 'unknown-target':
+      return t('move.refusal.target', 'There is no such target location.')
+    case 'cycle':
+      return t('move.refusal.cycle', 'A container cannot go inside itself.')
+    default:
+      return t('move.refusal.same', 'It is already there.')
+  }
 }

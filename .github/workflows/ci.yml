@@ -3,13 +3,30 @@ name: CI
 # Der Merge-Gate. Nach der stehenden Regel wird nur bei gruenem CI gemergt —
 # ein Repo ohne Checks hat also kein Tor, sondern eine offene Tuer.
 #
-# Auf `pull_request`, weil genau dort gemergt wird. Nur auf `push: main` zu
+# Auf `pull_request`, weil genau dort gemergt wird. Nur auf einen Push zu
 # laufen hiesse, den Fehler nach dem Merge zu finden.
-
+#
+# DER PUSH-ZWEIG NANNTE `main` — DER HIER NICHT DER DEFAULT-BRANCH IST
+# (gemessen 2026-09-18). Es gibt drei Branches: `main`,
+# `claude/av-planner-market-research-39l0mv` (der DEFAULT, also der, auf den
+# gemergt wird) und den Arbeitsbranch. Ein Push auf den Default-Branch oder
+# auf einen Arbeitsbranch loeste damit keinen Lauf aus.
+#
+# Aufgefallen ist es nicht, weil `pull_request` die Luecke verdeckte: solange
+# ein PR offen war, prueften dessen `synchronize`-Laeufe jeden Push.
+#
+# Gemerkt hat es erst der Fall ohne offenen PR: gepusht am 2026-09-18 um
+# 10:43, PR fuenf Minuten spaeter — dazwischen lag der Stand ungeprueft, und
+# der erste Lauf musste von Hand angestossen werden.
+#
+# `**` statt einer Aufzaehlung: ein Branch-Name, der hier eingetragen werden
+# muss, ist genau die Zeile, die beim naechsten Umbenennen wieder still
+# danebenliegt. Ein Lauf zuviel kostet eine Minute; ein Lauf zuwenig kostet
+# einen ungeprueften Stand.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
   workflow_dispatch:
 
 concurrency:
@@ -41,3 +58,12 @@ jobs:
       # (`ci:complete`) meldet genau das.
       - name: Tests + Waechter (Grenze zum Plan, Quellsprache)
         run: npm test
+
+      # Der Waechter ueber den Waechtern: jeder `*:check` aus package.json wird
+      # auch wirklich gefahren — als eigener Schritt hier oder angehaengt an
+      # `test`/`lint`. Ohne ihn ist diese Liste der Kenntnisstand dessen, der
+      # sie zuletzt angefasst hat. Im `multicam-planner` ist genau das am
+      # 2026-09-19 aufgefallen: `slider:check` stand seit sieben Tagen in
+      # package.json, war gruen und lief bei keinem Merge.
+      - name: Jeder Pruef-Lauf wird auch gefahren
+        run: npm run ci:complete

@@ -36,8 +36,12 @@ import { useT } from '../i18n'
 import { TabelleRahmen } from './TabelleRahmen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { nodePathLabel } from '../domain/lib/storageTree'
+import { platzAbsageText, platzAufloesen } from '../domain/lib/platzAufloesen'
+import { liesSchema } from '../lib/kennungsablage'
+import { moveRefusalLabel } from '../domain/types/storageMove'
+import type { MoveRefusal } from '../domain/types/storageMove'
 import { ownershipLabel } from '../domain/lib/ownership'
-import type { InventoryOwnership } from '../domain/types/inventory'
+import type { InventoryItem, InventoryOwnership, StorageNode } from '../domain/types/inventory'
 
 const EIGENTUM: InventoryOwnership[] = ['owned', 'rented', 'subhire']
 
@@ -48,6 +52,10 @@ export function Bestand() {
   const addItem = useInventoryStore((s) => s.addItem)
   const updateItem = useInventoryStore((s) => s.updateItem)
   const removeItem = useInventoryStore((s) => s.removeItem)
+  // Einraeumen geht durch `moveItem` und nicht durch `updateItem`: der Typ
+  // schliesst `locationId` dort aus, weil ein Umzug geprueft und ins Journal
+  // geschrieben werden muss. Der Waechter steht an der richtigen Stelle.
+  const moveItem = useInventoryStore((s) => s.moveItem)
 
   const [suche, setSuche] = useState('')
   const [modell, setModell] = useState('')
@@ -263,7 +271,14 @@ export function Bestand() {
                     </select>
                   </td>
                   <td data-spalte={t('stock.col.location', 'Location')}>
-                    {nodePathLabel(nodes, i.locationId) || (i.stockLocation ?? '')}
+                    {/* Die KENNUNG zuerst und der Pfad daneben: „A1" ist das,
+                        was am Regal steht und was jemand im Gang sucht;
+                        „Halle 1 › Regal A › Ebene 1" sagt, wo das ist. */}
+                    <LagerortZelle
+                      item={i}
+                      nodes={nodes}
+                      onSetze={(locationId) => moveItem(i.id, locationId)}
+                    />
                   </td>
                   <td data-spalte={t('stock.col.supplier', 'Supplier')}>{i.supplier ?? ''}</td>
                   <td>
@@ -287,5 +302,87 @@ export function Bestand() {
         </p>
       )}
     </section>
+  )
+}
+
+/**
+ * Der Lagerort eines Artikels — lesbar UND eintippbar.
+ *
+ * ─── WARUM MAN IHN HIER TIPPEN KANN ────────────────────────────────────────
+ *
+ * Weil er von aussen kommt. Er steht auf einem Aufkleber, in einer CSV, im
+ * Kabelplan als Freitext — und überall als TEXT. Wer „Regal A Ebene 1"
+ * abliest, soll ihn eintragen können, ohne den Baum aufzuklappen.
+ *
+ * Aufgelöst wird er von `platzAufloesen`, derselben Stelle, die auch jeder
+ * andere Weg benutzt. Zwei Auflösungen wären zwei Bedeutungen desselben
+ * Textes.
+ *
+ * ─── UND WARUM EINE ABSAGE STEHENBLEIBT ────────────────────────────────────
+ *
+ * „Passt auf 2 Lagerorte: Halle 1 › Regal A · Halle 2 › Regal A. Welcher?"
+ * ist eine Auskunft. Das Feld still zu leeren wäre die Behauptung, der
+ * Artikel liege nirgends.
+ */
+function LagerortZelle({
+  item,
+  nodes,
+  onSetze,
+}: {
+  item: InventoryItem
+  nodes: StorageNode[]
+  onSetze: (locationId: string | undefined) => MoveRefusal | undefined
+}) {
+  const { t } = useT()
+  const [text, setText] = useState('')
+  const [absage, setAbsage] = useState<string | null>(null)
+
+  const pfad = nodePathLabel(nodes, item.locationId)
+  const knoten = nodes.find((n) => n.id === item.locationId)
+
+  const uebernehmen = () => {
+    if (text.trim() === '') {
+      setAbsage(null)
+      return
+    }
+    const treffer = platzAufloesen(text, nodes, liesSchema())
+    if (treffer.art === 'absage') {
+      setAbsage(platzAbsageText(treffer, nodes, t))
+      return
+    }
+    // Auch der Umzug selbst kann absagen — „liegt schon dort", „Ziel gibt
+    // es nicht". Sie hier zu verschlucken hiesse, ein Feld zu leeren und
+    // nichts zu sagen.
+    const nein = onSetze(treffer.node.id)
+    if (nein) {
+      setAbsage(moveRefusalLabel(nein, t))
+      return
+    }
+    setText('')
+    setAbsage(null)
+  }
+
+  return (
+    <div className="lagerort-zelle">
+      {knoten ? (
+        <span>
+          {knoten.code && <strong className="lagerort-kennung">{knoten.code}</strong>}
+          <span className="leise">{pfad}</span>
+        </span>
+      ) : (
+        <span className="leise">{item.stockLocation ?? t('stock.nowhere', 'not put away')}</span>
+      )}
+      <input
+        value={text}
+        placeholder={t('stock.setPlace', 'Code or path…')}
+        aria-label={t('stock.setPlaceFor', 'Set the location')}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={uebernehmen}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') uebernehmen()
+        }}
+      />
+      {absage && <span className="befund nein">{absage}</span>}
+    </div>
   )
 }

@@ -32,4 +32,36 @@ export const STORAGE_KEYS = {
    * Bestand nichts zu tun hat.
    */
   fristArten: 'inventory-planner:fristArten',
+  /**
+   * Die Fahrzeuge des Hauses (Ladeplanung).
+   *
+   * Eigener Schluessel aus demselben Grund wie die Fristarten: Stammdaten,
+   * kein Bestand. Ein Fahrzeug ueberdauert jeden Bestand, und wer alle
+   * Artikel loescht, hat immer noch dieselben Fahrzeuge.
+   */
+  vehicles: 'inventory-planner:vehicles',
+  /**
+   * Die Ladungen. Betriebszustand EINER Fahrt, kein Katalog -- dieselbe
+   * Begruendung wie bei den Ausgabescheinen.
+   */
+  loads: 'inventory-planner:loads',
+  /**
+   * Die Flaechen der Halle: Stellflaechen, Pickzonen, Verkehrswege, Tore.
+   *
+   * Eigener Schluessel aus demselben Grund wie die Fahrzeuge: Stammdaten des
+   * Hauses, kein Bestand. Wer alle Artikel loescht, hat immer noch dieselbe
+   * Halle mit denselben Toren.
+   */
+  hallenflaechen: 'inventory-planner:hallenflaechen',
+  /**
+   * Der Ausbau der Cases: Innenmasse, Wandstaerke, Steg.
+   *
+   * Eigener Schluessel, und zwar nicht nur aus dem ueblichen Grund
+   * (Stammdaten, kein Bestand). Der Ausbau steht bewusst AUSSERHALB des
+   * portablen Formats: `StorageNode` reist zwischen den Planern, und ein
+   * Feld dort waere ein Versionssprung in allen Repos -- fuer eine Angabe,
+   * die am anderen Ende niemandem hilft. Die Begruendung steht ausfuehrlich
+   * in `domain/types/caseAusbau.ts`.
+   */
+  caseAusbau: 'inventory-planner:caseAusbau',
 } as const
