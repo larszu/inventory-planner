@@ -11,7 +11,15 @@
 // ───────────────────────────────────────────────────────────────────────────
 import { create } from 'zustand'
 import { STORAGE_KEYS } from '../../lib/storageKeys'
-import type { CaseAusbau, CaseInnenmass } from '../types/caseAusbau'
+import {
+  AUSBAU_ARTEN,
+  type AusbauArt,
+  type CaseAusbau,
+  type CaseInnenmass,
+  type DividerRaster,
+  type RackAusbau,
+  type Schublade,
+} from '../types/caseAusbau'
 
 const zahl = (v: unknown): number | undefined =>
   typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined
@@ -34,22 +42,93 @@ const healInnen = (raw: unknown): CaseInnenmass | undefined => {
   return mm.widthMm || mm.heightMm || mm.depthMm ? mm : undefined
 }
 
+const ARTEN = new Set<AusbauArt>(AUSBAU_ARTEN)
+
+/** Eine Teilung lesen. Nur positive Masse; eine Spalte von 0 mm ist keine. */
+const healRaster = (raw: unknown): DividerRaster | undefined => {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Partial<DividerRaster>
+  const liste = (v: unknown): number[] =>
+    Array.isArray(v) ? v.filter((n): n is number => typeof n === 'number' && Number.isFinite(n) && n > 0) : []
+  const spaltenMm = liste(r.spaltenMm)
+  const reihenMm = liste(r.reihenMm)
+  return spaltenMm.length || reihenMm.length ? { spaltenMm, reihenMm } : undefined
+}
+
+/**
+ * Einen Auszug lesen.
+ *
+ * OHNE NAMEN GIBT ES IHN NICHT: eine namenlose Schublade in einer Liste von
+ * Schubladen lässt sich nicht ansprechen. Die HÖHE darf dagegen fehlen —
+ * `schubladenPlan` nennt den Auszug dann, statt eine zu erfinden.
+ */
+const healSchublade = (raw: unknown): Schublade | null => {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Partial<Schublade>
+  if (typeof r.name !== 'string' || !r.name.trim()) return null
+  const innenRoh = r.innen as Partial<Schublade['innen']> | undefined
+  return {
+    id: typeof r.id === 'string' && r.id ? r.id : `sch-${Math.random().toString(36).slice(2, 10)}`,
+    name: r.name.trim(),
+    hoeheMm: zahl(r.hoeheMm),
+    innen:
+      innenRoh && (innenRoh.art === 'schaum' || innenRoh.art === 'divider')
+        ? {
+            art: innenRoh.art,
+            stegMm: zahl(innenRoh.stegMm),
+            raster: healRaster(innenRoh.raster),
+          }
+        : undefined,
+  }
+}
+
+const healRack = (raw: unknown): RackAusbau | undefined => {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Partial<RackAusbau>
+  const rack: RackAusbau = {
+    // Ganzzahlig: eine halbe Höheneinheit gibt es nicht.
+    hoeheHE: typeof r.hoeheHE === 'number' && Number.isFinite(r.hoeheHE) && r.hoeheHE > 0
+      ? Math.round(r.hoeheHE)
+      : undefined,
+    nutzbareTiefeMm: zahl(r.nutzbareTiefeMm),
+    planRef: typeof r.planRef === 'string' && r.planRef.trim() ? r.planRef.trim() : undefined,
+  }
+  return rack.hoeheHE || rack.nutzbareTiefeMm || rack.planRef ? rack : undefined
+}
+
 export const healAusbau = (raw: unknown): CaseAusbau | null => {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Partial<CaseAusbau>
   if (typeof r.nodeId !== 'string' || !r.nodeId) return null
+  const schubladen = Array.isArray(r.schubladen)
+    ? r.schubladen.map(healSchublade).filter((s): s is Schublade => s !== null)
+    : undefined
   const a: CaseAusbau = {
     nodeId: r.nodeId,
+    art: ARTEN.has(r.art as AusbauArt) ? (r.art as AusbauArt) : undefined,
     innenMm: healInnen(r.innenMm),
     wandstaerkeMm: zahl(r.wandstaerkeMm),
     stegMm: typeof r.stegMm === 'number' && Number.isFinite(r.stegMm) && r.stegMm >= 0 ? r.stegMm : undefined,
+    raster: healRaster(r.raster),
+    schubladen: schubladen && schubladen.length ? schubladen : undefined,
+    rack: healRack(r.rack),
+    vorlageId: typeof r.vorlageId === 'string' && r.vorlageId ? r.vorlageId : undefined,
     notes: typeof r.notes === 'string' ? r.notes : undefined,
     updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : new Date().toISOString(),
   }
   // Ein Eintrag, der NICHTS sagt, ist keiner. Er stünde sonst in der Liste
   // und sähe aus wie eine Angabe.
-  if (!a.innenMm && a.wandstaerkeMm === undefined && a.stegMm === undefined && !a.notes) return null
-  return a
+  const leer =
+    !a.art &&
+    !a.innenMm &&
+    a.wandstaerkeMm === undefined &&
+    a.stegMm === undefined &&
+    !a.raster &&
+    !a.schubladen &&
+    !a.rack &&
+    !a.vorlageId &&
+    !a.notes
+  return leer ? null : a
 }
 
 const laden = (): Record<string, CaseAusbau> => {
