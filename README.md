@@ -143,6 +143,64 @@ Was kein Fach bekommt, steht **mit Grund** darunter: ohne Masse, zu gross,
 kein Platz. Der Generator ist deterministisch — wer nach einem Bild schneidet,
 sieht beim zweiten Öffnen dasselbe.
 
+### Vier Arten, ein Inneres zu teilen
+
+Die **Schale** und der **Innenausbau** sind zwei Dinge. Die Schale macht ein
+Ding transportierbar (Aussenmass, Leergewicht, Rollen, Deckel) und steht am
+Lagerknoten; der Ausbau sagt, wie das Innere geteilt ist:
+
+| Art | Woraus die Fächer entstehen |
+|---|---|
+| **Schaum** | aus den Stücken — jedes bekommt seinen Ausschnitt |
+| **Divider** | aus der Teilung — die Wände stehen, gefragt wird was hineinpasst |
+| **Schubladen** | aus den Auszügen — jeder ein eigener kleiner Innenraum |
+| **Rack** | aus Höheneinheiten — 19 Zoll quer, HE hoch |
+
+Ein 19-Zoll-Rack im Maschinenraum hat einen Ausbau und keine Schale. Ein
+Peli-Case hat beides. Ein Rack-Case im Tourbetrieb hat beides, und sein
+Ausbau ist `rack`. Kein Sonderfall, sondern dieselbe Zeile zweimal gelesen.
+
+**Beim Rack teilen sich Lager und Plan die Arbeit.** Das *leere* Rack gehört
+dem Lager: wieviele HE das Case hat, ist eine Eigenschaft des Gegenstands.
+Was *darin sitzt*, gehört dem Signal-Plan — dort hängen Geräte, Ports und die
+interne Verkabelung daran. Damit gibt es keine zweite Wahrheit, und einen
+Befund, den es vorher nicht geben konnte: belegt der Plan HE 1–14 und hat das
+Case zwölf, sagt das jemand, bevor der LKW fährt. Ohne angeschlossenen Plan
+zeigt die Ansicht das leere Rack und sagt dazu, dass das **keine Aussage
+darüber ist, dass es leer ist**.
+
+Eine **Schublade ist kein eigener Lagerort**, sondern Teil des Ausbaus. Der
+Grund steht in `types/caseAusbau.ts` und ist gemessen: `healNode` verwirft
+jeden Knoten mit unbekannter Art, ein älterer Stand löschte also beim Laden
+jede Schublade samt der Zugehörigkeit aller Artikel darin. Der Preis: eine
+Schublade lässt sich nicht einzeln scannen.
+
+### 2D und 3D, Ebenen schaltbar
+
+Die **Draufsicht** sagt „wo liegt was" je Lage und druckt in der Auflösung
+des Druckers. Sie kann nicht sagen, wie die Lagen *übereinander* stehen — und
+daran hängt beim Schaum, ob der Deckel zugeht. Deshalb beides; **3D liegt
+hinter `lazy`**, Three gehört nicht in den Start des Lagers (gemessen: eigener
+Chunk).
+
+**Jede Ebene lässt sich ausblenden.** Wer Schaum für Lage 2 schneidet, will
+Lage 1 nicht im Bild haben.
+
+### Vorlagen: Peli, Nanuk — und die eigenen
+
+Die mitgelieferten Vorlagen sind **Namen ohne Masse**, und das ist Absicht:
+sie liessen sich in der Umgebung, in der dieses Werkzeug gebaut wurde, nicht
+nachprüfen (`peli.com` und `nanukcases.com` waren nicht erreichbar). Ein
+erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener
+— und jemand schneidet danach Schaum. Das wäre genau der Fehler, gegen den
+dieses Werkzeug gebaut ist.
+
+Neben **jeder** Vorlage steht deshalb, woher ihre Zahlen kommen: gemessen,
+aus dem Datenblatt, oder gar nicht hinterlegt. Der Weg, auf dem der Katalog
+wertvoll wird, ist der zurück: **wer das erste Peli 1510 ausmisst und als
+Vorlage sichert, hat sie für jedes weitere.** Eigene Vorlagen schlagen
+mitgelieferte.
+
 ### Der Inhaltslisten-Generator
 
 Er baut das Blatt, das **in den Deckel** kommt: Kästchen zum Abhaken, eine

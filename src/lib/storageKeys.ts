@@ -64,4 +64,13 @@ export const STORAGE_KEYS = {
    * in `domain/types/caseAusbau.ts`.
    */
   caseAusbau: 'inventory-planner:caseAusbau',
+  /**
+   * Die eigenen Case-Vorlagen des Hauses.
+   *
+   * Eigener Schluessel aus demselben Grund wie die Fahrzeuge: Stammdaten,
+   * kein Bestand. Wer alle Artikel loescht, hat immer noch dieselben
+   * ausgemessenen Case-Modelle -- und die sind der eigentliche Wert des
+   * Katalogs, weil die mitgelieferten Vorlagen bewusst keine Masse tragen.
+   */
+  caseVorlagen: 'inventory-planner:caseVorlagen',
 } as const

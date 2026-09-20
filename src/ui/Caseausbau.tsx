@@ -7,7 +7,8 @@
 // sich. Getrennt müsste man es zweimal heraussuchen, und die beiden Blätter,
 // die am Ende an derselben Kiste hängen, entstünden an zwei Stellen.
 //
-//   Layout       wo im Schaum welches Fach sitzt (`lib/caseLayout.ts`)
+//   Layout       wie das Innere geteilt ist (`lib/caseLayout.ts` für Schaum,
+//                `lib/caseAusbauLayout.ts` für Divider, Schubladen, Rack)
 //   Inhaltsliste was drin sein muss, zum Abhaken (`lib/caseInhaltsliste.ts`)
 //
 // ─── DAS INNENMASS IST EINE EINGABE UND KEINE RECHNUNG ─────────────────────
@@ -17,28 +18,37 @@
 // Ein Bild auf geratenem Innenmass sähe genauso aus wie eins auf gemessenem,
 // und nach dem einen schneidet jemand Schaum.
 //
-// ─── DIE ZEICHNUNG IST EINE DRAUFSICHT JE LAGE ─────────────────────────────
+// ─── 2D STEHT SOFORT DA, 3D BEANTWORTET DIE ANDERE FRAGE ───────────────────
 //
-// Ein Case wird von OBEN aufgemacht; die Frage „wo liegt was" ist deshalb
-// eine Grundriss-Frage, so wie am Dock. SVG und kein 3D, aus demselben Grund
-// wie bei der Draufsicht der Ladefläche: es steht sofort da, es druckt in
-// der Auflösung des Druckers, und es geht mit dem Finger.
+// Die Draufsicht sagt „wo liegt was" je Lage und druckt in der Auflösung des
+// Druckers. Sie kann nicht sagen, wie die Lagen ÜBEREINANDER stehen — und
+// das ist beim Schaum die Frage, an der der Deckel hängt. Deshalb beides,
+// und 3D hinter `lazy`: Three ist gross und gehört nicht in den Start des
+// Lagers.
+//
+// ─── EBENEN LASSEN SICH AUSBLENDEN ─────────────────────────────────────────
+//
+// Weil die untere Lage sonst nie zu sehen ist. Das ist keine Spielerei: wer
+// Schaum für Lage 2 schneidet, will Lage 1 nicht im Bild haben.
 // ───────────────────────────────────────────────────────────────────────────
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCaseAusbauStore } from '../domain/store/caseAusbauStore'
-import {
-  VORGABE_STEG_MM,
-  erzeugeCaseLayout,
-  fuellgrad,
-  type CaseLage,
-  type CaseStueck,
-} from '../domain/lib/caseLayout'
+import { useCaseVorlagenStore } from '../domain/store/caseVorlagenStore'
+import { erzeugeCaseLayout, innenmass, type CaseStueck } from '../domain/lib/caseLayout'
+import { dividerPlan, rackPlan, schubladenPlan } from '../domain/lib/caseAusbauLayout'
 import { caseInhalt, caseInhaltAlsText } from '../domain/lib/caseInhaltsliste'
 import { buildCaseInhaltslisteHtml } from '../domain/lib/inventoryPrint'
 import { isContainerKind, nodePathLabel } from '../domain/lib/storageTree'
-import { GRUPPEN_TOENE } from '../domain/lib/gruppenFarben'
+import { ausbauArt, type CaseAusbau } from '../domain/types/caseAusbau'
+import { AusbauFelder } from './Caseansicht/AusbauFelder'
+import { DividerAnsicht, RackAnsicht, SchaumLage, SchubladenAnsicht } from './Caseansicht/Plaene'
+import { VorlagenWahl } from './Caseansicht/VorlagenWahl'
+
+// Three ist gross und gehört nicht in den Start des Lagers — dieselbe
+// Grenze wie bei `Ladeansicht3D`.
+const Case3D = lazy(() => import('./Caseansicht/Case3D'))
 
 const heuteIso = () => new Date().toISOString().slice(0, 10)
 
@@ -49,9 +59,17 @@ export function Caseausbau() {
   const units = useInventoryStore((s) => s.units)
   const ausbauAlle = useCaseAusbauStore((s) => s.ausbau)
   const setzeAusbau = useCaseAusbauStore((s) => s.setzeAusbau)
+  const eigeneVorlagen = useCaseVorlagenStore((s) => s.vorlagen)
+  const setzeVorlage = useCaseVorlagenStore((s) => s.setzeVorlage)
+
   const [gewaehlt, setGewaehlt] = useState('')
   const [fehler, setFehler] = useState<string | null>(null)
   const [kopiert, setKopiert] = useState(false)
+  const [raum, setRaum] = useState<'2d' | '3d'>('2d')
+  const [auswahl, setAuswahl] = useState<string | undefined>()
+  /** Welche Lagen sichtbar sind. Leer heisst ALLE — eine leere Menge als
+   *  „nichts zeigen" zu lesen liesse die Ansicht beim ersten Öffnen leer. */
+  const [versteckt, setVersteckt] = useState<ReadonlySet<number>>(new Set())
 
   const cases = useMemo(
     () => nodes.filter((n) => isContainerKind(n.kind)).sort((a, b) => a.name.localeCompare(b.name)),
@@ -59,6 +77,14 @@ export function Caseausbau() {
   )
   const node = cases.find((n) => n.id === gewaehlt)
   const ausbau = gewaehlt ? ausbauAlle[gewaehlt] : undefined
+  const art = ausbauArt(ausbau)
+
+  // Beim Wechsel des Cases nichts aus dem vorigen stehen lassen.
+  useEffect(() => {
+    setVersteckt(new Set())
+    setAuswahl(undefined)
+    setKopiert(false)
+  }, [gewaehlt])
 
   const inhalt = useMemo(
     () => (gewaehlt ? caseInhalt(gewaehlt, { items, nodes, units }, heuteIso()) : null),
@@ -98,23 +124,36 @@ export function Caseausbau() {
     return raus
   }, [gewaehlt, items, nodes])
 
-  const vorschlag = useMemo(
-    () => (node ? erzeugeCaseLayout(node, ausbau, stuecke, {}, t) : null),
-    [node, ausbau, stuecke, t],
+  const innen = useMemo(
+    () => (node ? innenmass(node, ausbau, t) : null),
+    [node, ausbau, t],
+  )
+  const schaum = useMemo(
+    () => (node && art === 'schaum' ? erzeugeCaseLayout(node, ausbau, stuecke, {}, t) : null),
+    [node, ausbau, stuecke, art, t],
+  )
+  const divider = useMemo(
+    () =>
+      innen?.bekannt && art === 'divider' && ausbau?.raster
+        ? dividerPlan(innen.mm, ausbau.raster, stuecke, ausbau.stegMm ?? 10, t)
+        : null,
+    [innen, art, ausbau, stuecke, t],
+  )
+  const schubladen = useMemo(
+    () => (innen?.bekannt && art === 'schubladen' ? schubladenPlan(innen.mm, ausbau?.schubladen ?? []) : null),
+    [innen, art, ausbau],
+  )
+  const rack = useMemo(
+    // Die Bestückung kommt NICHT von hier: das Lager darf kein Plan-Modell
+    // kennen (ADR-006). Ohne angeschlossenen Plan zeigt `rackPlan` das leere
+    // Rack und sagt, dass es keine Aussage über den Inhalt ist.
+    () => (art === 'rack' ? rackPlan(ausbau?.rack, undefined, t) : null),
+    [art, ausbau, t],
   )
 
-  const zahlFeld = (wert: number | undefined, setze: (v: number | undefined) => void, label: string) => (
-    <label>
-      {label}
-      <input
-        type="number"
-        min={0}
-        value={wert ?? ''}
-        onChange={(e) => setze(e.target.value === '' ? undefined : Number(e.target.value))}
-        aria-label={label}
-      />
-    </label>
-  )
+  const patch = (p: Partial<Omit<CaseAusbau, 'nodeId' | 'updatedAt'>>) => {
+    if (node) setzeAusbau(node.id, { ...ausbau, ...p })
+  }
 
   const blattOeffnen = () => {
     if (!inhalt) return
@@ -127,6 +166,12 @@ export function Caseausbau() {
     w.document.write(buildCaseInhaltslisteHtml(inhalt, new Date().toLocaleDateString(), t))
     w.document.close()
   }
+
+  const lagen = schaum?.lagen ?? []
+  const sichtbareLagen = useMemo(
+    () => new Set(lagen.map((_, i) => i).filter((i) => !versteckt.has(i))),
+    [lagen, versteckt],
+  )
 
   return (
     <section className="bericht">
@@ -146,10 +191,7 @@ export function Caseausbau() {
               {t('case.pick', 'Case')}
               <select
                 value={gewaehlt}
-                onChange={(e) => {
-                  setGewaehlt(e.target.value)
-                  setKopiert(false)
-                }}
+                onChange={(e) => setGewaehlt(e.target.value)}
                 aria-label={t('case.pick.aria', 'Which case')}
               >
                 <option value="">—</option>
@@ -166,107 +208,158 @@ export function Caseausbau() {
 
       {node && (
         <>
+          {/* ── Vorlage ────────────────────────────────────────────────── */}
+          <div className="block">
+            <h3>{t('case.template', 'Template')}</h3>
+            <VorlagenWahl
+              eigene={eigeneVorlagen}
+              node={node}
+              ausbau={ausbau}
+              onUebernehmen={patch}
+              onVorlageSpeichern={setzeVorlage}
+            />
+          </div>
+
           {/* ── Der Ausbau ─────────────────────────────────────────────── */}
           <div className="block">
             <h3>{t('case.buildout', 'Inside')}</h3>
-            <p className="hinweis">
-              {t(
-                'case.buildout.hint',
-                'The inside does not follow from the outside — shell, foam and lid all take their share. Measure it, or give the wall thickness so it can be subtracted. Nothing is guessed here.',
-              )}
-            </p>
-            <div className="zeile">
-              {zahlFeld(
-                ausbau?.innenMm?.widthMm,
-                (v) => setzeAusbau(node.id, { ...ausbau, innenMm: { ...ausbau?.innenMm, widthMm: v } }),
-                t('case.inner.width', 'Inside width (mm)'),
-              )}
-              {zahlFeld(
-                ausbau?.innenMm?.heightMm,
-                (v) => setzeAusbau(node.id, { ...ausbau, innenMm: { ...ausbau?.innenMm, heightMm: v } }),
-                t('case.inner.height', 'Inside height (mm)'),
-              )}
-              {zahlFeld(
-                ausbau?.innenMm?.depthMm,
-                (v) => setzeAusbau(node.id, { ...ausbau, innenMm: { ...ausbau?.innenMm, depthMm: v } }),
-                t('case.inner.depth', 'Inside depth (mm)'),
-              )}
-            </div>
-            <div className="zeile">
-              {zahlFeld(
-                ausbau?.wandstaerkeMm,
-                (v) => setzeAusbau(node.id, { ...ausbau, wandstaerkeMm: v }),
-                t('case.wall', 'Wall thickness (mm)'),
-              )}
-              {zahlFeld(
-                ausbau?.stegMm,
-                (v) => setzeAusbau(node.id, { ...ausbau, stegMm: v }),
-                format(t('case.web', 'Web between compartments (mm, default {mm})'), { mm: VORGABE_STEG_MM }),
-              )}
-            </div>
-            {vorschlag && (
-              <p className="hinweis">
-                {vorschlag.innen.bekannt
-                  ? vorschlag.innen.quelle === 'gemessen'
-                    ? t('case.inner.measured', 'Measured inside dimensions — they beat any subtraction.')
-                    : t('case.inner.derived', 'Computed from the outside dimensions and the wall thickness.')
-                  : vorschlag.innen.text}
-              </p>
-            )}
+            {innen && <AusbauFelder ausbau={ausbau} innen={innen} onSetze={patch} />}
           </div>
 
           {/* ── Das Layout ─────────────────────────────────────────────── */}
           <div className="block">
             <h3>{t('case.layout', 'Layout')}</h3>
-            {vorschlag && vorschlag.innen.bekannt && vorschlag.lagen.length > 0 ? (
-              <>
-                {vorschlag.lagen.map((lage, i) => (
-                  <LagenBild
-                    key={lage.yMm}
-                    lage={lage}
-                    innen={vorschlag.innen.bekannt ? vorschlag.innen.mm : { widthMm: 0, heightMm: 0, depthMm: 0 }}
-                    nr={vorschlag.lagen.length - i}
-                    vonOben={i === 0}
-                  />
-                ))}
-                <p className="hinweis">
-                  {format(
-                    t('case.layout.summary', '{lagen} layers · {faecher} compartments · {kg} kg placed'),
-                    {
-                      lagen: vorschlag.lagen.length,
-                      faecher: vorschlag.lagen.reduce((n, l) => n + l.faecher.length, 0),
-                      kg: vorschlag.gesetztKg.toFixed(1),
-                    },
-                  )}
-                </p>
-              </>
+
+            {!innen?.bekannt && art !== 'rack' ? (
+              <p className="hinweis">{innen?.text}</p>
             ) : (
-              <p className="hinweis">
-                {vorschlag && !vorschlag.innen.bekannt
-                  ? vorschlag.innen.text
-                  : t('case.layout.empty', 'Nothing with dimensions lies directly in this case.')}
-              </p>
+              <>
+                {/* Schaum: 2D je Lage, 3D über alle, Ebenen schaltbar. */}
+                {art === 'schaum' && schaum && innen?.bekannt && (
+                  <>
+                    {lagen.length === 0 ? (
+                      <p className="hinweis">
+                        {t('case.layout.empty', 'Nothing with dimensions lies directly in this case.')}
+                      </p>
+                    ) : (
+                      <>
+                        <div className="zeile">
+                          <div className="modus-schalter">
+                            <button
+                              type="button"
+                              className={raum === '2d' ? 'aktiv' : undefined}
+                              onClick={() => setRaum('2d')}
+                            >
+                              {t('case.view2d', 'Top view')}
+                            </button>
+                            <button
+                              type="button"
+                              className={raum === '3d' ? 'aktiv' : undefined}
+                              onClick={() => setRaum('3d')}
+                            >
+                              {t('case.view3d', '3D')}
+                            </button>
+                          </div>
+                          {/* Ebenen ein- und ausblenden. Ohne das ist die
+                              untere Lage nie zu sehen. */}
+                          {lagen.map((lage, i) => (
+                            <label key={lage.yMm} className="wahl">
+                              <input
+                                type="checkbox"
+                                checked={!versteckt.has(i)}
+                                onChange={() =>
+                                  setVersteckt((v) => {
+                                    const n = new Set(v)
+                                    if (n.has(i)) n.delete(i)
+                                    else n.add(i)
+                                    return n
+                                  })
+                                }
+                              />
+                              {format(t('case.layerToggle', 'Layer {nr}'), { nr: lagen.length - i })}
+                            </label>
+                          ))}
+                        </div>
+
+                        {raum === '3d' ? (
+                          <Suspense fallback={<p className="hinweis">{t('case3d.loading', 'Loading the 3D view…')}</p>}>
+                            <Case3D
+                              innen={innen.mm}
+                              lagen={lagen}
+                              sichtbar={sichtbareLagen}
+                              auswahl={auswahl}
+                            />
+                          </Suspense>
+                        ) : (
+                          lagen.map((lage, i) =>
+                            versteckt.has(i) ? null : (
+                              <SchaumLage
+                                key={lage.yMm}
+                                lage={lage}
+                                innen={innen.mm}
+                                nr={lagen.length - i}
+                                vonOben={i === 0}
+                                auswahl={auswahl}
+                                onWaehle={setAuswahl}
+                              />
+                            ),
+                          )
+                        )}
+                        <p className="hinweis">
+                          {format(
+                            t('case.layout.summary', '{lagen} layers · {faecher} compartments · {kg} kg placed'),
+                            {
+                              lagen: lagen.length,
+                              faecher: lagen.reduce((n, l) => n + l.faecher.length, 0),
+                              kg: schaum.gesetztKg.toFixed(1),
+                            },
+                          )}
+                        </p>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {art === 'divider' &&
+                  innen?.bekannt &&
+                  (divider ? (
+                    <DividerAnsicht plan={divider} innen={innen.mm} />
+                  ) : (
+                    <p className="hinweis">
+                      {t('divider.noRaster', 'No division entered yet — give the column widths and row depths above.')}
+                    </p>
+                  ))}
+
+                {art === 'schubladen' &&
+                  innen?.bekannt &&
+                  (schubladen && schubladen.lagen.length > 0 ? (
+                    <SchubladenAnsicht plan={schubladen} innen={innen.mm} />
+                  ) : (
+                    <p className="hinweis">{t('drawers.none', 'No drawers with a clear height yet.')}</p>
+                  ))}
+
+                {art === 'rack' && rack && <RackAnsicht plan={rack} />}
+              </>
             )}
 
-            {vorschlag && vorschlag.befunde.length > 0 && (
+            {/* Befunde und was kein Fach bekam — MIT Grund. */}
+            {schaum && schaum.befunde.length > 0 && (
               <ul className="messliste">
-                {vorschlag.befunde.map((b) => (
+                {schaum.befunde.map((b) => (
                   <li key={b.art}>{b.text}</li>
                 ))}
               </ul>
             )}
-            {vorschlag && vorschlag.ohnePlatz.length > 0 && (
+            {(schaum?.ohnePlatz.length || divider?.ohnePlatz.length) ? (
               <>
                 <h4>{t('case.noRoom', 'Without a compartment')}</h4>
-                {/* MIT GRUND und nicht nur als Zahl: wer hier nachsieht, will
-                    wissen, ob er messen oder umpacken muss. */}
                 <ul className="messliste">
-                  {vorschlag.ohnePlatz.map((o) => (
+                  {[...(schaum?.ohnePlatz ?? []), ...(divider?.ohnePlatz ?? [])].map((o) => (
                     <li key={o.stueckId}>{o.text}</li>
                   ))}
                 </ul>
               </>
-            )}
+            ) : null}
           </div>
 
           {/* ── Die Inhaltsliste ───────────────────────────────────────── */}
@@ -342,93 +435,5 @@ export function Caseausbau() {
         </>
       )}
     </section>
-  )
-}
-
-/**
- * Eine Lage von oben.
- *
- * DIE OBERSTE ZUERST, weil ein Case von oben aufgemacht wird: was man sieht,
- * wenn der Deckel aufgeht, steht auch oben auf dem Blatt. Die Nummer der Lage
- * zählt deshalb von unten (Lage 1 liegt am Boden), die Reihenfolge der Bilder
- * von oben — beides zusammen ist die Reihenfolge beim Ein- und Auspacken.
- */
-function LagenBild({
-  lage,
-  innen,
-  nr,
-  vonOben,
-}: {
-  lage: CaseLage
-  innen: { widthMm: number; heightMm: number; depthMm: number }
-  nr: number
-  vonOben: boolean
-}) {
-  const { t, format } = useT()
-  if (innen.widthMm <= 0 || innen.depthMm <= 0) return null
-  return (
-    <div className="draufsicht-rahmen">
-      <p className="draufsicht-legende">
-        {format(t('case.layer', 'Layer {nr} · {mm} mm high · {pct}% of the floor used'), {
-          nr,
-          mm: lage.hoeheMm,
-          pct: Math.round(fuellgrad(lage, innen) * 100),
-        })}
-        {vonOben ? ` · ${t('case.layer.top', 'this is what you see when the lid opens')}` : ''}
-      </p>
-      <svg
-        className="draufsicht"
-        viewBox={`-10 -10 ${innen.widthMm + 20} ${innen.depthMm + 20}`}
-        role="img"
-        aria-label={format(t('case.layer.aria', 'Layer {nr} seen from above'), { nr })}
-      >
-        {/* Die Innenwand. Kein Rechteck um das Aussenmass — gezeichnet wird,
-            was wirklich frei ist. */}
-        <rect
-          x={0}
-          y={0}
-          width={innen.widthMm}
-          height={innen.depthMm}
-          fill="none"
-          stroke="var(--linie)"
-          strokeWidth={4}
-        />
-        {lage.faecher.map((f, i) => (
-          <g key={f.stueckId}>
-            <rect
-              x={f.xMm}
-              y={f.zMm}
-              width={f.breiteMm}
-              height={f.tiefeMm}
-              fill={GRUPPEN_TOENE[i % GRUPPEN_TOENE.length]}
-              fillOpacity={0.35}
-              stroke="var(--linie)"
-              strokeWidth={3}
-            />
-            {/* Die Nummer steht im Fach, der Name daneben in der Liste: ein
-                Modellname in einem 80-mm-Fach ist bei jedem Massstab
-                unlesbar. */}
-            <text
-              x={f.xMm + f.breiteMm / 2}
-              y={f.zMm + f.tiefeMm / 2}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={Math.max(20, Math.min(f.breiteMm, f.tiefeMm) / 3)}
-              fill="var(--text)"
-            >
-              {f.nr}
-            </text>
-          </g>
-        ))}
-      </svg>
-      <ol className="messliste">
-        {lage.faecher.map((f) => (
-          <li key={f.stueckId}>
-            {f.nr} · {f.label} · {f.breiteMm} × {f.tiefeMm} × {f.hoeheMm} mm
-            {f.gedreht ? ` · ${t('case.turned', 'turned')}` : ''}
-          </li>
-        ))}
-      </ol>
-    </div>
   )
 }

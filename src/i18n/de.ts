@@ -1128,8 +1128,6 @@ export const de: Record<string, string> = {
   'case.none':
     'Noch kein Case im Lagerbaum. Ein Case ist ein Container-Knoten — ohne einen gibt es nichts aufzuteilen.',
   'case.buildout': 'Innen',
-  'case.buildout.hint':
-    'Das Innenmass folgt nicht aus dem Aussenmass — Schale, Schaum und Deckel nehmen sich ihren Teil. Miss es nach, oder gib die Wandstärke an, damit sie abgezogen werden kann. Geschätzt wird hier nichts.',
   'case.inner.width': 'Innenbreite (mm)',
   'case.inner.height': 'Innenhöhe (mm)',
   'case.inner.depth': 'Innentiefe (mm)',
@@ -1190,4 +1188,81 @@ export const de: Record<string, string> = {
     'kein Gesamtgewicht: {n} Positionen sind nicht gewogen, und das Leergewicht des Cases ist nicht hinterlegt',
   'caseList.missingEmpty': 'kein Gesamtgewicht: das Leergewicht des Cases ist nicht hinterlegt',
   'caseList.missingItems': 'kein Gesamtgewicht: {n} Positionen sind nicht gewogen',
+  // ── Case-Ausbau: Arten, Divider, Schubladen, Rack ───────────────────────
+  'ausbau.art': 'Innen',
+  'ausbau.art.foam': 'Schaumausschnitte',
+  'ausbau.art.divider': 'Verstellbare Trennwände',
+  'ausbau.art.drawers': 'Schubladen',
+  'ausbau.art.rack': '19-Zoll-Schienen',
+  'ausbau.innerHint':
+    'Das Innenmass folgt nicht aus dem Aussenmass — Schale, Schaum und Deckel nehmen sich ihren Teil. Miss es nach, oder gib die Wandstärke an, damit sie abgezogen werden kann. Geschätzt wird hier nichts.',
+  'ausbau.wallThickness': 'Wandstärke der Trennwand (mm)',
+  'ausbau.columns': 'Spaltenbreiten (mm)',
+  'ausbau.rows': 'Reihentiefen (mm)',
+  'ausbau.dividerHint':
+    'Die Teilung ist deine Entscheidung und kein Ergebnis: die Wände bleiben, wo du sie hinsteckst, und gefragt wird, was hineinpasst. Breiten in mm, mit Komma getrennt.',
+  'ausbau.evenSplit': '{n} Spalten, gleichmässig',
+  'ausbau.drawersHint':
+    'Unten zuerst — welcher Auszug tief sitzt, ist eine Entscheidung (das Schwere nach unten) und kein Rechenergebnis. Ein Auszug ohne Höhe steht in der Liste, wird aber nicht gestapelt; eine angenommene Höhe verschöbe jeden Auszug darüber.',
+  'ausbau.drawerName': 'Auszug',
+  'ausbau.drawerHeight': 'Lichte Höhe (mm)',
+  'ausbau.drawerRemove': 'Entfernen',
+  'ausbau.drawerAdd': 'Auszug hinzufügen',
+  'ausbau.drawerDefault': 'Auszug {n}',
+  'ausbau.rackHint':
+    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — verknüpfe ihn über die Kennung daneben.',
+  'ausbau.rackUnits': 'Höhe (HE)',
+  'ausbau.rackDepth': 'Nutzbare Tiefe hinter der Schiene (mm)',
+  'ausbau.rackRef': 'Rack im Signal-Plan',
+  'ausbau.rackRefPlaceholder': 'Name oder Kennung des Racks',
+
+  'case.template': 'Vorlage',
+  'case.view2d': 'Draufsicht',
+  'case.view3d': '3D',
+  'case.layerToggle': 'Lage {nr}',
+  'case3d.loading': 'Die 3D-Ansicht wird geladen…',
+
+  'divider.legend': 'Fächer: {n} · {pct} % der Grundfläche ist Fach, der Rest ist Wand',
+  'divider.aria': 'Die Teilung von oben',
+  'divider.empty': 'leer',
+  'divider.tooBig': '{label} passt in kein Fach dieser Teilung.',
+  'divider.full': 'Jedes Fach, in das {label} passt, ist voll.',
+  'divider.noRaster': 'Noch keine Teilung eingetragen — gib oben die Spaltenbreiten und Reihentiefen an.',
+
+  'drawers.legend': 'Auszüge: {n} · {mm} mm bleiben oben frei',
+  'drawers.aria': 'Die Auszüge von der Seite',
+  'drawers.tooTall': 'Die Auszüge sind zusammen höher als das Case.',
+  'drawers.noHeight': 'Ohne lichte Höhe, nicht gestapelt: {n}',
+  'drawers.none': 'Noch kein Auszug mit lichter Höhe.',
+
+  'rack.legend': '{he} HE · {frei} frei',
+  'rack.aria': 'Das Rack von vorn',
+  'rack.noHeight':
+    'Für dieses Case ist keine Rack-Höhe hinterlegt. Wieviele Höheneinheiten es hat, ist eine Eigenschaft des Cases — der Plan kann das nicht beantworten.',
+  'rack.noPlan':
+    'Kein Rack-Layout aus dem Signal-Plan verknüpft. Das Case wird leer gezeigt — das ist keine Aussage darüber, dass es leer ist.',
+  'rack.overlap': 'HE {he}: {a} und {b} sind übereinander geplant.',
+  'rack.tooTall': '{label} reicht bis HE {oben}, dieses Case hat aber {hoehe}.',
+
+  // Der Katalog
+  'katalog.noSize': 'kein Mass hinterlegt — einmal nachmessen, dann trägt die Vorlage es',
+  'katalog.measured': 'in diesem Haus gemessen',
+  'katalog.measuredBy': 'gemessen · {quelle}',
+  'katalog.fromSheet': 'aus dem Datenblatt · {quelle}',
+  'katalog.fromSheetPlain': 'aus dem Datenblatt',
+  'katalog.unknownSource': 'Masse hinterlegt, Herkunft nicht angegeben',
+
+  'vorlage.pick': 'Schale aus einer Vorlage',
+  'vorlage.apply': 'Übernehmen',
+  'vorlage.own': ' eigen',
+  'vorlage.maker': 'Hersteller',
+  'vorlage.model': 'Modell',
+  'vorlage.save': 'Dieses Case als Vorlage sichern',
+  'vorlage.saved': 'Als Vorlage „{name}" gesichert.',
+  'vorlage.cannotSave':
+    'Noch nichts zu sichern: eine Vorlage braucht einen Modellnamen und mindestens einen vollständigen Satz Masse.',
+  'vorlage.noSizeToApply':
+    'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
+  'vorlage.shippedHint':
+    'Die mitgelieferten Vorlagen sind Namen ohne Masse — sie liessen sich hier nicht nachprüfen, und ein erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener. Einmal nachmessen und zurücksichern; ab dann trägt das Modell echte Zahlen.',
 }
