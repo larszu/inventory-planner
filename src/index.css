@@ -311,6 +311,33 @@ body {
 .wahl { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; cursor: pointer; }
 .wahl em { display: block; font-style: normal; font-size: 0.8rem; color: var(--leise); }
 
+/* Die Ebenen-Schalter der Case-Ansicht.
+ *
+ * Eigener Behaelter, weil `.zeile label` die Felder auf `column` stellt --
+ * in einer `.zeile` standen Kaestchen und Beschriftung deshalb uebereinander
+ * und weit auseinander. Hier bleiben sie nebeneinander. */
+.ebenen-schalter { display: flex; flex-wrap: wrap; gap: var(--steg-3); align-items: center; }
+.ebenen-schalter .wahl { align-items: center; }
+
+/* Die 3D-Ansicht des Cases.
+ *
+ * FESTE HOEHE, wie bei der Ladeansicht und aus demselben Grund: ein
+ * `<Canvas>` misst sich an seinem Eltern-Block, und ein Block ohne Hoehe
+ * ergibt ein Bild von wenigen Pixeln. Gesehen im Bildschirmfoto vom
+ * 2026-09-20 — die Leinwand stand da, war aber zu klein, um etwas zu
+ * erkennen. */
+.case3d-rahmen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: min(60vh, 520px);
+  margin: var(--steg-3) 0;
+  border: 1px solid var(--rand);
+  background: var(--bg);
+}
+
+.case3d { flex: 1 1 auto; min-height: 0; }
+
 /* ── Helles Thema ────────────────────────────────────────────────────────
  *
  * NUR die Token werden getauscht, keine Regel darunter — genau dafuer ist die
