@@ -53,4 +53,15 @@ export const STORAGE_KEYS = {
    * Halle mit denselben Toren.
    */
   hallenflaechen: 'inventory-planner:hallenflaechen',
+  /**
+   * Der Ausbau der Cases: Innenmasse, Wandstaerke, Steg.
+   *
+   * Eigener Schluessel, und zwar nicht nur aus dem ueblichen Grund
+   * (Stammdaten, kein Bestand). Der Ausbau steht bewusst AUSSERHALB des
+   * portablen Formats: `StorageNode` reist zwischen den Planern, und ein
+   * Feld dort waere ein Versionssprung in allen Repos -- fuer eine Angabe,
+   * die am anderen Ende niemandem hilft. Die Begruendung steht ausfuehrlich
+   * in `domain/types/caseAusbau.ts`.
+   */
+  caseAusbau: 'inventory-planner:caseAusbau',
 } as const

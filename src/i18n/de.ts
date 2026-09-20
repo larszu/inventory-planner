@@ -1120,4 +1120,74 @@ export const de: Record<string, string> = {
   'measure.height': 'Laderaumhöhe',
   'measure.height.where':
     'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
+  // ── Cases: Layout und Inhaltsliste ──────────────────────────────────────
+  'tab.cases': 'Cases',
+  'tab.cases.q': 'Wie liegt es darin — und was muss drin sein?',
+  'case.pick': 'Case',
+  'case.pick.aria': 'Welches Case',
+  'case.none':
+    'Noch kein Case im Lagerbaum. Ein Case ist ein Container-Knoten — ohne einen gibt es nichts aufzuteilen.',
+  'case.buildout': 'Innen',
+  'case.buildout.hint':
+    'Das Innenmass folgt nicht aus dem Aussenmass — Schale, Schaum und Deckel nehmen sich ihren Teil. Miss es nach, oder gib die Wandstärke an, damit sie abgezogen werden kann. Geschätzt wird hier nichts.',
+  'case.inner.width': 'Innenbreite (mm)',
+  'case.inner.height': 'Innenhöhe (mm)',
+  'case.inner.depth': 'Innentiefe (mm)',
+  'case.inner.measured': 'Gemessenes Innenmass — es schlägt jede Rechnung.',
+  'case.inner.derived': 'Aus Aussenmass und Wandstärke gerechnet.',
+  'case.wall': 'Wandstärke (mm)',
+  'case.web': 'Steg zwischen den Fächern (mm, Vorgabe {mm})',
+  'case.layout': 'Layout',
+  'case.layout.empty': 'Nichts mit Massen liegt direkt in diesem Case.',
+  'case.layout.summary': '{lagen} Lagen · {faecher} Fächer · {kg} kg gesetzt',
+  'case.layer': 'Lage {nr} · {mm} mm hoch · {pct} % der Grundfläche belegt',
+  'case.layer.top': 'das sieht man, wenn der Deckel aufgeht',
+  'case.layer.aria': 'Lage {nr} von oben',
+  'case.turned': 'gedreht',
+  'case.noRoom': 'Ohne Fach',
+  'case.contents': 'Inhaltsliste',
+  'case.contents.empty': 'Es liegt nichts direkt in diesem Case.',
+  'case.col.what': 'Was',
+  'case.col.qty': 'Anzahl',
+  'case.col.kg': 'kg',
+  'case.subcase': 'eigenes Blatt',
+  'case.notWeighed': 'nicht gewogen',
+  'case.totalKg': 'Gesamt {kg} kg, Case leer {leer} kg.',
+  'case.noTotal':
+    'Inhalt {kg} kg — kein Gesamtgewicht: {n} Positionen sind nicht gewogen, oder das Leergewicht des Cases fehlt.',
+  'case.openSheet': 'Blatt für den Deckel öffnen (A4)',
+  'case.copy': 'Als Text kopieren',
+  'case.copied': 'Kopiert',
+  'case.printBlocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+
+  // Der Layout-Generator
+  'caseLayout.noInner':
+    'Kein Innenmass hinterlegt, und auch keine Wandstärke. Das Innere folgt nicht aus dem Äusseren — Schale, Schaum und Deckel nehmen sich ihren Teil, also wird hier nichts gerechnet.',
+  'caseLayout.noOuter':
+    'Eine Wandstärke ist hinterlegt, aber die Aussenmasse des Cases nicht. Es gibt nichts, wovon sie abgezogen werden könnte.',
+  'caseLayout.wallTooThick':
+    'Eine Wand von {wand} mm lässt in diesem Case nichts übrig. Eine der beiden Zahlen ist falsch.',
+  'caseLayout.noSize': 'Für diesen Artikel sind keine Masse hinterlegt — er bekommt kein Fach.',
+  'caseLayout.tooBig': '{label} ist in mindestens einer Richtung grösser als das Innere dieses Cases.',
+  'caseLayout.noRoom': 'Für {label} ist in diesem Case kein Platz mehr.',
+  'caseLayout.unweighed':
+    'Von den gesetzten Stücken haben {n} kein Gewicht hinterlegt. Die Summe darunter ist das Bekannte, nicht das Gewicht des Cases.',
+  'caseLayout.headroom': 'Über der obersten Lage bleiben {mm} mm Höhe frei.',
+
+  // Das Deckelblatt
+  'caseList.kicker': 'Case-Inhalt',
+  'caseList.title': 'Inhalt — {name}',
+  'caseList.pieces': '{n} Stück',
+  'caseList.noCode': 'kein Code',
+  'caseList.total': 'Gesamtgewicht',
+  'caseList.totalKg': 'Gesamt {kg} kg',
+  'caseList.emptyKg': 'Case leer {kg} kg',
+  'caseList.contents': 'Inhalt',
+  'caseList.contentsKg': 'Inhalt {kg} kg',
+  'caseList.unweighed': 'nicht gewogen',
+  'caseList.unweighedShort': 'nicht gewogen',
+  'caseList.missingBoth':
+    'kein Gesamtgewicht: {n} Positionen sind nicht gewogen, und das Leergewicht des Cases ist nicht hinterlegt',
+  'caseList.missingEmpty': 'kein Gesamtgewicht: das Leergewicht des Cases ist nicht hinterlegt',
+  'caseList.missingItems': 'kein Gesamtgewicht: {n} Positionen sind nicht gewogen',
 }

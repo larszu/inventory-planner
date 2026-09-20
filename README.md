@@ -116,6 +116,56 @@ räumt jemand wieder von Hand um und trägt es nirgends ein.
 sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
+## Cases — wie es darin liegt, und was drin sein muss
+
+Die Ansicht **Cases** beantwortet zwei Fragen an derselben Kiste.
+
+### Der Layout-Generator
+
+Er schlägt eine **Fachaufteilung** vor: Lagen von oben gesehen, je Fach ein
+Rechteck mit Mass und Platz — genug, um Schaum zu schneiden oder eine Kiste
+einzuräumen. Die oberste Lage steht oben, denn ein Case wird von oben
+aufgemacht.
+
+**Das Innenmass wird nicht geschätzt.** Es gibt genau zwei Wege dorthin:
+jemand hat es gemessen, oder jemand hat die Wandstärke angegeben und sie wird
+abgezogen. Gibt es keinen von beiden, zeigt die Ansicht **kein Bild, sondern
+den Grund**. Ein Rackcase mit 600 mm Aussentiefe hat keine 580 mm innen —
+Schale, Schaum und Deckel nehmen sich ihren Teil, und wer nach einer
+geratenen Zahl schneidet, hat umsonst geschnitten.
+
+**Gekippt wird nur, was gekippt werden darf.** Ohne Angabe zulässiger Lagen
+liegt ein Stück aufrecht — dieselbe Hausregel wie im Ladepacker. Gedreht wird
+dagegen frei: eine Vierteldrehung um die Hochachse ist keine andere Lage, ein
+Fach im Schaum kennt keine Fahrtrichtung.
+
+Was kein Fach bekommt, steht **mit Grund** darunter: ohne Masse, zu gross,
+kein Platz. Der Generator ist deterministisch — wer nach einem Bild schneidet,
+sieht beim zweiten Öffnen dasselbe.
+
+### Der Inhaltslisten-Generator
+
+Er baut das Blatt, das **in den Deckel** kommt: Kästchen zum Abhaken, eine
+Zeile je Position, Gewicht, und **fremdes Material als solches markiert** —
+mit Lieferant und Rückgabedatum. Es beantwortet die Frage aus der Rückgabe:
+„fehlt etwas?"
+
+**Ein Unter-Case steht als eine Zeile da und wird nicht aufgeklappt.** Ein
+Blatt, das den Inhalt von drei Unter-Cases mit aufführt, lässt sich nicht
+abhaken — man müsste drei Kisten aufmachen, um eine Liste zu prüfen. Jedes
+Case trägt sein eigenes Blatt.
+
+**Ein Gesamtgewicht steht nur da, wenn es eines gibt.** Fehlt das Leergewicht
+des Cases oder ist eine Position nicht gewogen, nennt das Blatt den gewogenen
+Teil und sagt, was fehlt. Eine Summe, die vollständig aussieht und es nicht
+ist, ist am Hallenboden gefährlicher als gar keine: jemand hebt danach.
+
+Der Ausbau eines Cases (Innenmass, Wandstärke, Steg) liegt **ausserhalb** des
+portablen Formats, unter einem eigenen Speicher-Schlüssel. Er ist eine
+Eigenschaft dieses Stücks in diesem Lager und hilft am anderen Ende
+niemandem; ihn in `avplan-inventory` aufzunehmen wäre ein Versionssprung in
+allen Repos für nichts.
+
 ### Grundriss und Raum — wo die Regale wirklich stehen
 
 Der Baum sagt, wo etwas **hingehört**. Er sagt nicht, wo man **hinlaufen**

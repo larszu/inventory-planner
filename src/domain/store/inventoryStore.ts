@@ -216,6 +216,27 @@ const healItem = (raw: unknown): InventoryItem | null => {
       r.ownership === 'owned' || r.ownership === 'rented' || r.ownership === 'subhire'
         ? r.ownership
         : undefined,
+    /**
+     * Das Rueckgabedatum fremden Materials.
+     *
+     * ES STAND BIS 2026-09-20 NICHT HIER — und `healItem` baut jeden Artikel
+     * Feld fuer Feld neu auf. Das Feld gibt es im Typ, `subhireStatus`,
+     * `ownershipNote` und `overdueCheckouts` lesen es, die Oberflaeche
+     * schreibt es; nur ueberlebte es das naechste Laden nicht. Nach einem
+     * Neustart las jedes sub-gemietete Stueck „kein Rueckgabedatum", und
+     * genau das ist die Angabe, wegen der es die Spalte gibt.
+     *
+     * Aufgefallen beim Deckelblatt der Case-Inhaltsliste: dort stand es
+     * neben einem Artikel, der eines hatte.
+     *
+     * Geprueft wird die FORM und nicht die Gueltigkeit: `subhireStatus`
+     * vergleicht ISO-Zeichenketten, und ein „30.09.2026" verglichen sich
+     * still falsch. Was nicht wie ein ISO-Datum aussieht, ist keins.
+     */
+    returnDue:
+      typeof r.returnDue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.returnDue.trim())
+        ? r.returnDue.trim()
+        : undefined,
     code: typeof r.code === 'string' && r.code.trim() ? r.code.trim() : undefined,
     codeType: healCodeType(r.codeType),
     locationId: typeof r.locationId === 'string' && r.locationId ? r.locationId : undefined,
