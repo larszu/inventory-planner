@@ -45,6 +45,7 @@ import { ausbauArt, type CaseAusbau } from '../domain/types/caseAusbau'
 import { AusbauFelder } from './Caseansicht/AusbauFelder'
 import { DividerAnsicht, RackAnsicht, SchaumLage, SchubladenAnsicht } from './Caseansicht/Plaene'
 import { VorlagenWahl } from './Caseansicht/VorlagenWahl'
+import { InlayAusgabe } from './Caseansicht/InlayAusgabe'
 
 // Three ist gross und gehört nicht in den Start des Lagers — dieselbe
 // Grenze wie bei `Ladeansicht3D`.
@@ -392,6 +393,18 @@ export function Caseausbau() {
               </>
             ) : null}
           </div>
+
+          {/* ── Das Inlay als Datei ────────────────────────────────────── */}
+          {art === 'schaum' && (
+            <div className="block">
+              <h3>{t('case.inlay', 'Inlay as a file')}</h3>
+              <InlayAusgabe
+                lagen={lagen}
+                innen={innen?.bekannt ? innen.mm : null}
+                titel={node.name}
+              />
+            </div>
+          )}
 
           {/* ── Die Inhaltsliste ───────────────────────────────────────── */}
           <div className="block">

@@ -92,6 +92,7 @@ describe('erzeugeCaseLayout', () => {
   it('legt Stücke nebeneinander und lässt einen Steg dazwischen', () => {
     const r = erzeugeCaseLayout(caseNode(), innen, [stueck('a', 200, 50, 100), stueck('b', 200, 50, 100)], {
       stegMm: 20,
+      randMm: 0,
     })
     expect(r.lagen).toHaveLength(1)
     const [a, b] = r.lagen[0]!.faecher
@@ -104,7 +105,7 @@ describe('erzeugeCaseLayout', () => {
     const r = erzeugeCaseLayout(caseNode(), { ...innen, stegMm: 30 }, [
       stueck('a', 100, 50, 100),
       stueck('b', 100, 50, 100),
-    ])
+    ], { randMm: 0 })
     expect(r.stegMm).toBe(30)
     expect(r.lagen[0]!.faecher[1]!.xMm).toBe(130)
   })
@@ -121,7 +122,7 @@ describe('erzeugeCaseLayout', () => {
     const r = erzeugeCaseLayout(caseNode(), innen, [
       stueck('a', 400, 50, 100),
       stueck('b', 400, 50, 100),
-    ], { stegMm: 10 })
+    ], { stegMm: 10, randMm: 0 })
     const [a, b] = r.lagen[0]!.faecher
     expect(a!.gedreht).toBe(false)
     expect(b!.gedreht).toBe(true)
@@ -135,7 +136,7 @@ describe('erzeugeCaseLayout', () => {
     const r = erzeugeCaseLayout(caseNode(), { innenMm: { widthMm: 600, heightMm: 300, depthMm: 300 } }, [
       stueck('a', 400, 50, 100),
       stueck('b', 400, 50, 100),
-    ], { stegMm: 10 })
+    ], { stegMm: 10, randMm: 0 })
     const [a, b] = r.lagen[0]!.faecher
     expect(a!.zMm).toBe(0)
     expect(b!.xMm).toBe(0)
@@ -223,13 +224,51 @@ describe('erzeugeCaseLayout', () => {
   })
 })
 
+describe('der Rand zur Innenwand', () => {
+  const innen = { innenMm: { widthMm: 600, heightMm: 300, depthMm: 400 } }
+
+  it('lässt zwischen Fach und Wand so viel Schaum wie zwischen zwei Fächern', () => {
+    // Schaum zwischen Fach und Wand trägt genauso wie Schaum zwischen zwei
+    // Fächern — und reisst genauso aus, wenn er fehlt.
+    const r = erzeugeCaseLayout(caseNode(), innen, [stueck('a', 100, 50, 100)], { stegMm: 20 })
+    const f = r.lagen[0]!.faecher[0]!
+    expect(f.xMm).toBe(20)
+    expect(f.zMm).toBe(20)
+  })
+
+  it('verkleinert das Feld um den Rand auf ALLEN vier Seiten', () => {
+    // 600 innen, 15 Rand links und rechts: 570 bleiben. Ein Stück von 580
+    // passt ohne Rand, mit Rand nicht mehr.
+    const r = erzeugeCaseLayout(caseNode(), innen, [stueck('breit', 580, 50, 100)], { stegMm: 15 })
+    expect(r.lagen).toEqual([])
+    expect(r.ohnePlatz[0]!.grund).toBe('zu-gross')
+  })
+
+  it('lässt sich auf null stellen — dann liegt das Fach an der Wand', () => {
+    const r = erzeugeCaseLayout(caseNode(), innen, [stueck('a', 100, 50, 100)], { randMm: 0 })
+    expect(r.lagen[0]!.faecher[0]!.xMm).toBe(0)
+  })
+
+  it('hält den Rand auch an der rechten und der vorderen Wand ein', () => {
+    const r = erzeugeCaseLayout(caseNode(), innen, [
+      stueck('a', 250, 50, 150),
+      stueck('b', 250, 50, 150),
+      stueck('c', 250, 50, 150),
+    ], { stegMm: 15 })
+    for (const f of r.lagen.flatMap((l) => l.faecher)) {
+      expect(f.xMm + f.breiteMm).toBeLessThanOrEqual(600 - 15)
+      expect(f.zMm + f.tiefeMm).toBeLessThanOrEqual(400 - 15)
+    }
+  })
+})
+
 describe('fuellgrad', () => {
   it('misst die Grundfläche und nicht das Volumen', () => {
     // Der Luftraum über einem flachen Stück neben einem hohen ist kein
     // Verschnitt, den jemand beheben könnte.
     const r = erzeugeCaseLayout(caseNode(), { innenMm: { widthMm: 200, heightMm: 300, depthMm: 100 } }, [
       stueck('a', 100, 90, 100),
-    ])
+    ], { randMm: 0 })
     expect(fuellgrad(r.lagen[0]!, { widthMm: 200, heightMm: 300, depthMm: 100 })).toBeCloseTo(0.5)
   })
 

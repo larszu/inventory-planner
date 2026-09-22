@@ -1265,4 +1265,30 @@ export const de: Record<string, string> = {
     'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
   'vorlage.shippedHint':
     'Die mitgelieferten Vorlagen sind Namen ohne Masse — sie liessen sich hier nicht nachprüfen, und ein erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener. Einmal nachmessen und zurücksichern; ab dann trägt das Modell echte Zahlen.',
+  // ── Inlay: Schaumzuschnitt und 3D-Druck ─────────────────────────────────
+  'case.inlay': 'Inlay als Datei',
+  'inlay.nothing':
+    'Noch keine Lage zum Schneiden. Ein Inlay braucht Innenmasse und mindestens ein Stück mit Massen.',
+  'inlay.hint':
+    'Das Layout legt die Stücke auf ihre wahren Masse; das Inlay gibt Spiel dazu, denn ein Fach in Gerätegrösse nimmt das Gerät nicht auf. Eine Datei je Lage — Lagen sind einzelne Platten.',
+  'inlay.layer': 'Lage',
+  'inlay.layerOption': 'Lage {nr} · {mm} mm',
+  'inlay.clearance': 'Spiel je Seite (mm, Vorgabe {mm})',
+  'inlay.clearanceAria': 'Spiel je Seite',
+  'inlay.floor': 'Boden unter den Taschen (mm)',
+  'inlay.grip': 'Griffmulden',
+  'inlay.summary':
+    'Rohling {b} × {t} × {h} mm · {n} Taschen · {tri} Dreiecke · {open} offene Kanten · {vol} cm³',
+  'inlay.dxf': 'DXF für den Schaumzuschnitt',
+  'inlay.3mf': '3MF zum Drucken',
+  'inlay.stl': 'STL (ohne Einheit in der Datei)',
+  'inlay.formats':
+    '3MF nennt die Einheit (Millimeter) in der Datei und verlangt ein dichtes Netz — nimm es zuerst. STL nennt gar keine Einheit; ein Leser muss raten, und der klassische Fehler ist der Faktor 25,4. Stege unter {min} mm stehen oben.',
+  'inlay.overEdge':
+    'Mit {spiel} mm Spiel ragt die Tasche für {label} über die Kante des Rohlings. Nimm weniger Spiel — oder das Stück gehört nicht in diese Lage.',
+  'inlay.noGrip':
+    'Für {label} ist kein Platz für eine Griffmulde. Ohne sie reisst die Fachkante ein, wenn man das Stück heraushebelt.',
+  'inlay.thinWeb':
+    'Zwischen {paar} bleiben nur {mm} mm Material. Unter {min} mm bricht ein Schaumsteg aus, wenn ein Stück herausgehoben wird.',
+  'inlay.thinFloor': 'Ein Boden von {mm} mm trägt wenig. Unter einem schweren Stück gibt er nach.',
 }
