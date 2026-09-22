@@ -65,7 +65,7 @@ function polylinie(punkte: readonly { x: number; z: number }[], ebene: string): 
   return s + g(0, 'SEQEND') + g(8, ebene)
 }
 
-function text(inhalt: string, x: number, z: number, hoehe: number): string {
+function text(inhalt: string, x: number, z: number, hoehe: number, drehung = 0): string {
   return (
     g(0, 'TEXT') +
     g(8, DXF_EBENE_TEXT) +
@@ -73,14 +73,51 @@ function text(inhalt: string, x: number, z: number, hoehe: number): string {
     g(20, z) +
     g(30, 0) +
     g(40, hoehe) +
-    // Mittig gesetzt: die Beschriftung sitzt in der Tasche und nicht an
-    // ihrer Ecke.
+    // Gruppe 50: Drehung in Grad. Nur gesetzt, wenn gedreht wird — manche
+    // alte Leser stolpern über Gruppen, die sie nicht erwarten.
+    (drehung ? g(50, drehung) : '') +
+    // Mittig gesetzt, waagrecht (72 = 1) und senkrecht (73 = 2): die
+    // Beschriftung sitzt in der Tasche und nicht an ihrer Ecke.
     g(72, 1) +
     g(11, x) +
     g(21, z) +
     g(31, 0) +
+    g(73, 2) +
     g(1, inhalt)
   )
+}
+
+/**
+ * Wie eine Beschriftung in eine Tasche passt.
+ *
+ * GEMESSEN AM 2026-09-22 an einer Vorschau aus der Datei selbst: „Shure SM58
+ * (1/4)" stand in 13 mm Höhe in einer 52 mm breiten Tasche — rund 125 mm
+ * Text, und die Namen der Nachbartaschen liefen ineinander. Die Schrift
+ * richtete sich nach der Tasche, aber nicht nach der Länge des Namens.
+ *
+ * Jetzt: entlang der LANGEN Seite, und so gross, dass der Name dort Platz
+ * hat. Die Breite wird geschätzt: 0,9 × Höhe je Zeichen. Nicht das Mittel
+ * einer Serifenlosen (0,6) — damit lief „Sennheiser EW500 G4 1" im
+ * gerenderten DXF über den Taschenrand (gemessen 0,75), und die Schrift, mit
+ * der die Schneide-Software rendert, kennen wir nicht; TXT.shx ist breiter.
+ *
+ * Nicht kleiner als 3 mm: darunter liest es am Schaumblock niemand, und
+ * dann ist ein überstehender Name die bessere Auskunft als ein unlesbarer.
+ */
+export function beschriftung(
+  inhalt: string,
+  breiteMm: number,
+  tiefeMm: number,
+): { hoehe: number; drehung: number } {
+  const lang = Math.max(breiteMm, tiefeMm)
+  const kurz = Math.min(breiteMm, tiefeMm)
+  const zeichen = Math.max(1, inhalt.length)
+  const passtInLaenge = (lang * 0.85) / (zeichen * 0.9)
+  const passtInBreite = kurz * 0.6
+  const hoehe = Math.max(3, Math.min(14, passtInLaenge, passtInBreite))
+  // Senkrecht nur, wenn die Tasche tiefer als breit ist — sonst liest man
+  // den Namen quer, obwohl er waagrecht Platz hätte.
+  return { hoehe: Math.round(hoehe * 10) / 10, drehung: tiefeMm > breiteMm ? 90 : 0 }
 }
 
 /**
@@ -132,10 +169,14 @@ export function buildInlayDxf(modell: InlayModell, titel = ''): string {
 
   for (const tasche of modell.taschen) {
     s += polylinie(taschenUmriss(tasche), DXF_EBENE_SCHNITT)
-    // Die Schrifthöhe folgt der Tasche, bleibt aber lesbar: eine 3-mm-Schrift
-    // in einem 40-mm-Fach liest am Schaumblock niemand.
-    const hoehe = Math.max(6, Math.min(14, Math.min(tasche.breiteMm, tasche.tiefeMm) / 4))
-    s += text(tasche.label, tasche.xMm + tasche.breiteMm / 2, tasche.zMm + tasche.tiefeMm / 2, hoehe)
+    const { hoehe, drehung } = beschriftung(tasche.label, tasche.breiteMm, tasche.tiefeMm)
+    s += text(
+      tasche.label,
+      tasche.xMm + tasche.breiteMm / 2,
+      tasche.zMm + tasche.tiefeMm / 2,
+      hoehe,
+      drehung,
+    )
   }
 
   if (titel) {

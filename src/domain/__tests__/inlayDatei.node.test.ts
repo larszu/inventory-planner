@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { erzeugeInlay } from '../lib/inlay'
 import { inlayNetz, offeneKanten, volumen } from '../lib/inlayMesh'
 import { build3mf, build3mfModel, buildStl } from '../lib/inlayDruck'
-import { buildInlayDxf } from '../lib/inlayDxf'
+import { beschriftung, buildInlayDxf } from '../lib/inlayDxf'
 import { crc32, zipStore } from '../../lib/zipStore'
 import type { CaseLage } from '../lib/caseLayout'
 
@@ -262,5 +262,53 @@ describe('Das Netz an einer ECHTEN Lage', () => {
     const n = inlayNetz(m)
     expect(offeneKanten(n)).toBe(0)
     expect(volumen(n)).toBeGreaterThan(0)
+  })
+})
+
+describe('Die Beschriftung im DXF', () => {
+  it('passt einen langen Namen in eine schmale Tasche, statt überzulaufen', () => {
+    // Der gemessene Fall: „Shure SM58 (1/4)" in einer 52 × 164 mm Tasche
+    // stand in 13 mm Höhe da — rund 125 mm Text, die Nachbarnamen liefen
+    // ineinander.
+    const { hoehe, drehung } = beschriftung('Shure SM58 (1/4)', 52, 164)
+    expect(drehung).toBe(90)
+    // Geschätzte Textlänge muss auf die lange Seite passen.
+    expect('Shure SM58 (1/4)'.length * 0.6 * hoehe).toBeLessThanOrEqual(164)
+    // Und die Schrifthöhe auf die kurze.
+    expect(hoehe).toBeLessThanOrEqual(52)
+  })
+
+  it('schreibt waagrecht, wenn die Tasche breiter als tief ist', () => {
+    expect(beschriftung('Mischer', 300, 120).drehung).toBe(0)
+  })
+
+  it('wird nie kleiner als 3 mm — darunter liest es am Schaum niemand', () => {
+    expect(beschriftung('Ein sehr langer Gerätename mit Zusatz', 20, 20).hoehe).toBe(3)
+  })
+
+  it('schreibt die Drehung als Gruppe 50 nur, wenn gedreht wird', () => {
+    const hoch = buildInlayDxf(erzeugeInlay(
+      { yMm: 0, hoeheMm: 60, faecher: [fach('Schmal', 20, 20, 50, 160)] },
+      { widthMm: 400, heightMm: 300, depthMm: 300 },
+    )!)
+    const breit = buildInlayDxf(erzeugeInlay(
+      { yMm: 0, hoeheMm: 60, faecher: [fach('Breit', 20, 20, 200, 60)] },
+      { widthMm: 400, heightMm: 300, depthMm: 300 },
+    )!)
+    // Paarweise lesen: eine Zeile "50" kann auch ein Koordinatenwert sein.
+    const drehungen = (dxf: string): string[] => {
+      const z = dxf.split('\n')
+      const aus: string[] = []
+      let inText = false
+      for (let i = 0; i + 1 < z.length; i += 2) {
+        const code = z[i].trim()
+        const wert = z[i + 1].trim()
+        if (code === '0') inText = wert === 'TEXT'
+        else if (inText && code === '50') aus.push(wert)
+      }
+      return aus
+    }
+    expect(drehungen(hoch)).toEqual(['90'])
+    expect(drehungen(breit)).toEqual([])
   })
 })

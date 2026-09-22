@@ -168,7 +168,7 @@ export function Caseausbau() {
     w.document.close()
   }
 
-  const lagen = schaum?.lagen ?? []
+  const lagen = useMemo(() => schaum?.lagen ?? [], [schaum])
   const sichtbareLagen = useMemo(
     () => new Set(lagen.map((_, i) => i).filter((i) => !versteckt.has(i))),
     [lagen, versteckt],
