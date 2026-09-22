@@ -10,7 +10,12 @@
 // #24 steht sie auf einem Lastverteilungsplan.
 // ───────────────────────────────────────────────────────────────────────────
 import { describe, expect, it } from 'vitest'
-import { FAHRZEUG_KATALOG, katalogMaengel, type KatalogFahrzeug } from '../data/fahrzeugKatalog'
+import {
+  FAHRZEUG_KATALOG,
+  FEHLENDE_KLASSEN,
+  katalogMaengel,
+  type KatalogFahrzeug,
+} from '../data/fahrzeugKatalog'
 import {
   ausKatalog,
   buildFahrzeugDatei,
@@ -55,6 +60,41 @@ describe('der Katalog', () => {
   it('weist eine Achse ohne zulässige Last ab', () => {
     const m = katalogMaengel(eintrag({ axles: [{ positionMm: 0, maxLastKg: 0 }] }))
     expect(m).toContain('axles.maxLastKg')
+  })
+
+  // ── Der Startsatz selbst (#19) ────────────────────────────────────────
+  //
+  // Der Katalog war bis 2026-09-22 leer, und das war eine Aussage: lieber
+  // keine Zahlen als geratene. Jetzt steht etwas drin, und diese Tests
+  // halten fest, WORAN man einen belegten Eintrag erkennt — nicht, dass
+  // die Zahlen stimmen (das kann keine Software sagen, dafür steht die
+  // Quelle da), sondern dass keiner sich als belegt ausgibt, ohne es zu
+  // sein.
+
+  it('nennt zu jedem Eintrag eine Quelle mit Fundstelle, nicht nur einen Namen', () => {
+    for (const e of FAHRZEUG_KATALOG) {
+      expect(e.quelle, `${e.name}`).toMatch(/https?:\/\//)
+    }
+  })
+
+  it('gibt keine Nutzlast an, die im Datenblatt nicht steht', () => {
+    // Die Ducato-Zeilen stammen vom Blatt „ABMESSUNGEN KASTENWAGEN"; eine
+    // Nutzlast nennt es nicht. Eine aus dem zulässigen Gesamtgewicht
+    // gerechnete sähe im Ladeplan aus wie eine Messung.
+    for (const e of FAHRZEUG_KATALOG.filter((x) => x.name.startsWith('Fiat Ducato'))) {
+      expect(e.nutzlastKg, `${e.name}`).toBeUndefined()
+    }
+  })
+
+  it('führt keine Klasse als fehlend, für die es einen Eintrag gibt', () => {
+    // Sonst sagt die Oberfläche „hier fehlt noch alles", während darunter
+    // sechs Einträge stehen — und wer das einmal liest, sucht nicht weiter.
+    for (const klasse of FEHLENDE_KLASSEN) {
+      expect(
+        FAHRZEUG_KATALOG.some((e) => e.kind === klasse),
+        `${klasse} gilt als fehlend, hat aber Einträge`,
+      ).toBe(false)
+    }
   })
 })
 

@@ -492,6 +492,15 @@ Breite darüber, und sie ist die, an der eine Europalette scheitert. Im Modell
 ist die obere `cargoMm.widthMm`, die untere gehört als Radkasten unter die
 Hindernisse, dort, wo sie auch im Weg ist.
 
+**Im Katalog steht bei fehlender Radkastenhöhe die schmale Breite.** Ein
+Hindernis braucht drei Maße; Breite und Länge lassen sich aus der Bereifung
+herleiten, die Höhe aus nichts — sie hängt am Abstand zwischen Ladeboden und
+Achse. Statt sie zu schätzen, nimmt der Katalog die konservative Annahme: der
+Radkasten geht durch bis oben. Das *ist* ein Laderaum in Radkastenbreite ohne
+Hindernis — dieselbe Aussage ohne erfundene Zahl. Sie irrt in die sichere
+Richtung; wer die Höhe einmal misst, trägt den Radkasten ein und gewinnt die
+Breite darüber zurück.
+
 **Alles am Fahrzeug ist änderbar, nicht nur beim Anlegen.** Unter
 *Stammdaten und Laderaum* stehen Name, Klasse, die Maße des Laderaums, die
 Ladeöffnung, Hebebühne, ebener Boden, Führerscheinklasse, Herkunft der Zahlen
