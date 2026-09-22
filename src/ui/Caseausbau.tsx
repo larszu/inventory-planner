@@ -45,6 +45,7 @@ import { ausbauArt, type CaseAusbau } from '../domain/types/caseAusbau'
 import { AusbauFelder } from './Caseansicht/AusbauFelder'
 import { DividerAnsicht, RackAnsicht, SchaumLage, SchubladenAnsicht } from './Caseansicht/Plaene'
 import { VorlagenWahl } from './Caseansicht/VorlagenWahl'
+import { InlayAusgabe } from './Caseansicht/InlayAusgabe'
 
 // Three ist gross und gehört nicht in den Start des Lagers — dieselbe
 // Grenze wie bei `Ladeansicht3D`.
@@ -167,10 +168,32 @@ export function Caseausbau() {
     w.document.close()
   }
 
-  const lagen = schaum?.lagen ?? []
+  const lagen = useMemo(() => schaum?.lagen ?? [], [schaum])
   const sichtbareLagen = useMemo(
     () => new Set(lagen.map((_, i) => i).filter((i) => !versteckt.has(i))),
     [lagen, versteckt],
+  )
+
+  /**
+   * Die Lagen in ANZEIGE-Reihenfolge: oberste zuerst.
+   *
+   * `erzeugeCaseLayout` baut sie von UNTEN auf — `lagen[0]` liegt am Boden.
+   * Wer den Deckel aufmacht, sieht aber die oberste. Gemessen am 2026-09-20
+   * an einem Bildschirmfoto: die Fläche zeigte die unterste zuerst UND
+   * beschriftete sie mit „das sieht man, wenn der Deckel aufgeht" — beides
+   * verkehrt herum, und zusammen ergab es eine Anleitung zum falschen
+   * Einräumen.
+   *
+   * `nr` zählt weiter von unten (Lage 1 liegt am Boden), weil man beim
+   * Packen von unten arbeitet. Beides zusammen ist die Reihenfolge beim
+   * Ein- und Auspacken.
+   */
+  const anzeigeLagen = useMemo(
+    () =>
+      lagen
+        .map((lage, index) => ({ lage, index, nr: index + 1 }))
+        .reverse(),
+    [lagen],
   )
 
   return (
@@ -260,24 +283,33 @@ export function Caseausbau() {
                               {t('case.view3d', '3D')}
                             </button>
                           </div>
-                          {/* Ebenen ein- und ausblenden. Ohne das ist die
-                              untere Lage nie zu sehen. */}
-                          {lagen.map((lage, i) => (
-                            <label key={lage.yMm} className="wahl">
-                              <input
-                                type="checkbox"
-                                checked={!versteckt.has(i)}
-                                onChange={() =>
-                                  setVersteckt((v) => {
-                                    const n = new Set(v)
-                                    if (n.has(i)) n.delete(i)
-                                    else n.add(i)
-                                    return n
-                                  })
-                                }
-                              />
-                              {format(t('case.layerToggle', 'Layer {nr}'), { nr: lagen.length - i })}
-                            </label>
+                        </div>
+                        {/* Ebenen ein- und ausblenden. Ohne das ist die
+                            untere Lage nie zu sehen.
+
+                            EIGENE ZEILE, und das aus zwei Gründen, beide im
+                            Bildschirmfoto vom 2026-09-20 zu sehen: in einer
+                            `.zeile` setzt `.zeile label` die Felder auf
+                            `column` und riss Kästchen und Beschriftung
+                            auseinander — und neben dem Ansichts-Schalter
+                            umbrachen die Schalter mitten in der Reihe. */}
+                        <div className="ebenen-schalter">
+                            {anzeigeLagen.map(({ lage, index, nr }) => (
+                              <label key={lage.yMm} className="wahl">
+                                <input
+                                  type="checkbox"
+                                  checked={!versteckt.has(index)}
+                                  onChange={() =>
+                                    setVersteckt((v) => {
+                                      const n = new Set(v)
+                                      if (n.has(index)) n.delete(index)
+                                      else n.add(index)
+                                      return n
+                                    })
+                                  }
+                                />
+                                {format(t('case.layerToggle', 'Layer {nr}'), { nr })}
+                              </label>
                           ))}
                         </div>
 
@@ -291,14 +323,14 @@ export function Caseausbau() {
                             />
                           </Suspense>
                         ) : (
-                          lagen.map((lage, i) =>
-                            versteckt.has(i) ? null : (
+                          anzeigeLagen.map(({ lage, index, nr }, j) =>
+                            versteckt.has(index) ? null : (
                               <SchaumLage
                                 key={lage.yMm}
                                 lage={lage}
                                 innen={innen.mm}
-                                nr={lagen.length - i}
-                                vonOben={i === 0}
+                                nr={nr}
+                                vonOben={j === 0}
                                 auswahl={auswahl}
                                 onWaehle={setAuswahl}
                               />
@@ -361,6 +393,18 @@ export function Caseausbau() {
               </>
             ) : null}
           </div>
+
+          {/* ── Das Inlay als Datei ────────────────────────────────────── */}
+          {art === 'schaum' && (
+            <div className="block">
+              <h3>{t('case.inlay', 'Inlay as a file')}</h3>
+              <InlayAusgabe
+                lagen={lagen}
+                innen={innen?.bekannt ? innen.mm : null}
+                titel={node.name}
+              />
+            </div>
+          )}
 
           {/* ── Die Inhaltsliste ───────────────────────────────────────── */}
           <div className="block">

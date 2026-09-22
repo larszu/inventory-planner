@@ -215,6 +215,22 @@ export interface CaseVorschlag {
 export interface CaseLayoutOptions {
   /** Steg zwischen zwei Fächern. Fehlt er am Case, gilt `VORGABE_STEG_MM`. */
   stegMm?: number
+  /**
+   * Schaum zwischen den Fächern und der Innenwand.
+   *
+   * FEHLT ER, IST ER SO BREIT WIE DER STEG — und das ist keine Bequemlichkeit,
+   * sondern dieselbe Sache: Schaum zwischen Fach und Wand trägt genauso wie
+   * Schaum zwischen zwei Fächern, und reisst genauso aus, wenn er fehlt.
+   *
+   * Bis 2026-09-22 gab es ihn nicht. Das Layout legte die Stücke bündig an die
+   * Innenwand, und mit der VORGABE von 1 mm Spiel ragten im Inlay sechs von
+   * sieben Taschen über den Rohling. Ein Werkzeug, das bei seinen eigenen
+   * Vorgaben fast alles für falsch erklärt, benutzt niemand.
+   *
+   * Nur waagrecht. Der Boden unter den Taschen ist `bodenMm` im Inlay; der
+   * Schaum unter dem Deckel ist eine andere Platte.
+   */
+  randMm?: number
 }
 
 interface Kandidat {
@@ -275,6 +291,7 @@ export function erzeugeCaseLayout(
 ): CaseVorschlag {
   const innen = innenmass(node, ausbau, t)
   const steg = options.stegMm ?? ausbau?.stegMm ?? VORGABE_STEG_MM
+  const rand = options.randMm ?? steg
   const befunde: CaseBefund[] = []
   const ohnePlatz: OhnePlatz[] = []
 
@@ -300,6 +317,13 @@ export function erzeugeCaseLayout(
   }
 
   const raum = innen.mm
+  // Das Feld, in dem gepackt wird: der Innenraum minus Rand ringsum. Gepackt
+  // wird darin ab (0,0) wie bisher, und am Ende wird alles um den Rand
+  // verschoben — so bleibt die Packregel eine, und der Rand eine Zeile.
+  const feld = {
+    widthMm: raum.widthMm - 2 * rand,
+    depthMm: raum.depthMm - 2 * rand,
+  }
   // Vervielfachen: zwei gleiche Funkstrecken brauchen zwei Fächer.
   const einzeln: CaseStueck[] = []
   for (const s of stuecke) {
@@ -368,10 +392,10 @@ export function erzeugeCaseLayout(
       let gesetzt = false
       for (const v of varianten) {
         const brauchtX = xMm === 0 ? v.b : xMm + steg + v.b
-        if (brauchtX > raum.widthMm) continue
+        if (brauchtX > feld.widthMm) continue
         const startZ = zMm
         const brauchtZ = startZ + v.tf
-        if (brauchtZ > raum.depthMm) continue
+        if (brauchtZ > feld.depthMm) continue
         const startX = xMm === 0 ? 0 : xMm + steg
         nr += 1
         faecher.push({
@@ -399,12 +423,12 @@ export function erzeugeCaseLayout(
 
       // Passt nicht mehr in diese Reihe — eine neue anfangen.
       const naechsteZ = reiheTiefe === 0 ? zMm : zMm + reiheTiefe + steg
-      if (naechsteZ >= raum.depthMm) continue
+      if (naechsteZ >= feld.depthMm) continue
       zMm = naechsteZ
       xMm = 0
       reiheTiefe = 0
       for (const v of varianten) {
-        if (v.b > raum.widthMm || zMm + v.tf > raum.depthMm) continue
+        if (v.b > feld.widthMm || zMm + v.tf > feld.depthMm) continue
         nr += 1
         faecher.push({
           stueckId: k.stueck.id,
@@ -429,6 +453,11 @@ export function erzeugeCaseLayout(
     }
 
     if (faecher.length === 0) break
+    // In den Innenraum zurück: gepackt wurde im Feld ab (0,0).
+    for (const f of faecher) {
+      f.xMm += rand
+      f.zMm += rand
+    }
     lagen.push({ yMm, hoeheMm: lagenHoehe, faecher })
     yMm += lagenHoehe + steg
     offen = offen.filter((k) => !gesetztInLage.has(k.stueck.id))
@@ -437,8 +466,8 @@ export function erzeugeCaseLayout(
   // Was übrig blieb, steht MIT Grund da.
   for (const k of offen) {
     const passtGarNicht =
-      Math.min(k.breiteMm, k.tiefeMm) > Math.max(raum.widthMm, raum.depthMm) ||
-      Math.max(k.breiteMm, k.tiefeMm) > Math.max(raum.widthMm, raum.depthMm) ||
+      Math.min(k.breiteMm, k.tiefeMm) > Math.max(feld.widthMm, feld.depthMm) ||
+      Math.max(k.breiteMm, k.tiefeMm) > Math.max(feld.widthMm, feld.depthMm) ||
       k.hoeheMm > raum.heightMm
     ohnePlatz.push({
       stueckId: k.stueck.id,

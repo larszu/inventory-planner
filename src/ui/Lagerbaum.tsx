@@ -39,6 +39,7 @@
 // selben Store liegen.
 // ───────────────────────────────────────────────────────────────────────────
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useStorageMoveStore } from '../domain/store/storageMoveStore'
@@ -359,12 +360,7 @@ export function Lagerbaum() {
     const blob = new Blob([toCsv(tabelle.headers, tabelle.rows)], {
       type: 'text/csv;charset=utf-8',
     })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'umlagerungen.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+        herunterladen(blob, 'umlagerungen.csv')
   }
 
   const ctx: BaumKontext = {

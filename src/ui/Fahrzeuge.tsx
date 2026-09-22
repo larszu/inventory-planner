@@ -13,6 +13,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 import { useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
@@ -74,14 +75,7 @@ export function Fahrzeuge() {
   const [meldung, setMeldung] = useState('')
 
   const exportieren = () => {
-    const url = URL.createObjectURL(
-      new Blob([buildFahrzeugDatei(vehicles)], { type: 'application/json' }),
-    )
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'fahrzeuge.json'
-    a.click()
-    URL.revokeObjectURL(url)
+        herunterladen(new Blob([buildFahrzeugDatei(vehicles)], { type: 'application/json' }), 'fahrzeuge.json')
   }
 
   const importieren = async (e: React.ChangeEvent<HTMLInputElement>) => {

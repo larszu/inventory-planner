@@ -201,6 +201,51 @@ wertvoll wird, ist der zurück: **wer das erste Peli 1510 ausmisst und als
 Vorlage sichert, hat sie für jedes weitere.** Eigene Vorlagen schlagen
 mitgelieferte.
 
+### Inlays als Datei: Schaumzuschnitt und 3D-Druck
+
+Aus jeder Schaum-Lage entsteht ein **Inlay** — die Datei, nach der geschnitten
+oder gedruckt wird. Drei Formate, weil es drei Maschinen sind:
+
+| Datei | Wofür | Was sie zusichert |
+|---|---|---|
+| **DXF** (R12) | Schaumzuschnitt, Fräse, Wasserstrahl | geschlossene Konturen, `$INSUNITS = 4` (mm), Ebenen `SCHNITT` / `RAND` / `BESCHRIFTUNG` |
+| **3MF** | 3D-Druck | Einheit Millimeter **in der Datei**, dichtes Netz mit Normalen nach aussen |
+| **STL** | 3D-Druck, wo kein 3MF geht | nichts über die Einheit — das Format kennt keine |
+
+**Das Layout ist nicht das Inlay.** Das Layout legt die Stücke auf ihre wahren
+Masse; ein Fach in Gerätegrösse nimmt das Gerät aber nicht auf. Das Inlay gibt
+**Spiel** dazu (Vorgabe 1 mm je Seite — recherchiert: 0,5–1 mm für einen
+haltenden Sitz, das obere Ende, weil ein Case im Halbdunkel eingeräumt wird),
+setzt **Griffmulden** an die Vorderkante (ohne sie hebelt man die Geräte heraus
+und reisst die Fachkante ein) und prüft die **Stege** nach, die das Spiel von
+beiden Seiten anfrisst.
+
+Zwischen Fach und Innenwand bleibt ein **Rand** so breit wie der Steg: Schaum
+dort trägt genauso wie zwischen zwei Fächern.
+
+Jede Tasche wird auf die Höhe **ihres** Stücks gefräst. Ein flaches Gerät neben
+einem hohen liegt sonst versenkt, wo niemand es greift.
+
+**Warum R12 und POLYLINE.** R12 liest jede CAM-Software, auch die alte Steuerung
+im Hinterhof. `LWPOLYLINE` gibt es erst ab R14; in einer R12-Datei wird sie
+mancherorts still übersprungen — und eine übersprungene Kontur ist eine Tasche,
+die nicht geschnitten wird.
+
+**Warum 3MF zuerst.** STL enthält nur Zahlen. Ob sie Millimeter oder Zoll sind,
+rät der Leser; der klassische Fehler ist der Faktor 25,4. 3MF schreibt die
+Einheit hin.
+
+**Wie das Netz dicht wird.** Ein Inlay ist ein Höhenfeld: über jedem Punkt der
+Grundfläche steht genau eine Oberkante. Alle Taschenkanten zusammen ergeben ein
+Gitter, jede Zelle liegt ganz in einer Tasche oder ganz daneben, und jede
+senkrechte Fläche wird an denselben Höhenstufen geschnitten. Damit trifft jede
+Kante genau eine Gegenkante — die Bedingung der 3MF-Spezifikation. Die Zahl der
+offenen Kanten steht in der Oberfläche neben den Knöpfen; sie muss null sein.
+
+Geprüft mit fremden Werkzeugen, nicht nur mit den eigenen Tests: das 3MF mit
+`unzip -t`, STL und 3MF mit `trimesh` (wasserdicht, stimmiger Umlauf, gleiches
+Volumen), das DXF mit dem Prüfer von `ezdxf` (null Fehler, null Reparaturen).
+
 ### Der Inhaltslisten-Generator
 
 Er baut das Blatt, das **in den Deckel** kommt: Kästchen zum Abhaken, eine

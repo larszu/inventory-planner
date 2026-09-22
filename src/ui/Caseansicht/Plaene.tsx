@@ -52,7 +52,7 @@ function Draufsicht({
         width={innen.widthMm}
         height={innen.depthMm}
         fill="none"
-        stroke="var(--linie)"
+        stroke="var(--leise)"
         strokeWidth={4}
       />
       {children}
@@ -115,7 +115,7 @@ export function SchaumLage({
               height={f.tiefeMm}
               fill={GRUPPEN_TOENE[i % GRUPPEN_TOENE.length]}
               fillOpacity={auswahl === f.stueckId ? 0.65 : 0.35}
-              stroke="var(--linie)"
+              stroke="var(--leise)"
               strokeWidth={auswahl === f.stueckId ? 6 : 3}
             />
             <FachNummer x={f.xMm} y={f.zMm} b={f.breiteMm} t={f.tiefeMm} nr={f.nr} />
@@ -156,7 +156,7 @@ export function DividerAnsicht({ plan, innen }: { plan: DividerPlan; innen: Inne
               height={f.tiefeMm}
               fill={f.stuecke.length ? GRUPPEN_TOENE[i % GRUPPEN_TOENE.length] : 'transparent'}
               fillOpacity={0.35}
-              stroke="var(--linie)"
+              stroke="var(--leise)"
               strokeWidth={3}
             />
             <FachNummer x={f.xMm} y={f.zMm} b={f.breiteMm} t={f.tiefeMm} nr={f.nr} />
@@ -210,7 +210,7 @@ export function SchubladenAnsicht({ plan, innen }: { plan: SchubladenPlan; innen
           width={innen.widthMm}
           height={innen.heightMm}
           fill="none"
-          stroke="var(--linie)"
+          stroke="var(--leise)"
           strokeWidth={4}
         />
         {plan.lagen.map((l, i) => {
@@ -225,7 +225,7 @@ export function SchubladenAnsicht({ plan, innen }: { plan: SchubladenPlan; innen
                 height={l.hoeheMm}
                 fill={GRUPPEN_TOENE[i % GRUPPEN_TOENE.length]}
                 fillOpacity={0.35}
-                stroke="var(--linie)"
+                stroke="var(--leise)"
                 strokeWidth={3}
               />
               <text
@@ -299,7 +299,7 @@ export function RackAnsicht({ plan }: { plan: RackPlan }) {
         role="img"
         aria-label={t('rack.aria', 'The rack seen from the front')}
       >
-        <rect x={0} y={0} width={breite} height={hoehe} fill="none" stroke="var(--linie)" strokeWidth={4} />
+        <rect x={0} y={0} width={breite} height={hoehe} fill="none" stroke="var(--leise)" strokeWidth={4} />
         {plan.einheiten.map((e, i) => {
           const y = hoehe - (e.he * HE_MM)
           return (
@@ -311,7 +311,7 @@ export function RackAnsicht({ plan }: { plan: RackPlan }) {
                 height={HE_MM}
                 fill={e.belegtVon ? GRUPPEN_TOENE[i % GRUPPEN_TOENE.length] : 'transparent'}
                 fillOpacity={0.35}
-                stroke="var(--linie)"
+                stroke="var(--leise)"
                 strokeWidth={1}
               />
               <text x={6} y={y + HE_MM / 2} dominantBaseline="central" fontSize={18} fill="var(--leise)">

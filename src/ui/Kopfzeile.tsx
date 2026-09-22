@@ -36,6 +36,7 @@
 // der Nutzer muss raten, welches davon was tut.
 // ───────────────────────────────────────────────────────────────────────────
 import { useRef, useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
 import { Menue, MenuePunkt, MenueTrenner } from './Menue'
 import { Einstellungen } from './Einstellungen'
@@ -45,12 +46,7 @@ import { serializeInventory, parseInventory } from '../domain/lib/inventoryPorta
 /** Lädt einen Text als Datei herunter. */
 const gibAus = (name: string, inhalt: string) => {
   const blob = new Blob([inhalt], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = name
-  a.click()
-  URL.revokeObjectURL(url)
+    herunterladen(blob, name)
 }
 
 const heute = () => new Date().toISOString().slice(0, 10)
