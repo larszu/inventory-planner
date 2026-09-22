@@ -116,6 +116,159 @@ räumt jemand wieder von Hand um und trägt es nirgends ein.
 sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
+## Cases — wie es darin liegt, und was drin sein muss
+
+Die Ansicht **Cases** beantwortet zwei Fragen an derselben Kiste.
+
+### Der Layout-Generator
+
+Er schlägt eine **Fachaufteilung** vor: Lagen von oben gesehen, je Fach ein
+Rechteck mit Mass und Platz — genug, um Schaum zu schneiden oder eine Kiste
+einzuräumen. Die oberste Lage steht oben, denn ein Case wird von oben
+aufgemacht.
+
+**Das Innenmass wird nicht geschätzt.** Es gibt genau zwei Wege dorthin:
+jemand hat es gemessen, oder jemand hat die Wandstärke angegeben und sie wird
+abgezogen. Gibt es keinen von beiden, zeigt die Ansicht **kein Bild, sondern
+den Grund**. Ein Rackcase mit 600 mm Aussentiefe hat keine 580 mm innen —
+Schale, Schaum und Deckel nehmen sich ihren Teil, und wer nach einer
+geratenen Zahl schneidet, hat umsonst geschnitten.
+
+**Gekippt wird nur, was gekippt werden darf.** Ohne Angabe zulässiger Lagen
+liegt ein Stück aufrecht — dieselbe Hausregel wie im Ladepacker. Gedreht wird
+dagegen frei: eine Vierteldrehung um die Hochachse ist keine andere Lage, ein
+Fach im Schaum kennt keine Fahrtrichtung.
+
+Was kein Fach bekommt, steht **mit Grund** darunter: ohne Masse, zu gross,
+kein Platz. Der Generator ist deterministisch — wer nach einem Bild schneidet,
+sieht beim zweiten Öffnen dasselbe.
+
+### Vier Arten, ein Inneres zu teilen
+
+Die **Schale** und der **Innenausbau** sind zwei Dinge. Die Schale macht ein
+Ding transportierbar (Aussenmass, Leergewicht, Rollen, Deckel) und steht am
+Lagerknoten; der Ausbau sagt, wie das Innere geteilt ist:
+
+| Art | Woraus die Fächer entstehen |
+|---|---|
+| **Schaum** | aus den Stücken — jedes bekommt seinen Ausschnitt |
+| **Divider** | aus der Teilung — die Wände stehen, gefragt wird was hineinpasst |
+| **Schubladen** | aus den Auszügen — jeder ein eigener kleiner Innenraum |
+| **Rack** | aus Höheneinheiten — 19 Zoll quer, HE hoch |
+
+Ein 19-Zoll-Rack im Maschinenraum hat einen Ausbau und keine Schale. Ein
+Peli-Case hat beides. Ein Rack-Case im Tourbetrieb hat beides, und sein
+Ausbau ist `rack`. Kein Sonderfall, sondern dieselbe Zeile zweimal gelesen.
+
+**Beim Rack teilen sich Lager und Plan die Arbeit.** Das *leere* Rack gehört
+dem Lager: wieviele HE das Case hat, ist eine Eigenschaft des Gegenstands.
+Was *darin sitzt*, gehört dem Signal-Plan — dort hängen Geräte, Ports und die
+interne Verkabelung daran. Damit gibt es keine zweite Wahrheit, und einen
+Befund, den es vorher nicht geben konnte: belegt der Plan HE 1–14 und hat das
+Case zwölf, sagt das jemand, bevor der LKW fährt. Ohne angeschlossenen Plan
+zeigt die Ansicht das leere Rack und sagt dazu, dass das **keine Aussage
+darüber ist, dass es leer ist**.
+
+Eine **Schublade ist kein eigener Lagerort**, sondern Teil des Ausbaus. Der
+Grund steht in `types/caseAusbau.ts` und ist gemessen: `healNode` verwirft
+jeden Knoten mit unbekannter Art, ein älterer Stand löschte also beim Laden
+jede Schublade samt der Zugehörigkeit aller Artikel darin. Der Preis: eine
+Schublade lässt sich nicht einzeln scannen.
+
+### 2D und 3D, Ebenen schaltbar
+
+Die **Draufsicht** sagt „wo liegt was" je Lage und druckt in der Auflösung
+des Druckers. Sie kann nicht sagen, wie die Lagen *übereinander* stehen — und
+daran hängt beim Schaum, ob der Deckel zugeht. Deshalb beides; **3D liegt
+hinter `lazy`**, Three gehört nicht in den Start des Lagers (gemessen: eigener
+Chunk).
+
+**Jede Ebene lässt sich ausblenden.** Wer Schaum für Lage 2 schneidet, will
+Lage 1 nicht im Bild haben.
+
+### Vorlagen: Peli, Nanuk — und die eigenen
+
+Die mitgelieferten Vorlagen sind **Namen ohne Masse**, und das ist Absicht:
+sie liessen sich in der Umgebung, in der dieses Werkzeug gebaut wurde, nicht
+nachprüfen (`peli.com` und `nanukcases.com` waren nicht erreichbar). Ein
+erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener
+— und jemand schneidet danach Schaum. Das wäre genau der Fehler, gegen den
+dieses Werkzeug gebaut ist.
+
+Neben **jeder** Vorlage steht deshalb, woher ihre Zahlen kommen: gemessen,
+aus dem Datenblatt, oder gar nicht hinterlegt. Der Weg, auf dem der Katalog
+wertvoll wird, ist der zurück: **wer das erste Peli 1510 ausmisst und als
+Vorlage sichert, hat sie für jedes weitere.** Eigene Vorlagen schlagen
+mitgelieferte.
+
+### Inlays als Datei: Schaumzuschnitt und 3D-Druck
+
+Aus jeder Schaum-Lage entsteht ein **Inlay** — die Datei, nach der geschnitten
+oder gedruckt wird. Drei Formate, weil es drei Maschinen sind:
+
+| Datei | Wofür | Was sie zusichert |
+|---|---|---|
+| **DXF** (R12) | Schaumzuschnitt, Fräse, Wasserstrahl | geschlossene Konturen, `$INSUNITS = 4` (mm), Ebenen `SCHNITT` / `RAND` / `BESCHRIFTUNG` |
+| **3MF** | 3D-Druck | Einheit Millimeter **in der Datei**, dichtes Netz mit Normalen nach aussen |
+| **STL** | 3D-Druck, wo kein 3MF geht | nichts über die Einheit — das Format kennt keine |
+
+**Das Layout ist nicht das Inlay.** Das Layout legt die Stücke auf ihre wahren
+Masse; ein Fach in Gerätegrösse nimmt das Gerät aber nicht auf. Das Inlay gibt
+**Spiel** dazu (Vorgabe 1 mm je Seite — recherchiert: 0,5–1 mm für einen
+haltenden Sitz, das obere Ende, weil ein Case im Halbdunkel eingeräumt wird),
+setzt **Griffmulden** an die Vorderkante (ohne sie hebelt man die Geräte heraus
+und reisst die Fachkante ein) und prüft die **Stege** nach, die das Spiel von
+beiden Seiten anfrisst.
+
+Zwischen Fach und Innenwand bleibt ein **Rand** so breit wie der Steg: Schaum
+dort trägt genauso wie zwischen zwei Fächern.
+
+Jede Tasche wird auf die Höhe **ihres** Stücks gefräst. Ein flaches Gerät neben
+einem hohen liegt sonst versenkt, wo niemand es greift.
+
+**Warum R12 und POLYLINE.** R12 liest jede CAM-Software, auch die alte Steuerung
+im Hinterhof. `LWPOLYLINE` gibt es erst ab R14; in einer R12-Datei wird sie
+mancherorts still übersprungen — und eine übersprungene Kontur ist eine Tasche,
+die nicht geschnitten wird.
+
+**Warum 3MF zuerst.** STL enthält nur Zahlen. Ob sie Millimeter oder Zoll sind,
+rät der Leser; der klassische Fehler ist der Faktor 25,4. 3MF schreibt die
+Einheit hin.
+
+**Wie das Netz dicht wird.** Ein Inlay ist ein Höhenfeld: über jedem Punkt der
+Grundfläche steht genau eine Oberkante. Alle Taschenkanten zusammen ergeben ein
+Gitter, jede Zelle liegt ganz in einer Tasche oder ganz daneben, und jede
+senkrechte Fläche wird an denselben Höhenstufen geschnitten. Damit trifft jede
+Kante genau eine Gegenkante — die Bedingung der 3MF-Spezifikation. Die Zahl der
+offenen Kanten steht in der Oberfläche neben den Knöpfen; sie muss null sein.
+
+Geprüft mit fremden Werkzeugen, nicht nur mit den eigenen Tests: das 3MF mit
+`unzip -t`, STL und 3MF mit `trimesh` (wasserdicht, stimmiger Umlauf, gleiches
+Volumen), das DXF mit dem Prüfer von `ezdxf` (null Fehler, null Reparaturen).
+
+### Der Inhaltslisten-Generator
+
+Er baut das Blatt, das **in den Deckel** kommt: Kästchen zum Abhaken, eine
+Zeile je Position, Gewicht, und **fremdes Material als solches markiert** —
+mit Lieferant und Rückgabedatum. Es beantwortet die Frage aus der Rückgabe:
+„fehlt etwas?"
+
+**Ein Unter-Case steht als eine Zeile da und wird nicht aufgeklappt.** Ein
+Blatt, das den Inhalt von drei Unter-Cases mit aufführt, lässt sich nicht
+abhaken — man müsste drei Kisten aufmachen, um eine Liste zu prüfen. Jedes
+Case trägt sein eigenes Blatt.
+
+**Ein Gesamtgewicht steht nur da, wenn es eines gibt.** Fehlt das Leergewicht
+des Cases oder ist eine Position nicht gewogen, nennt das Blatt den gewogenen
+Teil und sagt, was fehlt. Eine Summe, die vollständig aussieht und es nicht
+ist, ist am Hallenboden gefährlicher als gar keine: jemand hebt danach.
+
+Der Ausbau eines Cases (Innenmass, Wandstärke, Steg) liegt **ausserhalb** des
+portablen Formats, unter einem eigenen Speicher-Schlüssel. Er ist eine
+Eigenschaft dieses Stücks in diesem Lager und hilft am anderen Ende
+niemandem; ihn in `avplan-inventory` aufzunehmen wäre ein Versionssprung in
+allen Repos für nichts.
+
 ### Grundriss und Raum — wo die Regale wirklich stehen
 
 Der Baum sagt, wo etwas **hingehört**. Er sagt nicht, wo man **hinlaufen**

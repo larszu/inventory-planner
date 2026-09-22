@@ -129,36 +129,69 @@ describe('Gegenprobe zum Lauf selbst', () => {
 // ───────────────────────────────────────────────────────────────────────────
 const druck = readFileSync(resolve(__dirname, '..', 'lib', 'inventoryPrint.ts'), 'utf8')
 
-/** Nur der Inhalt des `<style>`-Blocks; der Rest der Datei ist TypeScript. */
-const druckStil = (): string => {
-  const m = /<style>([\s\S]*?)<\/style>/.exec(druck)
-  return (m?.[1] ?? '').replace(OHNE_KOMMENTAR, '')
-}
+/**
+ * Die `<style>`-Bloecke der Datei — JEDER, nicht der erste.
+ *
+ * Bis 2026-09-20 las diese Stelle mit `.exec` genau einen Block, weil es
+ * genau ein Blatt gab. Mit dem Deckelblatt der Case-Inhaltsliste kam ein
+ * zweites dazu, und es waere an der Farbpruefung vollstaendig vorbeigelaufen:
+ * ein Waechter, der das erste Blatt misst, sagt ueber das zweite nichts und
+ * sieht dabei gruen aus. Das ist die schlimmere Sorte Luecke — sie meldet
+ * sich nicht.
+ */
+const druckStile = (): string[] =>
+  [...druck.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) =>
+    (m[1] ?? '').replace(OHNE_KOMMENTAR, ''),
+  )
+
+/** Alle Stilbloecke zusammen — fuer Pruefungen, die nur „kommt vor" fragen. */
+const druckStil = (): string => druckStile().join('\n')
 
 /** Die Marken-Werte, die auf hellem Grund vorkommen duerfen. */
 const HELLE_PALETTE = new Set(['#F6F5F0', '#E1ECEF', '#1D324F', '#5C6B85', '#8C9CB3', '#132040'])
 
 describe('Der Druckbogen traegt die Marke', () => {
-  it('benutzt nur Farben aus der Palette', () => {
-    const fremd = [...druckStil().matchAll(/#[0-9A-Fa-f]{3,8}\b/g)]
-      .map((m) => m[0])
-      .filter((h) => !HELLE_PALETTE.has(h.toUpperCase()))
-
-    expect(fremd, `fremde Farben im Druckbogen: ${fremd.join(', ')}`).toEqual([])
+  it('findet ueberhaupt Blaetter — sonst prueft der Rest nichts', () => {
+    // Ohne diese Zeile waere eine umbenannte Datei oder ein zu Vorlagen
+    // umgebauter Bogen still gruen: null Bloecke halten jede Regel ein.
+    expect(druckStile().length).toBeGreaterThanOrEqual(2)
   })
 
-  it('steht auf Off-White und schreibt in Navy', () => {
-    expect(druckStil()).toMatch(/background:\s*#F6F5F0/)
-    expect(druckStil()).toMatch(/color:\s*#1D324F/)
+  it('benutzt in JEDEM Blatt nur Farben aus der Palette', () => {
+    for (const stil of druckStile()) {
+      const fremd = [...stil.matchAll(/#[0-9A-Fa-f]{3,8}\b/g)]
+        .map((m) => m[0])
+        .filter((h) => !HELLE_PALETTE.has(h.toUpperCase()))
+      expect(fremd, `fremde Farben im Druckbogen: ${fremd.join(', ')}`).toEqual([])
+    }
   })
 
-  it('traegt genau EINE Kopflinie', () => {
+  it('steht in jedem Blatt auf Off-White und schreibt in Navy', () => {
+    for (const stil of druckStile()) {
+      expect(stil).toMatch(/background:\s*#F6F5F0/)
+      expect(stil).toMatch(/color:\s*#1D324F/)
+    }
+  })
+
+  it('traegt genau EINE Kopflinie JE BLATT', () => {
     // Guide, Gestaltungssystem 1: Kicker, darunter die durchgehende Linie,
     // eine pro Flaeche. Sie ist der Baustein, an dem ein Blatt dieses
     // Hauses erkennbar ist — und der Ersatz fuer Rahmen und Ecken.
-    expect((druck.match(/class="kopflinie"/g) ?? []).length).toBe(1)
-    expect((druck.match(/class="kicker"/g) ?? []).length).toBe(1)
-    expect(druckStil()).toMatch(/\.kopflinie[^}]*border-top:\s*1px solid #8C9CB3/)
+    //
+    // Gezaehlt wird je Blatt und nicht je Datei: die Regel ist „eine pro
+    // FLAECHE", und ein zweites Blatt in derselben Datei ist eine zweite
+    // Flaeche. Ein Zaehler auf die Datei zwaenge dazu, das zweite Blatt
+    // ohne Kopflinie zu bauen, um den Waechter gruen zu halten — also
+    // genau die Regel zu brechen, die er schuetzen soll.
+    const blaetter = druck.split('<!doctype html>').slice(1)
+    expect(blaetter.length).toBe(druckStile().length)
+    for (const blatt of blaetter) {
+      expect((blatt.match(/class="kopflinie"/g) ?? []).length).toBe(1)
+      expect((blatt.match(/class="kicker"/g) ?? []).length).toBe(1)
+    }
+    for (const stil of druckStile()) {
+      expect(stil).toMatch(/\.kopflinie[^}]*border-top:\s*1px solid #8C9CB3/)
+    }
   })
 
   it('traegt KEIN Tally-Rot', () => {

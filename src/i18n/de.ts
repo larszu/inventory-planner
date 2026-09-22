@@ -1120,4 +1120,175 @@ export const de: Record<string, string> = {
   'measure.height': 'Laderaumhöhe',
   'measure.height.where':
     'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
+  // ── Cases: Layout und Inhaltsliste ──────────────────────────────────────
+  'tab.cases': 'Cases',
+  'tab.cases.q': 'Wie liegt es darin — und was muss drin sein?',
+  'case.pick': 'Case',
+  'case.pick.aria': 'Welches Case',
+  'case.none':
+    'Noch kein Case im Lagerbaum. Ein Case ist ein Container-Knoten — ohne einen gibt es nichts aufzuteilen.',
+  'case.buildout': 'Innen',
+  'case.inner.width': 'Innenbreite (mm)',
+  'case.inner.height': 'Innenhöhe (mm)',
+  'case.inner.depth': 'Innentiefe (mm)',
+  'case.inner.measured': 'Gemessenes Innenmass — es schlägt jede Rechnung.',
+  'case.inner.derived': 'Aus Aussenmass und Wandstärke gerechnet.',
+  'case.wall': 'Wandstärke (mm)',
+  'case.web': 'Steg zwischen den Fächern (mm, Vorgabe {mm})',
+  'case.layout': 'Layout',
+  'case.layout.empty': 'Nichts mit Massen liegt direkt in diesem Case.',
+  'case.layout.summary': '{lagen} Lagen · {faecher} Fächer · {kg} kg gesetzt',
+  'case.layer': 'Lage {nr} · {mm} mm hoch · {pct} % der Grundfläche belegt',
+  'case.layer.top': 'das sieht man, wenn der Deckel aufgeht',
+  'case.layer.aria': 'Lage {nr} von oben',
+  'case.turned': 'gedreht',
+  'case.noRoom': 'Ohne Fach',
+  'case.contents': 'Inhaltsliste',
+  'case.contents.empty': 'Es liegt nichts direkt in diesem Case.',
+  'case.col.what': 'Was',
+  'case.col.qty': 'Anzahl',
+  'case.col.kg': 'kg',
+  'case.subcase': 'eigenes Blatt',
+  'case.notWeighed': 'nicht gewogen',
+  'case.totalKg': 'Gesamt {kg} kg, Case leer {leer} kg.',
+  'case.noTotal':
+    'Inhalt {kg} kg — kein Gesamtgewicht: {n} Positionen sind nicht gewogen, oder das Leergewicht des Cases fehlt.',
+  'case.openSheet': 'Blatt für den Deckel öffnen (A4)',
+  'case.copy': 'Als Text kopieren',
+  'case.copied': 'Kopiert',
+  'case.printBlocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
+
+  // Der Layout-Generator
+  'caseLayout.noInner':
+    'Kein Innenmass hinterlegt, und auch keine Wandstärke. Das Innere folgt nicht aus dem Äusseren — Schale, Schaum und Deckel nehmen sich ihren Teil, also wird hier nichts gerechnet.',
+  'caseLayout.noOuter':
+    'Eine Wandstärke ist hinterlegt, aber die Aussenmasse des Cases nicht. Es gibt nichts, wovon sie abgezogen werden könnte.',
+  'caseLayout.wallTooThick':
+    'Eine Wand von {wand} mm lässt in diesem Case nichts übrig. Eine der beiden Zahlen ist falsch.',
+  'caseLayout.noSize': 'Für diesen Artikel sind keine Masse hinterlegt — er bekommt kein Fach.',
+  'caseLayout.tooBig': '{label} ist in mindestens einer Richtung grösser als das Innere dieses Cases.',
+  'caseLayout.noRoom': 'Für {label} ist in diesem Case kein Platz mehr.',
+  'caseLayout.unweighed':
+    'Von den gesetzten Stücken haben {n} kein Gewicht hinterlegt. Die Summe darunter ist das Bekannte, nicht das Gewicht des Cases.',
+  'caseLayout.headroom': 'Über der obersten Lage bleiben {mm} mm Höhe frei.',
+
+  // Das Deckelblatt
+  'caseList.kicker': 'Case-Inhalt',
+  'caseList.title': 'Inhalt — {name}',
+  'caseList.pieces': '{n} Stück',
+  'caseList.noCode': 'kein Code',
+  'caseList.total': 'Gesamtgewicht',
+  'caseList.totalKg': 'Gesamt {kg} kg',
+  'caseList.emptyKg': 'Case leer {kg} kg',
+  'caseList.contents': 'Inhalt',
+  'caseList.contentsKg': 'Inhalt {kg} kg',
+  'caseList.unweighed': 'nicht gewogen',
+  'caseList.unweighedShort': 'nicht gewogen',
+  'caseList.missingBoth':
+    'kein Gesamtgewicht: {n} Positionen sind nicht gewogen, und das Leergewicht des Cases ist nicht hinterlegt',
+  'caseList.missingEmpty': 'kein Gesamtgewicht: das Leergewicht des Cases ist nicht hinterlegt',
+  'caseList.missingItems': 'kein Gesamtgewicht: {n} Positionen sind nicht gewogen',
+  // ── Case-Ausbau: Arten, Divider, Schubladen, Rack ───────────────────────
+  'ausbau.art': 'Innen',
+  'ausbau.art.foam': 'Schaumausschnitte',
+  'ausbau.art.divider': 'Verstellbare Trennwände',
+  'ausbau.art.drawers': 'Schubladen',
+  'ausbau.art.rack': '19-Zoll-Schienen',
+  'ausbau.innerHint':
+    'Das Innenmass folgt nicht aus dem Aussenmass — Schale, Schaum und Deckel nehmen sich ihren Teil. Miss es nach, oder gib die Wandstärke an, damit sie abgezogen werden kann. Geschätzt wird hier nichts.',
+  'ausbau.wallThickness': 'Wandstärke der Trennwand (mm)',
+  'ausbau.columns': 'Spaltenbreiten (mm)',
+  'ausbau.rows': 'Reihentiefen (mm)',
+  'ausbau.dividerHint':
+    'Die Teilung ist deine Entscheidung und kein Ergebnis: die Wände bleiben, wo du sie hinsteckst, und gefragt wird, was hineinpasst. Breiten in mm, mit Komma getrennt.',
+  'ausbau.evenSplit': '{n} Spalten, gleichmässig',
+  'ausbau.drawersHint':
+    'Unten zuerst — welcher Auszug tief sitzt, ist eine Entscheidung (das Schwere nach unten) und kein Rechenergebnis. Ein Auszug ohne Höhe steht in der Liste, wird aber nicht gestapelt; eine angenommene Höhe verschöbe jeden Auszug darüber.',
+  'ausbau.drawerName': 'Auszug',
+  'ausbau.drawerHeight': 'Lichte Höhe (mm)',
+  'ausbau.drawerRemove': 'Entfernen',
+  'ausbau.drawerAdd': 'Auszug hinzufügen',
+  'ausbau.drawerDefault': 'Auszug {n}',
+  'ausbau.rackHint':
+    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — verknüpfe ihn über die Kennung daneben.',
+  'ausbau.rackUnits': 'Höhe (HE)',
+  'ausbau.rackDepth': 'Nutzbare Tiefe hinter der Schiene (mm)',
+  'ausbau.rackRef': 'Rack im Signal-Plan',
+  'ausbau.rackRefPlaceholder': 'Name oder Kennung des Racks',
+
+  'case.template': 'Vorlage',
+  'case.view2d': 'Draufsicht',
+  'case.view3d': '3D',
+  'case.layerToggle': 'Lage {nr}',
+  'case3d.loading': 'Die 3D-Ansicht wird geladen…',
+
+  'divider.legend': 'Fächer: {n} · {pct} % der Grundfläche ist Fach, der Rest ist Wand',
+  'divider.aria': 'Die Teilung von oben',
+  'divider.empty': 'leer',
+  'divider.tooBig': '{label} passt in kein Fach dieser Teilung.',
+  'divider.full': 'Jedes Fach, in das {label} passt, ist voll.',
+  'divider.noRaster': 'Noch keine Teilung eingetragen — gib oben die Spaltenbreiten und Reihentiefen an.',
+
+  'drawers.legend': 'Auszüge: {n} · {mm} mm bleiben oben frei',
+  'drawers.aria': 'Die Auszüge von der Seite',
+  'drawers.tooTall': 'Die Auszüge sind zusammen höher als das Case.',
+  'drawers.noHeight': 'Ohne lichte Höhe, nicht gestapelt: {n}',
+  'drawers.none': 'Noch kein Auszug mit lichter Höhe.',
+
+  'rack.legend': '{he} HE · {frei} frei',
+  'rack.aria': 'Das Rack von vorn',
+  'rack.noHeight':
+    'Für dieses Case ist keine Rack-Höhe hinterlegt. Wieviele Höheneinheiten es hat, ist eine Eigenschaft des Cases — der Plan kann das nicht beantworten.',
+  'rack.noPlan':
+    'Kein Rack-Layout aus dem Signal-Plan verknüpft. Das Case wird leer gezeigt — das ist keine Aussage darüber, dass es leer ist.',
+  'rack.overlap': 'HE {he}: {a} und {b} sind übereinander geplant.',
+  'rack.tooTall': '{label} reicht bis HE {oben}, dieses Case hat aber {hoehe}.',
+
+  // Der Katalog
+  'katalog.noSize': 'kein Mass hinterlegt — einmal nachmessen, dann trägt die Vorlage es',
+  'katalog.measured': 'in diesem Haus gemessen',
+  'katalog.measuredBy': 'gemessen · {quelle}',
+  'katalog.fromSheet': 'aus dem Datenblatt · {quelle}',
+  'katalog.fromSheetPlain': 'aus dem Datenblatt',
+  'katalog.unknownSource': 'Masse hinterlegt, Herkunft nicht angegeben',
+
+  'vorlage.pick': 'Schale aus einer Vorlage',
+  'vorlage.apply': 'Übernehmen',
+  'vorlage.own': ' eigen',
+  'vorlage.maker': 'Hersteller',
+  'vorlage.model': 'Modell',
+  'vorlage.save': 'Dieses Case als Vorlage sichern',
+  'vorlage.saved': 'Als Vorlage „{name}" gesichert.',
+  'vorlage.cannotSave':
+    'Noch nichts zu sichern: eine Vorlage braucht einen Modellnamen und mindestens einen vollständigen Satz Masse.',
+  'vorlage.noSizeToApply':
+    'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
+  'vorlage.shippedHint':
+    'Die mitgelieferten Vorlagen sind Namen ohne Masse — sie liessen sich hier nicht nachprüfen, und ein erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener. Einmal nachmessen und zurücksichern; ab dann trägt das Modell echte Zahlen.',
+  // ── Inlay: Schaumzuschnitt und 3D-Druck ─────────────────────────────────
+  'case.inlay': 'Inlay als Datei',
+  'inlay.nothing':
+    'Noch keine Lage zum Schneiden. Ein Inlay braucht Innenmasse und mindestens ein Stück mit Massen.',
+  'inlay.hint':
+    'Das Layout legt die Stücke auf ihre wahren Masse; das Inlay gibt Spiel dazu, denn ein Fach in Gerätegrösse nimmt das Gerät nicht auf. Eine Datei je Lage — Lagen sind einzelne Platten.',
+  'inlay.layer': 'Lage',
+  'inlay.layerOption': 'Lage {nr} · {mm} mm',
+  'inlay.clearance': 'Spiel je Seite (mm, Vorgabe {mm})',
+  'inlay.clearanceAria': 'Spiel je Seite',
+  'inlay.floor': 'Boden unter den Taschen (mm)',
+  'inlay.grip': 'Griffmulden',
+  'inlay.summary':
+    'Rohling {b} × {t} × {h} mm · {n} Taschen · {tri} Dreiecke · {open} offene Kanten · {vol} cm³',
+  'inlay.dxf': 'DXF für den Schaumzuschnitt',
+  'inlay.3mf': '3MF zum Drucken',
+  'inlay.stl': 'STL (ohne Einheit in der Datei)',
+  'inlay.formats':
+    '3MF nennt die Einheit (Millimeter) in der Datei und verlangt ein dichtes Netz — nimm es zuerst. STL nennt gar keine Einheit; ein Leser muss raten, und der klassische Fehler ist der Faktor 25,4. Stege unter {min} mm stehen oben.',
+  'inlay.overEdge':
+    'Mit {spiel} mm Spiel ragt die Tasche für {label} über die Kante des Rohlings. Nimm weniger Spiel — oder das Stück gehört nicht in diese Lage.',
+  'inlay.noGrip':
+    'Für {label} ist kein Platz für eine Griffmulde. Ohne sie reisst die Fachkante ein, wenn man das Stück heraushebelt.',
+  'inlay.thinWeb':
+    'Zwischen {paar} bleiben nur {mm} mm Material. Unter {min} mm bricht ein Schaumsteg aus, wenn ein Stück herausgehoben wird.',
+  'inlay.thinFloor': 'Ein Boden von {mm} mm trägt wenig. Unter einem schweren Stück gibt er nach.',
 }

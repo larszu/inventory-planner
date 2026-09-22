@@ -72,6 +72,7 @@
 // wird die Zahl gebraucht.
 // ───────────────────────────────────────────────────────────────────────────
 import { useMemo, useRef, useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { buildInventoryReport, type CountValue } from '../domain/lib/inventoryReport'
 import { serializeInventory, parseInventory } from '../domain/lib/inventoryPortable'
@@ -192,12 +193,7 @@ export function Bericht() {
       exportedAt: new Date().toISOString(),
       app: 'inventory-planner',
     })
-    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'bestand.avplan-inventory.json'
-    a.click()
-    URL.revokeObjectURL(url)
+        herunterladen(new Blob([json], { type: 'application/json' }), 'bestand.avplan-inventory.json')
   }
 
   const einlesen = async (f: File) => {
@@ -243,12 +239,7 @@ export function Bericht() {
         z.fehlt,
       ]),
     )
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'nachbestellen.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+        herunterladen(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'nachbestellen.csv')
   }
 
   const blattOeffnen = () => {

@@ -10,6 +10,7 @@
 // darüber machte aus einem Handgriff zwei.
 // ───────────────────────────────────────────────────────────────────────────
 import { useT } from '../i18n'
+import { dateiName, herunterladen } from '../lib/herunterladen'
 import {
   buildCaseEtikettenHtml,
   buildDockListeHtml,
@@ -44,16 +45,12 @@ export function Ladeausgabe({ ladungName, vehicle, plan, gruppen, datum, onFehle
 
   const csvLaden = () => {
     const { headers, rows } = ladungTabelle(plan, t)
-    const url = URL.createObjectURL(
-      new Blob([toCsv(headers, rows)], { type: 'text/csv;charset=utf-8' }),
-    )
-    const a = document.createElement('a')
-    a.href = url
-    // Der Name der Ladung im Dateinamen, entschärft: am Dock liegen zehn
+    // Der Name der Ladung im Dateinamen, entschaerft: am Dock liegen zehn
     // Dateien nebeneinander, und „ladung.csv" ist dort keine Auskunft.
-    a.download = `${ladungName.replace(/[^\w\d-]+/g, '-').replace(/^-|-$/g, '') || 'load'}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    herunterladen(
+      new Blob([toCsv(headers, rows)], { type: 'text/csv;charset=utf-8' }),
+      `${dateiName(ladungName) || 'load'}.csv`,
+    )
   }
 
   return (
