@@ -75,6 +75,7 @@
 //   getippter Code.
 // ───────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { nodePathLabel } from '../domain/lib/storageTree'
 import {
@@ -343,14 +344,7 @@ export function Inventur() {
     // beides als `CsvTable`. Die BOM bleibt eingeschaltet (Vorgabe): das
     // Blatt landet in Excel, und ohne sie stehen dort „Geprüft an" und
     // „Erwartet in" als Buchstabensalat.
-    const url = URL.createObjectURL(
-      new Blob([toCsv(tabelle.headers, tabelle.rows)], { type: 'text/csv;charset=utf-8' }),
-    )
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `inventur-${(ortCode || 'lager').replace(/[^\w.-]+/g, '_')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+        herunterladen(new Blob([toCsv(tabelle.headers, tabelle.rows)], { type: 'text/csv;charset=utf-8' }), `inventur-${(ortCode || 'lager').replace(/[^\w.-]+/g, '_')}.csv`)
   }
 
   const erfasst = new Set(

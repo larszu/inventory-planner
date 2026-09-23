@@ -70,6 +70,7 @@
 // eingetragen hat, sähe aus wie eines, in dem alles geprüft ist.
 // ───────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from 'react'
+import { herunterladen } from '../lib/herunterladen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCheckoutStore } from '../domain/store/checkoutStore'
 import {
@@ -99,14 +100,7 @@ import { TabelleRahmen } from './TabelleRahmen'
 
 /** Eine Tabelle als CSV herunterladen. Vier Knöpfe brauchen dasselbe. */
 const csvLaden = (tabelle: CsvTable, name: string) => {
-  const url = URL.createObjectURL(
-    new Blob([toCsv(tabelle.headers, tabelle.rows)], { type: 'text/csv;charset=utf-8' }),
-  )
-  const a = document.createElement('a')
-  a.href = url
-  a.download = name
-  a.click()
-  URL.revokeObjectURL(url)
+    herunterladen(new Blob([toCsv(tabelle.headers, tabelle.rows)], { type: 'text/csv;charset=utf-8' }), name)
 }
 
 export function WerteUndSchaeden() {
