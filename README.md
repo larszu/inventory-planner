@@ -186,20 +186,28 @@ Chunk).
 **Jede Ebene lässt sich ausblenden.** Wer Schaum für Lage 2 schneidet, will
 Lage 1 nicht im Bild haben.
 
-### Vorlagen: Peli, Nanuk — und die eigenen
+### Vorlagen: Peli, Nanuk, Casetec, Amptown, Gäng — und die eigenen
 
-Die mitgelieferten Vorlagen sind **Namen ohne Masse**, und das ist Absicht:
-sie liessen sich in der Umgebung, in der dieses Werkzeug gebaut wurde, nicht
-nachprüfen (`peli.com` und `nanukcases.com` waren nicht erreichbar). Ein
-erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener
-— und jemand schneidet danach Schaum. Das wäre genau der Fehler, gegen den
-dieses Werkzeug gebaut ist.
+Mitgeliefert sind **Datenblatt-Zahlen mit Quelle** (Stand 2026-09-24):
 
-Neben **jeder** Vorlage steht deshalb, woher ihre Zahlen kommen: gemessen,
-aus dem Datenblatt, oder gar nicht hinterlegt. Der Weg, auf dem der Katalog
-wertvoll wird, ist der zurück: **wer das erste Peli 1510 ausmisst und als
-Vorlage sichert, hat sie für jedes weitere.** Eigene Vorlagen schlagen
-mitgelieferte.
+| Hersteller | Modelle | Was drinsteht |
+|---|---|---|
+| Peli | 1450, 1510, 1535 Air, 1610, 1620, 1637 Air | aussen, innen, Deckel/Unterteil, Leergewicht (1620: ohne) |
+| Nanuk | 915, 925, 935, 945, 960 | aussen, innen, Deckel/Unterteil, Leergewicht |
+| Casetec | 19"-Rack Typ A, 2/4/6/8 HE, 400 mm | HE, Einbautiefe, Aussenmass (ca.) |
+| Amptown | Double Door MC 2 HE, DDA 12 HE, KRS/KRL 2–5 HE | HE und Einbautiefe — Aussenmasse nicht veröffentlicht |
+| Gäng-Case | Tour Rack L DD 48 / DD 58 / DD 48 W | HE und Einbautiefe; Aussenmass nur beim 8U DD 48 W |
+
+Neben **jeder** Vorlage steht, woher ihre Zahlen kommen — mit Adresse und
+Abrufdatum. Die Hersteller-Seiten selbst waren beim Bau nicht erreichbar;
+die Zahlen stammen aus Suchtreffern auf Hersteller-Shop oder Händler, die das
+Datenblatt wiedergeben. Was nicht veröffentlicht ist, steht nicht da: eine
+Amptown-Vorlage setzt Höheneinheiten und Einbautiefe, keinen Millimeter
+Aussenmass. Geprüft wird, was sich prüfen lässt: bei jeder Hartschale ergibt
+Deckel- plus Unterteiltiefe die Innenhöhe (`caseKatalog.test.ts`).
+
+**Gemessen schlägt Datenblatt.** Wer ein Case ausmisst und als Vorlage
+sichert, ersetzt die mitgelieferte Fassung dieses Modells.
 
 ### Inlays als Datei: Schaumzuschnitt und 3D-Druck
 

@@ -1251,6 +1251,14 @@ export const de: Record<string, string> = {
   'katalog.fromSheet': 'aus dem Datenblatt · {quelle}',
   'katalog.fromSheetPlain': 'aus dem Datenblatt',
   'katalog.unknownSource': 'Masse hinterlegt, Herkunft nicht angegeben',
+  'katalog.rackOnlySheet':
+    'Aussenmasse nicht veröffentlicht — nur Höheneinheiten und Einbautiefe · {quelle}',
+  'katalog.units': '{he} HE',
+  'katalog.mountDepth': '{mm} mm Einbautiefe',
+  'katalog.outside': 'aussen {mass}',
+  'katalog.inside': 'innen {mass}',
+  'katalog.lidBase': 'Deckel {deckel} mm + Unterteil {unterteil} mm',
+  'katalog.empty': '{kg} kg leer',
 
   'vorlage.pick': 'Schale aus einer Vorlage',
   'vorlage.apply': 'Übernehmen',
@@ -1264,7 +1272,7 @@ export const de: Record<string, string> = {
   'vorlage.noSizeToApply':
     'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
   'vorlage.shippedHint':
-    'Die mitgelieferten Vorlagen sind Namen ohne Masse — sie liessen sich hier nicht nachprüfen, und ein erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener. Einmal nachmessen und zurücksichern; ab dann trägt das Modell echte Zahlen.',
+    'Die mitgelieferten Vorlagen tragen Datenblatt-Zahlen mit Quelle. Ein gemessenes Case schlägt das Datenblatt: einmal nachmessen und zurücksichern, dann ersetzen deine Zahlen die mitgelieferten für dieses Modell.',
   // ── Inlay: Schaumzuschnitt und 3D-Druck ─────────────────────────────────
   'case.inlay': 'Inlay als Datei',
   'inlay.nothing':

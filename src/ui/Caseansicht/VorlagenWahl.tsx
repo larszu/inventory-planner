@@ -1,12 +1,12 @@
 // ───────────────────────────────────────────────────────────────────────────
 // DIE VORLAGEN-WAHL — Peli, Nanuk, und die eigenen.
 //
-// ─── WARUM DIE MITGELIEFERTEN KEINE MASSE TRAGEN ───────────────────────────
+// ─── WOHER DIE ZAHLEN KOMMEN ───────────────────────────────────────────────
 //
-// Weil sie nicht nachgeprüft werden konnten (siehe `lib/caseKatalog.ts`).
-// Deshalb steht neben JEDER Vorlage, woher ihre Zahlen kommen — gemessen,
-// aus dem Datenblatt, oder gar nicht hinterlegt. Ohne diese Zeile sähen alle
-// drei gleich aus, und beim Zuschnitt zählt der Unterschied.
+// Neben JEDER Vorlage steht, woher ihre Zahlen kommen — gemessen, aus dem
+// Datenblatt (mit Adresse), oder gar nicht hinterlegt (siehe
+// `lib/caseKatalog.ts`). Ohne diese Zeile sähen alle drei gleich aus, und
+// beim Zuschnitt zählt der Unterschied.
 //
 // ─── UND DESHALB IST DER WEG ZURÜCK DER WICHTIGERE ─────────────────────────
 //
@@ -18,8 +18,9 @@ import { useState } from 'react'
 import { useT } from '../../i18n'
 import {
   alleVorlagen,
-  hatMasse,
+  hatUebernehmbares,
   massAuskunft,
+  massZeile,
   vorlageAusCase,
   vorlageName,
   type KatalogCase,
@@ -47,7 +48,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
 
   const uebernehmen = () => {
     if (!vorlage) return
-    if (!hatMasse(vorlage)) {
+    if (!hatUebernehmbares(vorlage)) {
       // Ehrlich statt hilfreich-aussehend: eine Vorlage ohne Masse zu
       // übernehmen setzte nichts und sähe aus, als hätte sie es getan.
       setMeldung(
@@ -63,7 +64,15 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
       innenMm: vorlage.innenMm,
       art: vorlage.art,
       vorlageId: vorlage.id,
-      ...(vorlage.hoeheHE ? { rack: { ...ausbau?.rack, hoeheHE: vorlage.hoeheHE } } : {}),
+      ...(vorlage.hoeheHE || vorlage.einbautiefeMm
+        ? {
+            rack: {
+              ...ausbau?.rack,
+              ...(vorlage.hoeheHE ? { hoeheHE: vorlage.hoeheHE } : {}),
+              ...(vorlage.einbautiefeMm ? { nutzbareTiefeMm: vorlage.einbautiefeMm } : {}),
+            },
+          }
+        : {}),
     })
   }
 
@@ -119,12 +128,13 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
           {t('vorlage.apply', 'Apply')}
         </button>
       </div>
+      {vorlage && massZeile(vorlage, t).length > 0 && <p>{massZeile(vorlage, t).join(' · ')}</p>}
       {vorlage && <p className="hinweis">{massAuskunft(vorlage, t)}</p>}
 
       <p className="hinweis">
         {t(
           'vorlage.shippedHint',
-          'The shipped templates are names without dimensions — they could not be verified here, and an invented millimetre looks exactly like a measured one on screen. Measure once and save it back; from then on the model carries real numbers.',
+          'The shipped templates carry data-sheet figures with their source. A measured case beats the data sheet: measure once and save it back, and your numbers replace the shipped ones for this model.',
         )}
       </p>
 
