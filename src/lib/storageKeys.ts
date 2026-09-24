@@ -73,4 +73,12 @@ export const STORAGE_KEYS = {
    * Katalogs, weil die mitgelieferten Vorlagen bewusst keine Masse tragen.
    */
   caseVorlagen: 'inventory-planner:caseVorlagen',
+  /**
+   * Die Rack-Bestückungen, die der Signal-Plan herübergereicht hat
+   * (`avplan-rack-belegung`, siehe `lib/rackBelegungFormat.ts`).
+   *
+   * Eigener Schlüssel, weil sie dem PLAN gehören und hier nur gelesen werden:
+   * eine neue Datei ersetzt den Stand ganz, statt sich mit ihm zu mischen.
+   */
+  planRacks: 'inventory-planner:planRacks',
 } as const

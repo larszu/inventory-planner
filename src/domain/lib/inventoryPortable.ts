@@ -112,6 +112,17 @@ export const INVENTORY_FORMAT = 'avplan-inventory'
 // byte-gleich in den Planern; es zu erweitern waere ein Versionssprung in
 // allen Repos fuer etwas, das nur die Ladeplanung braucht. Als eigener
 // optionaler Nachbar bleibt `PhysicalDimensions` unveraendert.
+//
+// Ebenfalls Version 8: `StorageNode.stellplatz` -- die Lage eines festen
+// Lagerplatzes im Hallen-Grundriss. Das Feld kam im Lager-Werkzeug OHNE
+// eigenen Sprung dazu (2026-09-18) und wurde erst beim Abgleich aller Kopien
+// am 2026-09-24 gefunden. Kein Schaden entstanden: bis dahin las kein Planer
+// Version 8, jeder lehnte die Datei also ab statt sie zu kuerzen. Es gehoert
+// damit zu 8 und nicht zu 9 -- jede Kopie, die 8 liest, kennt beide Felder.
+//
+// ABGEGLICHEN AM 2026-09-24 in allen Kopien: inventory-planner,
+// cable-planner, light-planner, multicam-planner, und in der Suite
+// `packages/inventory-core`, `apps/cable-planner`, `apps/inventory-planner`.
 export const INVENTORY_FORMAT_VERSION = 8
 
 export interface InventorySnapshot {

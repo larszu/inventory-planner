@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   dividerPlan,
   gleichmaessigeTeilung,
+  rackGegenPlan,
   rackPlan,
   schubladenPlan,
   type RackBelegung,
@@ -198,5 +199,49 @@ describe('rackPlan', () => {
     const r = rackPlan({ hoeheHE: 4 }, [])
     expect(r.befunde).toEqual([])
     expect(r.freiHE).toBe(4)
+  })
+})
+
+describe('das Rack gegen die Datei des Plans', () => {
+  const plan = {
+    hoeheHE: 12,
+    belegung: [
+      { startHE: 11, hoeheHE: 1, label: 'Patch vorn', seite: 'front' as const },
+      { startHE: 11, hoeheHE: 1, label: 'Patch hinten', seite: 'rear' as const },
+      { startHE: 1, hoeheHE: 2, label: 'Netzteil' },
+    ],
+  }
+
+  it('Front- und Rückschiene in derselben HE sind keine Doppelbelegung', () => {
+    const r = rackGegenPlan({ hoeheHE: 12, planRef: 'r1' }, plan, true)
+    expect(r.befunde.filter((b) => b.art === 'ueberlappung')).toEqual([])
+    expect(r.einheiten[10].belegtVon).toBe('Patch vorn / Patch hinten')
+    expect(r.freiHE).toBe(9)
+  })
+
+  it('ein volles Gerät und eine Blende in derselben HE sind es sehr wohl', () => {
+    const r = rackGegenPlan(
+      { hoeheHE: 4, planRef: 'r1' },
+      { hoeheHE: 4, belegung: [{ startHE: 2, hoeheHE: 1, label: 'Server' }, { startHE: 2, hoeheHE: 1, label: 'Blende', seite: 'rear' }] },
+      true,
+    )
+    expect(r.befunde.some((b) => b.art === 'ueberlappung')).toBe(true)
+  })
+
+  it('meldet, wenn der Plan das Rack höher baut, als das Case ist', () => {
+    const r = rackGegenPlan({ hoeheHE: 10, planRef: 'r1' }, plan, true)
+    expect(r.befunde.map((b) => b.art)).toContain('plan-hoeher')
+    expect(r.befunde.map((b) => b.art)).toContain('ueberbelegt')
+  })
+
+  it('eine Kennung, die die Datei nicht kennt, heisst „fehlt im Plan“ und nicht „leer“', () => {
+    const r = rackGegenPlan({ hoeheHE: 6, planRef: 'weg' }, undefined, true)
+    expect(r.befunde.map((b) => b.art)).toEqual(['plan-fehlt'])
+    expect(r.befunde[0].text).toMatch(/weg/)
+  })
+
+  it('ohne eingelesene Datei ist schlicht nichts angeschlossen', () => {
+    const r = rackGegenPlan({ hoeheHE: 6, planRef: 'r1' }, undefined, false)
+    expect(r.befunde.map((b) => b.art)).toEqual(['kein-plan'])
   })
 })

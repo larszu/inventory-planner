@@ -1210,7 +1210,7 @@ export const de: Record<string, string> = {
   'ausbau.drawerAdd': 'Auszug hinzufügen',
   'ausbau.drawerDefault': 'Auszug {n}',
   'ausbau.rackHint':
-    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — verknüpfe ihn über die Kennung daneben.',
+    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — lade die Rack-Datei aus dem Cable Planner und wähle unten das Rack.',
   'ausbau.rackUnits': 'Höhe (HE)',
   'ausbau.rackDepth': 'Nutzbare Tiefe hinter der Schiene (mm)',
   'ausbau.rackRef': 'Rack im Signal-Plan',
@@ -1243,6 +1243,14 @@ export const de: Record<string, string> = {
     'Kein Rack-Layout aus dem Signal-Plan verknüpft. Das Case wird leer gezeigt — das ist keine Aussage darüber, dass es leer ist.',
   'rack.overlap': 'HE {he}: {a} und {b} sind übereinander geplant.',
   'rack.tooTall': '{label} reicht bis HE {oben}, dieses Case hat aber {hoehe}.',
+  'rack.planMissing':
+    'Das Rack „{ref}" steht nicht in der letzten Datei des Signal-Plans. Vielleicht wurde es dort umbenannt oder gelöscht — das Case wird leer gezeigt, und das ist keine Aussage darüber, dass es leer ist.',
+  'rack.planTaller': 'Der Signal-Plan baut dieses Rack mit {plan} HE, dieses Case hat {hoehe}.',
+  'planRack.notAFile':
+    'Das ist keine Rack-Datei des Signal-Plans. Im Cable Planner: Bibliothek → Racks → Fürs Lager.',
+  'planRack.option': '{name} · {he} HE',
+  'planRack.load': 'Rack-Datei aus dem Plan laden',
+  'planRack.loaded': '{n} Racks aus dem Plan, geladen {wann}.',
 
   // Der Katalog
   'katalog.noSize': 'kein Mass hinterlegt — einmal nachmessen, dann trägt die Vorlage es',
@@ -1251,6 +1259,14 @@ export const de: Record<string, string> = {
   'katalog.fromSheet': 'aus dem Datenblatt · {quelle}',
   'katalog.fromSheetPlain': 'aus dem Datenblatt',
   'katalog.unknownSource': 'Masse hinterlegt, Herkunft nicht angegeben',
+  'katalog.rackOnlySheet':
+    'Aussenmasse nicht veröffentlicht — nur Höheneinheiten und Einbautiefe · {quelle}',
+  'katalog.units': '{he} HE',
+  'katalog.mountDepth': '{mm} mm Einbautiefe',
+  'katalog.outside': 'aussen {mass}',
+  'katalog.inside': 'innen {mass}',
+  'katalog.lidBase': 'Deckel {deckel} mm + Unterteil {unterteil} mm',
+  'katalog.empty': '{kg} kg leer',
 
   'vorlage.pick': 'Schale aus einer Vorlage',
   'vorlage.apply': 'Übernehmen',
@@ -1264,7 +1280,7 @@ export const de: Record<string, string> = {
   'vorlage.noSizeToApply':
     'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
   'vorlage.shippedHint':
-    'Die mitgelieferten Vorlagen sind Namen ohne Masse — sie liessen sich hier nicht nachprüfen, und ein erfundener Millimeter sieht auf dem Bildschirm genauso aus wie ein gemessener. Einmal nachmessen und zurücksichern; ab dann trägt das Modell echte Zahlen.',
+    'Die mitgelieferten Vorlagen tragen Datenblatt-Zahlen mit Quelle. Ein gemessenes Case schlägt das Datenblatt: einmal nachmessen und zurücksichern, dann ersetzen deine Zahlen die mitgelieferten für dieses Modell.',
   // ── Inlay: Schaumzuschnitt und 3D-Druck ─────────────────────────────────
   'case.inlay': 'Inlay als Datei',
   'inlay.nothing':
