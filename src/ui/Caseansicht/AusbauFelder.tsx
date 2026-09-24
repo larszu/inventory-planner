@@ -15,6 +15,7 @@
 // allem keine Vorgabe — siehe `lib/caseLayout.ts`.
 // ───────────────────────────────────────────────────────────────────────────
 import { useT } from '../../i18n'
+import { PlanRackWahl } from './PlanRackWahl'
 import {
   AUSBAU_ARTEN,
   ausbauArt,
@@ -266,7 +267,7 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
           <p className="hinweis">
             {t(
               'ausbau.rackHint',
-              'The empty rack belongs to the warehouse: how many units this case has is a property of the case. What sits in them belongs to the signal plan — connect it with the reference below.',
+              'The empty rack belongs to the warehouse: how many units this case has is a property of the case. What sits in them belongs to the signal plan — load the rack file from the Cable Planner and pick the rack below.',
             )}
           </p>
           <div className="zeile">
@@ -280,15 +281,12 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
               (v) => onSetze({ rack: { ...ausbau?.rack, nutzbareTiefeMm: v } }),
               t('ausbau.rackDepth', 'Usable depth behind the rail (mm)'),
             )}
-            <label>
-              {t('ausbau.rackRef', 'Rack in the signal plan')}
-              <input
-                value={ausbau?.rack?.planRef ?? ''}
-                onChange={(e) => onSetze({ rack: { ...ausbau?.rack, planRef: e.target.value } })}
-                placeholder={t('ausbau.rackRefPlaceholder', 'name or code of the rack')}
-                aria-label={t('ausbau.rackRef', 'Rack in the signal plan')}
-              />
-            </label>
+          </div>
+          <div className="zeile">
+            <PlanRackWahl
+              planRef={ausbau?.rack?.planRef}
+              onSetze={(planRef) => onSetze({ rack: { ...ausbau?.rack, planRef } })}
+            />
           </div>
         </>
       )}

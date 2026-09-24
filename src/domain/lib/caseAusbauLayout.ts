@@ -260,6 +260,13 @@ export interface RackBelegung {
   startHE: number
   hoeheHE: number
   label: string
+  /**
+   * Nur Front-, nur Rückschiene oder beide. Fehlt: beide.
+   *
+   * Eine Patchblende hinter einem kurzen Gerät in derselben HE ist Absicht
+   * und keine Doppelbelegung — der Plan baut das so (`mountSide`).
+   */
+  seite?: 'front' | 'rear' | 'full'
 }
 
 export interface RackPlan {
@@ -270,7 +277,7 @@ export interface RackPlan {
 }
 
 export interface RackBefund {
-  art: 'keine-hoehe' | 'ueberbelegt' | 'ueberlappung' | 'kein-plan'
+  art: 'keine-hoehe' | 'ueberbelegt' | 'ueberlappung' | 'kein-plan' | 'plan-hoeher' | 'plan-fehlt'
   text: string
 }
 
@@ -325,22 +332,30 @@ export function rackPlan(
     return { einheiten, freiHE: hoehe, befunde }
   }
 
+  // Je HE: wer vorn und wer hinten sitzt. `full` belegt beide Seiten.
+  const vorn = new Map<number, string>()
+  const hinten = new Map<number, string>()
   for (const b of belegung) {
+    const seite = b.seite ?? 'full'
     for (let i = 0; i < b.hoeheHE; i += 1) {
       const he = b.startHE + i
       const einheit = einheiten[he - 1]
       if (!einheit) continue
-      if (einheit.belegtVon && einheit.belegtVon !== b.label) {
+      const andere =
+        (seite !== 'rear' ? vorn.get(he) : undefined) ?? (seite !== 'front' ? hinten.get(he) : undefined)
+      if (andere && andere !== b.label) {
         befunde.push({
           art: 'ueberlappung',
           text: format(t('rack.overlap', 'Unit {he}: {a} and {b} are planned on top of each other.'), {
             he,
-            a: einheit.belegtVon,
+            a: andere,
             b: b.label,
           }),
         })
       }
-      einheit.belegtVon = b.label
+      if (seite !== 'rear') vorn.set(he, b.label)
+      if (seite !== 'front') hinten.set(he, b.label)
+      einheit.belegtVon = einheit.belegtVon && einheit.belegtVon !== b.label ? `${einheit.belegtVon} / ${b.label}` : b.label
     }
     const oben = b.startHE + b.hoeheHE - 1
     if (oben > hoehe) {
@@ -355,4 +370,66 @@ export function rackPlan(
   }
 
   return { einheiten, freiHE: einheiten.filter((e) => !e.belegtVon).length, befunde }
+}
+
+/** Was der Plan über ein Rack herüberreicht (`avplan-rack-belegung`). */
+export interface PlanBestueckung {
+  /** Höheneinheiten, für die der Plan das Rack gebaut hat. */
+  hoeheHE: number
+  belegung: readonly RackBelegung[]
+}
+
+/**
+ * Das Rack gegen die Bestückung des Plans.
+ *
+ * Zusätzlich zu `rackPlan` zwei Befunde, die erst mit der Datei des Plans
+ * möglich sind:
+ *
+ *   plan-fehlt    Das Case trägt eine Kennung, die die zuletzt eingelesene
+ *                 Datei nicht kennt — der Plan hat das Rack gelöscht oder
+ *                 umbenannt. NICHT „leer": das wäre eine Aussage über das
+ *                 Rack, die niemand gemacht hat.
+ *   plan-hoeher   Der Plan baut das Rack für mehr HE, als das Case hat. Auch
+ *                 wenn heute alles unten sitzt: wer im Plan oben etwas
+ *                 ergänzt, bekommt kein Nein.
+ */
+export function rackGegenPlan(
+  rack: RackAusbau | undefined,
+  plan: PlanBestueckung | undefined,
+  /** Liegt überhaupt eine Datei des Plans vor? Ohne sie fehlt kein Rack
+   *  darin — dann ist schlicht nichts angeschlossen. */
+  dateiEingelesen: boolean,
+  t: Uebersetzen = quelle,
+): RackPlan {
+  if (rack?.planRef && !plan && dateiEingelesen) {
+    const r = rackPlan(rack, undefined, t)
+    return {
+      ...r,
+      befunde: [
+        ...r.befunde.filter((b) => b.art !== 'kein-plan'),
+        {
+          art: 'plan-fehlt',
+          text: format(
+            t(
+              'rack.planMissing',
+              'The rack “{ref}” is not in the last file from the signal plan. It may have been renamed or deleted there — the case is shown empty, which is not a statement that it is empty.',
+            ),
+            { ref: rack.planRef },
+          ),
+        },
+      ],
+    }
+  }
+  const r = rackPlan(rack, plan?.belegung, t)
+  const hoehe = rack?.hoeheHE
+  if (plan && hoehe && plan.hoeheHE > hoehe) {
+    r.befunde.push({
+      art: 'plan-hoeher',
+      text: format(
+        t('rack.planTaller', 'The signal plan builds this rack with {plan} units; this case has {hoehe}.'),
+        { plan: plan.hoeheHE, hoehe },
+      ),
+    })
+  }
+  return r
 }

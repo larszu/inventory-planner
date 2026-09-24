@@ -87,6 +87,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
       ausbauArt(ausbau),
       node.name,
       ausbau?.rack?.hoeheHE,
+      ausbau?.rack?.nutzbareTiefeMm,
     )
     if (!v) {
       setMeldung(

@@ -333,6 +333,7 @@ export function vorlageAusCase(
   art: AusbauArt,
   quelleText?: string,
   hoeheHE?: number,
+  einbautiefeMm?: number,
 ): KatalogCase | null {
   const kandidat: KatalogCase = {
     id,
@@ -342,6 +343,7 @@ export function vorlageAusCase(
     innenMm,
     art,
     hoeheHE,
+    einbautiefeMm,
     herkunft: 'gemessen',
     quelle: quelleText?.trim() || undefined,
     eigen: true,

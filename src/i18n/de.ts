@@ -1210,7 +1210,7 @@ export const de: Record<string, string> = {
   'ausbau.drawerAdd': 'Auszug hinzufügen',
   'ausbau.drawerDefault': 'Auszug {n}',
   'ausbau.rackHint':
-    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — verknüpfe ihn über die Kennung daneben.',
+    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — lade die Rack-Datei aus dem Cable Planner und wähle unten das Rack.',
   'ausbau.rackUnits': 'Höhe (HE)',
   'ausbau.rackDepth': 'Nutzbare Tiefe hinter der Schiene (mm)',
   'ausbau.rackRef': 'Rack im Signal-Plan',
@@ -1243,6 +1243,14 @@ export const de: Record<string, string> = {
     'Kein Rack-Layout aus dem Signal-Plan verknüpft. Das Case wird leer gezeigt — das ist keine Aussage darüber, dass es leer ist.',
   'rack.overlap': 'HE {he}: {a} und {b} sind übereinander geplant.',
   'rack.tooTall': '{label} reicht bis HE {oben}, dieses Case hat aber {hoehe}.',
+  'rack.planMissing':
+    'Das Rack „{ref}" steht nicht in der letzten Datei des Signal-Plans. Vielleicht wurde es dort umbenannt oder gelöscht — das Case wird leer gezeigt, und das ist keine Aussage darüber, dass es leer ist.',
+  'rack.planTaller': 'Der Signal-Plan baut dieses Rack mit {plan} HE, dieses Case hat {hoehe}.',
+  'planRack.notAFile':
+    'Das ist keine Rack-Datei des Signal-Plans. Im Cable Planner: Bibliothek → Racks → Fürs Lager.',
+  'planRack.option': '{name} · {he} HE',
+  'planRack.load': 'Rack-Datei aus dem Plan laden',
+  'planRack.loaded': '{n} Racks aus dem Plan, geladen {wann}.',
 
   // Der Katalog
   'katalog.noSize': 'kein Mass hinterlegt — einmal nachmessen, dann trägt die Vorlage es',

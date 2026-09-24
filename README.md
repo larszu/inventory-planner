@@ -169,6 +169,23 @@ Case zwölf, sagt das jemand, bevor der LKW fährt. Ohne angeschlossenen Plan
 zeigt die Ansicht das leere Rack und sagt dazu, dass das **keine Aussage
 darüber ist, dass es leer ist**.
 
+**So kommt die Bestückung herüber:** im Cable Planner *Bibliothek → Racks →
+Fürs Lager* schreibt `rack-belegung.json` (Format `avplan-rack-belegung`,
+je Rack Kennung, HE, Tiefe und je Gerät Lage, Höhe, Name und Schiene). Hier
+im Rack-Ausbau des Cases *Rack-Datei aus dem Plan laden*, dann das Rack
+wählen. Geprüft wird:
+
+- ein Gerät, das über die HE des Cases hinausreicht,
+- zwei Geräte in derselben HE — ausser eines sitzt nur vorn und eines nur
+  hinten (Patchblende hinter kurzem Gerät ist Absicht),
+- ein Plan, der das Rack höher baut, als das Case ist,
+- eine Kennung, die die letzte Datei nicht mehr kennt („fehlt im Plan“,
+  nicht „leer“).
+
+HE werden in der Datei **von unten** gezählt, wie die Branche zählt; der
+Rack-Builder zeichnet von oben und rechnet beim Schreiben um. Eine neue Datei
+ersetzt den Stand ganz.
+
 Eine **Schublade ist kein eigener Lagerort**, sondern Teil des Ausbaus. Der
 Grund steht in `types/caseAusbau.ts` und ist gemessen: `healNode` verwirft
 jeden Knoten mit unbekannter Art, ein älterer Stand löschte also beim Laden

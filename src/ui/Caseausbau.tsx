@@ -37,12 +37,13 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCaseAusbauStore } from '../domain/store/caseAusbauStore'
 import { useCaseVorlagenStore } from '../domain/store/caseVorlagenStore'
 import { erzeugeCaseLayout, innenmass, type CaseStueck } from '../domain/lib/caseLayout'
-import { dividerPlan, rackPlan, schubladenPlan } from '../domain/lib/caseAusbauLayout'
+import { dividerPlan, rackGegenPlan, schubladenPlan } from '../domain/lib/caseAusbauLayout'
 import { caseInhalt, caseInhaltAlsText } from '../domain/lib/caseInhaltsliste'
 import { buildCaseInhaltslisteHtml } from '../domain/lib/inventoryPrint'
 import { isContainerKind, nodePathLabel } from '../domain/lib/storageTree'
 import { ausbauArt, type CaseAusbau } from '../domain/types/caseAusbau'
 import { AusbauFelder } from './Caseansicht/AusbauFelder'
+import { usePlanRackStore } from '../domain/store/planRackStore'
 import { DividerAnsicht, RackAnsicht, SchaumLage, SchubladenAnsicht } from './Caseansicht/Plaene'
 import { VorlagenWahl } from './Caseansicht/VorlagenWahl'
 import { InlayAusgabe } from './Caseansicht/InlayAusgabe'
@@ -144,13 +145,19 @@ export function Caseausbau() {
     () => (innen?.bekannt && art === 'schubladen' ? schubladenPlan(innen.mm, ausbau?.schubladen ?? []) : null),
     [innen, art, ausbau],
   )
-  const rack = useMemo(
+  const planRacks = usePlanRackStore((s) => s.racks)
+  const planEingelesen = usePlanRackStore((s) => !!s.eingelesen)
+  const rack = useMemo(() => {
     // Die Bestückung kommt NICHT von hier: das Lager darf kein Plan-Modell
-    // kennen (ADR-006). Ohne angeschlossenen Plan zeigt `rackPlan` das leere
-    // Rack und sagt, dass es keine Aussage über den Inhalt ist.
-    () => (art === 'rack' ? rackPlan(ausbau?.rack, undefined, t) : null),
-    [art, ausbau, t],
-  )
+    // kennen (ADR-006). Sie kommt aus der Datei, die der Plan herüberreicht
+    // (`avplan-rack-belegung`), und wird über `planRef` gefunden. Ohne sie
+    // zeigt `rackGegenPlan` das leere Rack und sagt, dass es keine Aussage
+    // über den Inhalt ist.
+    if (art !== 'rack') return null
+    const ref = ausbau?.rack?.planRef
+    const plan = ref ? planRacks.find((r) => r.planRef === ref) : undefined
+    return rackGegenPlan(ausbau?.rack, plan, planEingelesen, t)
+  }, [art, ausbau, planRacks, planEingelesen, t])
 
   const patch = (p: Partial<Omit<CaseAusbau, 'nodeId' | 'updatedAt'>>) => {
     if (node) setzeAusbau(node.id, { ...ausbau, ...p })

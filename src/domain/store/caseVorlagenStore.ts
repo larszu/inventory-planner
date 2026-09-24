@@ -52,6 +52,9 @@ export const healVorlage = (raw: unknown): KatalogCase | null => {
     innenMm: masse(r.innenMm),
     art: ARTEN.has(r.art as AusbauArt) ? (r.art as AusbauArt) : undefined,
     hoeheHE: typeof r.hoeheHE === 'number' && r.hoeheHE > 0 ? Math.round(r.hoeheHE) : undefined,
+    einbautiefeMm: zahl(r.einbautiefeMm),
+    deckelMm: zahl(r.deckelMm),
+    unterteilMm: zahl(r.unterteilMm),
     // Eine unbekannte Herkunft wird `unbekannt` und nicht stillschweigend
     // `gemessen`: der Unterschied ist der Grund, aus dem es das Feld gibt.
     herkunft: HERKUNFT.has(r.herkunft as MassHerkunft) ? (r.herkunft as MassHerkunft) : 'unbekannt',
