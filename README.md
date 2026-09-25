@@ -710,6 +710,65 @@ seit #24, die Herkunftsangabe noch nicht). Aus #25 fehlt XLSX; CSV ist da,
 und eine zweite Tabellenfassung wäre eine zweite Wahrheit über dieselbe
 Ladung.
 
+## Geräte-Bibliothek (devices.zumpelars.de)
+
+Die gemeinsame Gerätebibliothek der Suite ist hier eine **eigene,
+schreibgeschützte Quelle für Artikeltypen** — Reiter *Device library*. Was dort
+steht, gehört dem Server; in den Bestand kommt ein Artikel erst über
+*Add to stock* (mit der Menge aus dem Feld daneben). Ein Typ, der schon im
+Bestand steht (gleicher Hersteller, gleiches Modell), ist dort gesperrt.
+
+**Konto.** Lesen geht nur angemeldet. *Einstellungen → Device library*:
+Server-Adresse (ab Werk `https://devices.zumpelars.de`, änderbar, *Reset to
+default*), Anmeldung mit E-Mail oder Benutzername und Passwort, bei
+eingeschalteter Zwei-Faktor-Anmeldung ein zweiter Schritt mit dem Code aus der
+Authenticator-App, Abmelden. Konto anlegen und Passwort zurücksetzen laufen auf
+der Website; die Einstellungen verlinken dorthin. Eine andere Server-Adresse
+meldet ab und leert den Cache — Token und `latestSeq` gelten nur bei dem
+Server, der sie ausgegeben hat. Klartext-`http` nur für `localhost`.
+
+**Token.** Liegt unter `inventory-planner:deviceLibraryToken` in
+`localStorage`, getrennt von allem anderen, in keinem Export und in keinem Log.
+Auch die Desktop-Fassung nutzt `localStorage`: der Electron-Hauptprozess bietet
+bewusst kein IPC an (siehe *Drei Wege*), also auch keinen Weg zu `safeStorage`.
+Gespeichert wird nur das Token, nie das Passwort.
+
+**Abgleich.** *Sync* holt `GET /api/sync?planner=inventory&after=<latestSeq>`
+— beim ersten Mal alles, danach nur, was seitdem kam. Geräte mit `removed`
+fallen aus dem Cache. Der Cache überlebt den Neustart
+(`inventory-planner:deviceLibrary`). Jede Zeile zeigt Status und Zahl der
+Bestätigungen und verlinkt auf die Geräteseite. Geräte, deren Facet die
+Prüfung dieses Planers nicht besteht, erscheinen nicht in der Liste, sondern
+als Zahl *invalid* in der Leiste.
+
+**Einreichen.** Unter der Liste: einen eigenen Artikel wählen, Link zum
+Herstellerdatenblatt angeben (Pflicht), *Submit*. Das Gerät geht in die
+Moderation. Hersteller und Kategorie müssen am Artikel stehen.
+
+### Das Facet-Format `planners.inventory`
+
+Das Facet ist der **Artikeltyp** dieses Lagers in den Feldnamen von
+`InventoryItem` — nur die Felder, die das Modell beschreiben:
+
+| Feld | Typ | |
+| --- | --- | --- |
+| `model` | Text | Pflicht; fehlt es, gilt `core.model` |
+| `manufacturer` | Text | fehlt es, gilt `core.manufacturer` |
+| `category` | Text | fehlt es, gilt `core.category` |
+| `dimensions` | `{ widthMm, heightMm, depthMm, weightKg }`, Zahlen > 0 | `weightKg` fällt auf `core.weightKg` zurück |
+| `materialKinds` | `('rental' \| 'consumable')[]` | |
+| `ursprungsland` | ISO 3166-1 alpha-2, groß | |
+
+**Nicht darin**, weil es am Exemplar oder am Haus hängt: Menge, Mindestmenge,
+Mietpreis, Lieferant, Eigentum, Rückgabedatum, Code, Lagerort, Notizen,
+Seriennummern, Anschaffung, Versicherungswert, Fristen. Einreichen und
+Einlesen nutzen dasselbe Format (`src/domain/lib/geraetebibliothek.ts`).
+Unbekannte Schlüssel werden ignoriert; ein bekannter mit falschem Typ macht das
+Gerät ungültig.
+
+Der Client `src/lib/deviceLibraryClient.ts` ist eine unveränderte Kopie aus
+`larszu/av-device-library` (`clients/`); Änderungen gehören zuerst dorthin.
+
 ## Marke
 
 Die Oberfläche folgt dem Corporate Design der **Lars Zumpe Medienproduktion**

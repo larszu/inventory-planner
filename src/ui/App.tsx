@@ -39,8 +39,9 @@ import { Ladung } from './Ladung'
 import { Bericht } from './Bericht'
 import { WerteUndSchaeden } from './WerteUndSchaeden'
 import { Wareneingang } from './Wareneingang'
+import { Bibliothek } from './Bibliothek'
 
-type Reiter = 'bestand' | 'lager' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'cases' | 'fahrzeuge' | 'ladung'
+type Reiter = 'bestand' | 'lager' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'cases' | 'fahrzeuge' | 'ladung' | 'bibliothek'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -63,6 +64,7 @@ const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string
   { id: 'cases', titel: t('tab.cases', 'Cases'), frage: t('tab.cases.q', 'How does it lie inside — and what has to be in there?') },
   { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles'), frage: t('tab.vehicles.q', 'What fits in — and who is allowed to drive it?') },
   { id: 'ladung', titel: t('tab.load', 'Load'), frage: t('tab.load.q', 'What travels — and does the vehicle carry it?') },
+  { id: 'bibliothek', titel: t('tab.library', 'Device library'), frage: t('tab.library.q', 'Which device types does the shared library know — and which of ours are missing there?') },
 ]
 
 /**
@@ -162,6 +164,7 @@ export function App() {
         {reiter === 'cases' && <Caseausbau />}
         {reiter === 'fahrzeuge' && <Fahrzeuge />}
         {reiter === 'ladung' && <Ladung />}
+        {reiter === 'bibliothek' && <Bibliothek />}
       </main>
       {/* Die Statusleiste des Rahmens (ADR-007 Abschnitt 6). Links steht,
           welche Frage gerade offen ist, rechts ihre Zahl. */}
