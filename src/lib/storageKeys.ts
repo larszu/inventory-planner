@@ -81,4 +81,16 @@ export const STORAGE_KEYS = {
    * eine neue Datei ersetzt den Stand ganz, statt sich mit ihm zu mischen.
    */
   planRacks: 'inventory-planner:planRacks',
+  /**
+   * Die Geraetebibliothek: Server-Adresse, angemeldeter Nutzer und der Cache
+   * des letzten Abgleichs. Nicht Teil des portablen Formats — der Cache
+   * gehoert dem Server, nicht dem Lager.
+   */
+  deviceLibrary: 'inventory-planner:deviceLibrary',
+  /**
+   * Das Anmelde-Token der Bibliothek, getrennt vom Rest: es darf in keinen
+   * Export und in kein Log. `localStorage` auch in der Desktop-Fassung, weil
+   * der Hauptprozess bewusst kein IPC anbietet (electron/main.cjs).
+   */
+  deviceLibraryToken: 'inventory-planner:deviceLibraryToken',
 } as const

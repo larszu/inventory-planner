@@ -10,6 +10,9 @@
 //             NICHT gibt — die Begründung war richtig und ist jetzt erledigt.
 //   Thema     hell / dunkel / dem System folgen. Drei Zustände, weil
 //             „System" keine Umschreibung für „dunkel" ist.
+//   Device library
+//             Server, Anmeldung und Abmelden der Geraetebibliothek
+//             (`BibliothekKonto.tsx`).
 //   Über      Name und Version. Die Version kommt aus `__APP_VERSION__`
 //             (Vite-Define) und steht nirgends im Quelltext ein zweites Mal.
 //
@@ -19,6 +22,7 @@
 import { useEffect, useState } from 'react'
 import { liesThema, setzeThema, type Thema } from '../lib/thema'
 import { useT, type Sprache } from '../i18n'
+import { BibliothekKonto } from './BibliothekKonto'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -100,6 +104,7 @@ export function Einstellungen({ onClose }: { onClose: () => void }) {
               </label>
             ))}
           </section>
+          <BibliothekKonto />
           <section>
             <h3>{t('settings.about', 'About')}</h3>
             <p className="leise">Inventory Planner {__APP_VERSION__}</p>
