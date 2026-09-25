@@ -255,6 +255,10 @@ export function bibliothekFehlerText(code: LibraryErrorCode, t: Uebersetzen = qu
       return t('library.error.credentials', 'Sign-in failed: the e-mail, user name or password is not correct.')
     case 'email-not-verified':
       return t('library.error.unverified', 'Confirm your e-mail address first — the link is in the message from the library.')
+    case 'guidelines-outdated':
+      return t('library.error.guidelines', 'The library guidelines have changed. Accept the new version on the website, then try again.')
+    case 'exists':
+      return t('library.error.exists', 'This manufacturer and model are already in the library. Confirm the existing entry there instead.')
     case 'wrong-code':
       return t('library.error.code', 'The code is wrong or has expired. Enter the current code from your authenticator app.')
     case 'rate-limited':
@@ -281,3 +285,6 @@ export function bibliothekStatusText(status: SyncDevice['status'], t: Uebersetze
       return t('library.status.unconfirmed', 'unconfirmed')
   }
 }
+
+/** Wo man geaenderte Richtlinien neu annimmt. */
+export const richtlinienUrl = (server: string) => `${server.replace(/\/+$/, '')}/guidelines`

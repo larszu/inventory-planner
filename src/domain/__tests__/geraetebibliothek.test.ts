@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   abgleichAnwenden,
+  bibliothekFehlerText,
+  richtlinienUrl,
   artikelAusEintrag,
   einreichenMaengel,
   facetAusArtikel,
@@ -158,6 +160,14 @@ describe('Abgleich', () => {
   })
 })
 
+describe('Fehlertexte', () => {
+  it('jeder Code hat einen eigenen Text; Richtlinien-Link zeigt auf /guidelines', () => {
+    const codes = ['wrong-credentials', 'email-not-verified', 'guidelines-outdated', 'exists', 'wrong-code', 'rate-limited', 'not-signed-in', 'offline', 'server'] as const
+    expect(new Set(codes.map((c) => bibliothekFehlerText(c))).size).toBe(codes.length)
+    expect(richtlinienUrl('https://devices.zumpelars.de/')).toBe('https://devices.zumpelars.de/guidelines')
+  })
+})
+
 describe('Server-Adresse', () => {
   it('https ja, http nur lokal, Schraegstrich am Ende weg', () => {
     expect(serverAdresse('https://devices.zumpelars.de/')).toBe('https://devices.zumpelars.de')
@@ -262,6 +272,17 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!).server).toBe('https://test.example')
     store.getState().serverZuruecksetzen()
     expect(store.getState().server).toBe(DEFAULT_DEVICE_LIBRARY_URL)
+  })
+
+  it('Einreichen: vorhandenes Geraet (409) und veraltete Richtlinien werden erkannt, die Sitzung bleibt', async () => {
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    vi.stubGlobal('fetch', vi.fn(async () => json({ error: 'exists' }, {}, 409)))
+    const store = await laden()
+    expect(await store.getState().einreichen(artikel, 'https://x.de/a.pdf')).toBeNull()
+    expect(store.getState()).toMatchObject({ fehler: 'exists', token: 'tok' })
+    vi.stubGlobal('fetch', vi.fn(async () => json({ code: 'guidelines-outdated' }, {}, 403)))
+    await store.getState().einreichen(artikel, 'https://x.de/a.pdf')
+    expect(store.getState()).toMatchObject({ fehler: 'guidelines-outdated', token: 'tok' })
   })
 
   it('Einreichen schickt planners.inventory mit dem Facet', async () => {

@@ -13,7 +13,6 @@ import { useBibliothekStore } from '../domain/store/bibliothekStore'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import {
   artikelAusEintrag,
-  bibliothekFehlerText,
   bibliothekStatusText,
   einreichenMaengel,
   imBestand,
@@ -21,6 +20,7 @@ import {
 import { deviceUrl } from '../lib/deviceLibraryClient'
 import { TabelleRahmen } from './TabelleRahmen'
 import { Feld } from './Formular'
+import { BibliothekFehler } from './BibliothekKonto'
 
 export function Bibliothek() {
   const { t, format } = useT()
@@ -88,7 +88,7 @@ export function Bibliothek() {
           {t('library.signInFirst', 'Sign in under Settings → Device library to sync and to submit devices.')}
         </p>
       )}
-      {s.fehler && <p className="warnung">{bibliothekFehlerText(s.fehler, t)}</p>}
+      <BibliothekFehler fehler={s.fehler} server={s.server} />
       {angelegt && <p className="hinweis">{angelegt}</p>}
 
       {gesamt === 0 ? (

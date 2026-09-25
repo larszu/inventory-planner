@@ -7,7 +7,8 @@
 import { useEffect, useState } from 'react'
 import { useT } from '../i18n'
 import { useBibliothekStore } from '../domain/store/bibliothekStore'
-import { bibliothekFehlerText } from '../domain/lib/geraetebibliothek'
+import { bibliothekFehlerText, richtlinienUrl } from '../domain/lib/geraetebibliothek'
+import type { LibraryErrorCode } from '../lib/deviceLibraryClient'
 import { DEFAULT_DEVICE_LIBRARY_URL, forgotPasswordUrl, registerUrl } from '../lib/deviceLibraryClient'
 import { Feld } from './Formular'
 
@@ -149,7 +150,26 @@ export function BibliothekKonto() {
           </p>
         </>
       )}
-      {s.fehler && <p className="warnung">{bibliothekFehlerText(s.fehler, t)}</p>}
+      <BibliothekFehler fehler={s.fehler} server={s.server} />
     </section>
+  )
+}
+
+/** Eine Fehlermeldung der Bibliothek; bei geaenderten Richtlinien mit dem Weg dorthin. */
+export function BibliothekFehler({ fehler, server }: { fehler: LibraryErrorCode | null; server: string }) {
+  const { t } = useT()
+  if (!fehler) return null
+  return (
+    <p className="warnung">
+      {bibliothekFehlerText(fehler, t)}
+      {fehler === 'guidelines-outdated' && (
+        <>
+          {' '}
+          <a href={richtlinienUrl(server)} target="_blank" rel="noreferrer">
+            {t('library.error.guidelinesLink', 'Open the guidelines')}
+          </a>
+        </>
+      )}
+    </p>
   )
 }
