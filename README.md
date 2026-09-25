@@ -116,6 +116,11 @@ räumt jemand wieder von Hand um und trägt es nirgends ein.
 sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
+**Anlegen ist eine Klappe über dem Baum** („Add a location or case"), wie
+„Add to stock" im Bestand und „Add a vehicle" bei den Fahrzeugen: offen,
+solange noch nichts da ist, danach zugeklappt — wer den Baum öffnet, will
+meist nachsehen und nicht anlegen.
+
 ## Cases — wie es darin liegt, und was drin sein muss
 
 Die Ansicht **Cases** beantwortet zwei Fragen an derselben Kiste.
