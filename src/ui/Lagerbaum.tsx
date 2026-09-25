@@ -426,9 +426,15 @@ export function Lagerbaum() {
         )}
       </p>
 
-      <details>
+      {/* Dieselbe Bauart wie „Add to stock" im Bestand (suite#231): der
+          Block ist die Klappe, nicht das Formular darin — sonst stand die
+          Kopfzeile ungestaltet und 16 px hoch da, unter dem 32-px-Ziel.
+          Offen, solange es keinen Lagerort gibt: dann ist Anlegen das
+          Einzige, was hier zu tun ist. `key` zieht das beim Wechsel von leer
+          auf nicht-leer nach; `open` ist nur ein Anfangswert. */}
+      <details className="block" open={nodes.length === 0} key={nodes.length === 0 ? 'leer' : 'voll'}>
         <summary>{t('tree.create.head', 'Add a location or case')}</summary>
-        <form className="block" onSubmit={anlegen}>
+        <form onSubmit={anlegen}>
           <div className="zeile">
             <label>
               {t('tree.name', 'Name')}

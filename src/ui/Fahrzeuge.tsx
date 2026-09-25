@@ -126,9 +126,11 @@ export function Fahrzeuge() {
         )}
       </p>
 
-      <details>
+      {/* Dieselbe Bauart wie „Add to stock" im Bestand: der Block ist die
+          Klappe. Offen, solange es kein Fahrzeug gibt. */}
+      <details className="block" open={vehicles.length === 0} key={vehicles.length === 0 ? 'leer' : 'voll'}>
         <summary>{t('vehicle.create.head', 'Add a vehicle')}</summary>
-        <form className="block" onSubmit={anlegen}>
+        <form onSubmit={anlegen}>
           <label>
             {t('vehicle.name', 'Name')}
             <input value={name} onChange={(e) => setName(e.target.value)} />
@@ -195,7 +197,7 @@ export function Fahrzeuge() {
       {/* Die Ausmessen-Hilfe steht NEBEN dem Formular und nicht darin: wer
           misst, hat das Fahrzeug offen und das Telefon in der Hand, und eine
           Liste im Formular wäre beim Eintragen im Weg. */}
-      <details className="vermessen">
+      <details className="block vermessen">
         <summary>{t('measure.head', 'How to measure a vehicle')}</summary>
         <p className="hinweis">
           {t(
