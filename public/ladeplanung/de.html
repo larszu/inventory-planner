@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ladeplanung für Transporter</title>
+<meta name="description" content="Ladeplanung für Veranstaltungstechnik: Transporter mit Radkästen, Cases mit Rollen, Lastverteilungsplan, und der Bestand weiß, was im Case liegt.">
+<link rel="stylesheet" href="seite.css">
+<link rel="alternate" hreflang="en" href="./">
+</head>
+<body>
+<main>
+  <p class="kicker">Inventory Planner · Ladeplanung · <a href="./">English</a></p>
+  <h1>Passt das alles in den Transporter?</h1>
+  <p class="sub">Ladeplanung für Veranstaltungstechnik — gerechnet für den Laderaum, den du wirklich hast, nicht für einen Quader.</p>
+
+  <figure>
+    <img src="ducato-l3h2-3d.png" width="1100" height="740" alt="3D-Ansicht eines gepackten Fiat Ducato L3H2: Cases in drei Farben nach Abladegruppe, die zuerst gebrauchten an der Hecktür.">
+    <figcaption>Fiat Ducato Kastenwagen L3H2, Maße aus dem Herstellerdatenblatt. Farben = Abladegruppen; was zuerst gebraucht wird, steht an der Hecktür.</figcaption>
+  </figure>
+
+  <div class="aktion">
+    <a class="knopf" href="../">Im Browser ausprobieren</a>
+    <a class="knopf primaer" id="vorbestellen" aria-disabled="true" data-offen="Zum Gründerpreis vorbestellen">Vorbestellung öffnet in Kürze</a>
+  </div>
+
+  <h2>Was hier anders ist</h2>
+  <ul>
+    <li><strong>Transporter statt nur Sattelzug.</strong> Radkästen, Dachkanten, Hecktüröffnung: der Laderaum ist kein Quader, und der Packer rechnet mit dem, der da ist.</li>
+    <li><strong>Cases, wie sie wirklich reisen.</strong> Rollen, Rollenteller im Deckel, erlaubte Lagen (stehend, auf der Seite, hochkant), Stapelgrenzen — statt nackter Kisten.</li>
+    <li><strong>Lastverteilungsplan zum Ausdrucken.</strong> Schwerpunkt und Achslasten aus den gesetzten Positionen, dazu Ladeplan je Lage, Dock-Checkliste und Case-Etiketten.</li>
+    <li><strong>Der Bestand weiß, was im Case liegt.</strong> Fehlt Case 7, fehlt auch die Ersatz-Funkstrecke darin — weil die Ladeplanung Teil des Lagers ist und nicht bei einer Tabelle anfängt.</li>
+  </ul>
+
+  <h2>Warum eine Vorbestellung</h2>
+  <p>Die Ladeplanung läuft und lässt sich oben ausprobieren. Ob daraus ein gepflegtes, bezahltes Werkzeug wird, entscheidet die Nachfrage: erst wenn genug Leute zahlen, fließen die nächsten Wochenenden hinein.</p>
+  <ul>
+    <li>Gründerpreis: <strong>25 € im Monat</strong>, solange dein Abo läuft. Mit der Vorbestellung zahlst du den ersten Monat.</li>
+    <li>Kommt nicht genug zusammen, bekommst du den Betrag nach Testende<span id="ende-satz"> (<span id="ende">Datum folgt</span>)</span> vollständig zurück. Auf Wunsch jederzeit vorher.</li>
+    <li>Abgewickelt wird über einen Zahlungsdienstleister (Merchant of Record), der Rechnung und Umsatzsteuer ausstellt.</li>
+  </ul>
+
+  <h2>Nur ausprobieren?</h2>
+  <p>Auch das hilft. Miss deinen Transporter unter <em>Vehicles</em> aus — die Ansicht führt einmal ums Fahrzeug — und sag, wo es hakt.</p>
+  <p id="kontakt" hidden>Schick die exportierte Fahrzeugdatei (<em>Export vehicles</em>) an <a id="kontakt-adresse" data-betreff="Fahrzeugdatei Ladeplanung"></a>. Jede Datei zeigt, welche Fahrzeuge wirklich gefahren werden.</p>
+
+  <p class="klein">Lars Zumpe Medienproduktion. Der Lastverteilungsplan rechnet und zeigt; die Verantwortung für die Ladungssicherung bleibt bei Fahrer und Verlader.</p>
+</main>
+<script src="konfiguration.js"></script>
+<script src="seite.js"></script>
+</body>
+</html>
