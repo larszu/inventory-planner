@@ -755,7 +755,10 @@ nächste Version; das Ergebnis je Artikel (`created`, `edit-proposed`,
 `pending-updated`, `approved`, `in-sync`, `blocked`, `error`) steht im Block
 *Our devices in the library* und bleibt gespeichert. Hochgeladen wird nur, was
 sich seit dem letzten Mal geändert hat (Hash über Kern und Facet); *Upload all
-again* schickt alles. Ohne Kategorie oder ohne Datenblattlink bleibt ein Artikel
+again* schickt alles. Der Server meldet je Eintrag auch den Moderationsstand
+(`moderation: pending | approved`); die Statusspalte zeigt danach „wartet auf
+Moderation" oder „live". Einträge, die noch warten, schickt jeder Lauf
+unverändert erneut mit — nur so erfährt das Lager, dass sie freigegeben sind. Ohne Kategorie oder ohne Datenblattlink bleibt ein Artikel
 lokal **blockiert** und wird gezählt — der Link lässt sich in der Tabelle
 nachtragen.
 

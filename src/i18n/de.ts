@@ -1360,6 +1360,7 @@ export const de: Record<string, string> = {
   'library.up.editProposed': 'Als nächste Version eines vorhandenen Geräts vorgeschlagen',
   'library.up.error': 'Hochladen fehlgeschlagen',
   'library.up.inSync': 'Gleich mit der Bibliothek',
+  'library.up.inSyncPending': 'Hochgeladen, wartet auf Moderation',
   'library.up.never': 'Noch nicht hochgeladen',
   'library.up.pendingUpdated': 'Offener Vorschlag aktualisiert, wartet auf Moderation',
   'settings.library.auto': 'Eigene Geräte automatisch hochladen',
