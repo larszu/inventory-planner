@@ -710,10 +710,20 @@ was dadurch schwerer wird („zwei Stücke, die davor stehen sollten, fehlen
 noch") und lässt den Menschen entscheiden. Ein Werkzeug, das am Dock „nein"
 sagt, wird umgangen und weiss danach gar nichts mehr.
 
-**Noch nicht gebaut:** Fahrzeug-Stammdaten mit Quelle (#19 — die Gewichte und Achsen daraus stehen
-seit #24, die Herkunftsangabe noch nicht). Aus #25 fehlt XLSX; CSV ist da,
-und eine zweite Tabellenfassung wäre eine zweite Wahrheit über dieselbe
-Ladung.
+**Nicht gebaut:** XLSX aus #25; CSV ist da, und eine zweite Tabellenfassung
+wäre eine zweite Wahrheit über dieselbe Ladung.
+
+### Nachfragetest
+
+Ob die Ladeplanung ein bezahltes Produkt wird, entscheidet ein Nachfragetest
+mit vorab festgelegter Schwelle (#27) — Plan, Texte und Aufgaben in
+[docs/nachfragetest-ladeplanung.md](docs/nachfragetest-ladeplanung.md),
+Auswertung in `docs/nachfragetest-auswertung.csv`. Die Testseite liegt unter
+`public/ladeplanung/` (englisch `index.html`, deutsch `de.html`) und geht mit
+der Web-Seite unter `…/ladeplanung/` raus. Checkout-Link, Testende und
+Kontaktadresse stehen in `public/ladeplanung/konfiguration.js`; leer zeigt die
+Seite „Vorbestellung öffnet in Kürze". Die App selbst zählt nichts und
+schickt nichts nach Hause.
 
 ## Geräte-Bibliothek (devices.zumpelars.de)
 
