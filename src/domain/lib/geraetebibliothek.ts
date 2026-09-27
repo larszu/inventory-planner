@@ -20,13 +20,20 @@
 // Seriennummern, Anschaffung, Versicherungswert, Fristen. `deviceTypeId`
 // fehlt auch: die Identitaet in der Bibliothek ist der `slug`.
 //
-// Einreichen (`facetAusArtikel`) und Einlesen (`facetPruefen`) nutzen
+// Hochladen (`facetAusArtikel`) und Einlesen (`facetPruefen`) nutzen
 // dasselbe Format. Unbekannte Schluessel werden beim Einlesen ignoriert —
 // ein neueres Facet soll ein aelteres Lager nicht leer laufen lassen —, ein
 // bekannter Schluessel mit falschem Typ macht das Geraet UNGUELTIG: es
 // erscheint nicht in der Liste, sondern in der Zahl der ungueltigen.
 // ───────────────────────────────────────────────────────────────────────────
-import type { LibraryErrorCode, LibraryPlanner, ProposalCore, SyncDevice, SyncResponse } from '../../lib/deviceLibraryClient'
+import type {
+  LibraryErrorCode,
+  LibraryPlanner,
+  ProposalCore,
+  SyncDevice,
+  SyncResponse,
+  UploadState,
+} from '../../lib/deviceLibraryClient'
 import { quelle, type Uebersetzen } from '../../i18n/quelle'
 import type { InventoryItem, InventoryMaterialKind, PhysicalDimensions } from '../types/inventory'
 
@@ -168,17 +175,6 @@ export function facetAusArtikel(item: InventoryItem): InventoryLibraryFacet {
   return f
 }
 
-export type EinreichenMangel = 'manufacturer' | 'category' | 'sourceUrl'
-
-/** Was fuer einen Vorschlag fehlt. Leer = einreichbar. */
-export function einreichenMaengel(item: InventoryItem, sourceUrl: string): EinreichenMangel[] {
-  const m: EinreichenMangel[] = []
-  if (!text(item.manufacturer)) m.push('manufacturer')
-  if (!text(item.category)) m.push('category')
-  if (!istDatenblattLink(sourceUrl)) m.push('sourceUrl')
-  return m
-}
-
 export const istDatenblattLink = (url: string): boolean => {
   try {
     const u = new URL(url.trim())
@@ -188,7 +184,7 @@ export const istDatenblattLink = (url: string): boolean => {
   }
 }
 
-/** Kern und Facet fuer `propose()`. Setzt voraus, dass `einreichenMaengel` leer ist. */
+/** Kern und Facet eines Artikels. Hersteller, Kategorie und Link prueft `hochladeKandidaten`. */
 export function vorschlagAusArtikel(
   item: InventoryItem,
   sourceUrl: string,
@@ -288,3 +284,127 @@ export function bibliothekStatusText(status: SyncDevice['status'], t: Uebersetze
 
 /** Wo man geaenderte Richtlinien neu annimmt. */
 export const richtlinienUrl = (server: string) => `${server.replace(/\/+$/, '')}/guidelines`
+
+// ─── Hochladen eigener Artikeltypen ────────────────────────────────────────
+//
+// Jeder Lagerartikel mit Hersteller und Modell geht als Typ in die
+// Bibliothek — im selben Facet-Format wie oben, dazu ein Kern mit
+// Datenblattlink, Rackhoehe und Leistung. Diese drei stehen NICHT am
+// `InventoryItem`: ein Feld dort waere ein Versionssprung des portablen
+// Formats `avplan-inventory` in allen Planern. Sie liegen deshalb als
+// `TypAngaben` je Artikel-Id im Bibliotheks-Speicher.
+
+export interface TypAngaben {
+  sourceUrl?: string
+  rackUnits?: number
+  powerWatts?: number
+}
+
+export type HochladeSperre = 'sourceUrl' | 'category'
+
+export interface HochladeKandidat {
+  itemId: string
+  item: { localId: string; core: ProposalCore; facet: Record<string, unknown> }
+  hash: string
+}
+
+/** Wer hochgeht, wer gesperrt ist — Artikel ohne Hersteller zaehlen nicht mit. */
+export function hochladeKandidaten(
+  items: readonly InventoryItem[],
+  angaben: Readonly<Record<string, TypAngaben>>,
+): { bereit: HochladeKandidat[]; gesperrt: { itemId: string; grund: HochladeSperre }[] } {
+  const bereit: HochladeKandidat[] = []
+  const gesperrt: { itemId: string; grund: HochladeSperre }[] = []
+  for (const i of items) {
+    if (!text(i.manufacturer) || !text(i.model)) continue
+    const a = angaben[i.id] ?? {}
+    if (!text(i.category)) {
+      gesperrt.push({ itemId: i.id, grund: 'category' })
+      continue
+    }
+    if (!istDatenblattLink(a.sourceUrl ?? '')) {
+      gesperrt.push({ itemId: i.id, grund: 'sourceUrl' })
+      continue
+    }
+    const { core, facet } = vorschlagAusArtikel(i, a.sourceUrl!)
+    if (typeof a.rackUnits === 'number' && Number.isInteger(a.rackUnits) && a.rackUnits >= 0 && a.rackUnits <= 60) {
+      core.rackUnits = a.rackUnits
+    }
+    if (typeof a.powerWatts === 'number' && Number.isFinite(a.powerWatts) && a.powerWatts >= 0) core.powerWatts = a.powerWatts
+    const item = { localId: i.id, core, facet: { ...facet } }
+    bereit.push({ itemId: i.id, item, hash: inhaltsHash({ core, facet }) })
+  }
+  return { bereit, gesperrt }
+}
+
+/** Stabiler Hash (FNV-1a, Schluessel sortiert) — merkt, ob sich ein Typ seit dem letzten Hochladen geaendert hat. */
+export function inhaltsHash(wert: unknown): string {
+  const stabil = (v: unknown): unknown =>
+    Array.isArray(v)
+      ? v.map(stabil)
+      : v && typeof v === 'object'
+        ? Object.fromEntries(
+            Object.keys(v as object)
+              .sort()
+              .map((k) => [k, stabil((v as Record<string, unknown>)[k])]),
+          )
+        : v
+  const s = JSON.stringify(stabil(wert))
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 0x01000193) >>> 0
+  }
+  return h.toString(16).padStart(8, '0')
+}
+
+/** Befunde der Bibliothek (Pruefbefunde oder Schema-Fehler) als eine Zeile. */
+export function befundeText(befunde: unknown): string {
+  if (!Array.isArray(befunde)) return ''
+  return befunde
+    .map((b) => {
+      const o = (b ?? {}) as Record<string, unknown>
+      if (o.blocking === false) return ''
+      return String(o.detail ?? o.message ?? o.kind ?? '')
+    })
+    .filter(Boolean)
+    .join('; ')
+}
+
+/** Was beim letzten Hochladen eines Artikels herauskam. */
+export interface HochladeStand {
+  hash: string
+  state: UploadState
+  slug?: string
+  detail?: string
+  at: string
+}
+
+/** Die Statuszeile eines eigenen Artikels in der Bibliothek. */
+export function hochladeStatusText(
+  sperre: HochladeSperre | undefined,
+  stand: HochladeStand | undefined,
+  aktuellerHash: string | undefined,
+  t: Uebersetzen = quelle,
+): string {
+  if (sperre === 'sourceUrl') return t('library.up.blockedLink', 'Blocked: datasheet link missing')
+  if (sperre === 'category') return t('library.up.blockedCategory', 'Blocked: category missing')
+  if (!stand) return t('library.up.never', 'Not uploaded yet')
+  if (aktuellerHash && stand.hash !== aktuellerHash) return t('library.up.changed', 'Changed — waiting for upload')
+  switch (stand.state) {
+    case 'created':
+      return t('library.up.created', 'Submitted, waiting for moderation')
+    case 'edit-proposed':
+      return t('library.up.editProposed', 'Proposed as the next version of an existing device')
+    case 'pending-updated':
+      return t('library.up.pendingUpdated', 'Open proposal updated, waiting for moderation')
+    case 'approved':
+      return t('library.up.approved', 'Live in the library')
+    case 'in-sync':
+      return t('library.up.inSync', 'In sync with the library')
+    case 'blocked':
+      return t('library.up.blocked', 'Blocked by the library checks')
+    default:
+      return t('library.up.error', 'Upload failed')
+  }
+}

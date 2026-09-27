@@ -3,9 +3,10 @@
 // Artikeltypen.
 //
 // Was hier steht, gehoert dem Server; ein Lagerartikel entsteht erst ueber
-// „Add to stock". Umgekehrt kann ein eigener Artikeltyp vorgeschlagen werden
-// — er geht dort in die Moderation. Das Format beider Richtungen steht in
-// `domain/lib/geraetebibliothek.ts`.
+// „Add to stock". Umgekehrt geht jeder eigene Artikeltyp mit Hersteller und
+// Modell hinauf (`upload`), von Hand oder automatisch; der Stand je Artikel
+// steht im Block „Our devices in the library". Das Format beider Richtungen
+// steht in `domain/lib/geraetebibliothek.ts`.
 // ───────────────────────────────────────────────────────────────────────────
 import { useMemo, useState } from 'react'
 import { useT } from '../i18n'
@@ -14,12 +15,13 @@ import { useInventoryStore } from '../domain/store/inventoryStore'
 import {
   artikelAusEintrag,
   bibliothekStatusText,
-  einreichenMaengel,
+  hochladeKandidaten,
+  hochladeStatusText,
   imBestand,
+  type TypAngaben,
 } from '../domain/lib/geraetebibliothek'
 import { deviceUrl } from '../lib/deviceLibraryClient'
 import { TabelleRahmen } from './TabelleRahmen'
-import { Feld } from './Formular'
 import { BibliothekFehler } from './BibliothekKonto'
 
 export function Bibliothek() {
@@ -53,8 +55,8 @@ export function Bibliothek() {
   return (
     <section className="bibliothek">
       <div className="leiste">
-        <button type="button" className="knopf-primaer" onClick={() => void s.abgleichen()} disabled={!s.token || s.laeuft}>
-          {t('library.sync', 'Sync')}
+        <button type="button" className="knopf-primaer" onClick={() => void s.synchronisieren()} disabled={!s.token || s.laeuft}>
+          {t('library.syncNow', 'Sync now')}
         </button>
         <input
           type="search"
@@ -136,7 +138,8 @@ export function Bibliothek() {
                         disabled={drin || !mengeOk}
                         title={drin ? t('library.inStock', 'Already in stock (same manufacturer and model).') : undefined}
                         onClick={() => {
-                          addItem(artikelAusEintrag(e, zahl))
+                          const id = addItem(artikelAusEintrag(e, zahl))
+                          s.setzeTypAngaben(id, { sourceUrl: e.sourceUrl, rackUnits: e.rackUnits, powerWatts: e.powerWatts })
                           setAngelegt(format(t('library.added', 'Added {model} to the stock.'), { model: e.artikel.model }))
                         }}
                       >
@@ -151,77 +154,129 @@ export function Bibliothek() {
         </TabelleRahmen>
       )}
 
-      <Einreichen />
+      <EigeneGeraete />
     </section>
   )
 }
 
-/** Einen eigenen Artikeltyp vorschlagen — mit Pflicht-Datenblattlink. */
-function Einreichen() {
+/** Zahl aus einem Eingabefeld; leer = keine Angabe. */
+const zahlOderLeer = (roh: string): number | undefined => {
+  const n = Number(roh.trim().replace(',', '.'))
+  return roh.trim() === '' || !Number.isFinite(n) || n < 0 ? undefined : n
+}
+
+/** Die eigenen Artikeltypen und ihr Stand in der Bibliothek. */
+function EigeneGeraete() {
   const { t, format } = useT()
   const items = useInventoryStore((x) => x.items)
-  const token = useBibliothekStore((x) => x.token)
-  const laeuft = useBibliothekStore((x) => x.laeuft)
-  const einreichen = useBibliothekStore((x) => x.einreichen)
-  const [itemId, setItemId] = useState('')
-  const [link, setLink] = useState('')
-  const [ergebnis, setErgebnis] = useState<string | null>(null)
+  const b = useBibliothekStore()
+  const { bereit, gesperrt } = useMemo(() => hochladeKandidaten(items, b.typAngaben), [items, b.typAngaben])
+  const eigene = items.filter((i) => i.manufacturer?.trim() && i.model.trim())
+  const hash = new Map(bereit.map((k) => [k.itemId, k.hash]))
+  const sperre = new Map(gesperrt.map((g) => [g.itemId, g.grund]))
+  const hoch = bereit.filter((k) => b.uploads[k.itemId]?.hash === k.hash && b.uploads[k.itemId]?.state !== 'error').length
 
-  const item = items.find((i) => i.id === itemId)
-  const maengel = item ? einreichenMaengel(item, link) : []
-  const mangelText = (m: string) =>
-    m === 'manufacturer'
-      ? t('library.submit.needManufacturer', 'The item needs a manufacturer.')
-      : m === 'category'
-        ? t('library.submit.needCategory', 'The item needs a category.')
-        : t('library.submit.needLink', 'A link to the manufacturer datasheet (https://…) is required.')
+  const setze = (id: string, teil: TypAngaben) => b.setzeTypAngaben(id, teil)
 
   return (
-    <details className="block">
-      <summary>{t('library.submit.head', 'Submit a stock item to the library')}</summary>
+    <details className="block" open>
+      <summary>{t('library.own.head', 'Our devices in the library')}</summary>
       <p className="leise">
         {t(
-          'library.submit.hint',
-          'Only the type data is sent: model, manufacturer, category, dimensions, weight, material kind, country of origin. Quantities, locations, prices and serial numbers stay here. The device goes to moderation first.',
+          'library.own.hint',
+          'Every stock item with manufacturer and model goes up as a device type: model, manufacturer, category, dimensions, weight, material kind, country of origin, plus datasheet link, rack units and power from this table. Quantities, locations, prices and serial numbers stay here.',
         )}
       </p>
-      <form
-        className="zeile"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!item || maengel.length) return
-          void einreichen(item, link).then((r) => {
-            if (!r) return
-            setErgebnis(format(t('library.submit.done', 'Submitted as {slug} ({state}).'), { slug: r.slug, state: r.state }))
-            setLink('')
-          })
-        }}
-      >
-        <Feld name={t('library.submit.item', 'Stock item')}>
-          <select value={itemId} onChange={(e) => setItemId(e.target.value)}>
-            <option value="">{t('library.submit.choose', 'choose…')}</option>
-            {items.map((i) => (
-              <option key={i.id} value={i.id}>
-                {i.manufacturer ? `${i.manufacturer} ${i.model}` : i.model}
-              </option>
-            ))}
-          </select>
-        </Feld>
-        <Feld name={t('library.submit.link', 'Datasheet link')}>
-          <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" spellCheck={false} />
-        </Feld>
-        <button type="submit" className="knopf-primaer" disabled={!token || !item || maengel.length > 0 || laeuft}>
-          {t('library.submit', 'Submit')}
+      <div className="leiste">
+        <button type="button" onClick={() => void b.hochladen(true)} disabled={!b.token || b.laeuft || bereit.length === 0}>
+          {t('library.own.uploadAll', 'Upload all again')}
         </button>
-      </form>
-      {item && maengel.length > 0 && (
-        <ul className="leise">
-          {maengel.map((m) => (
-            <li key={m}>{mangelText(m)}</li>
-          ))}
-        </ul>
+        <span className="zaehler">
+          {format(t('library.own.count', '{up} of {all} up to date · {blocked} blocked'), {
+            up: hoch,
+            all: eigene.length,
+            blocked: gesperrt.length,
+          })}
+        </span>
+      </div>
+      {eigene.length === 0 ? (
+        <p className="leer">{t('library.own.empty', 'No stock item has both a manufacturer and a model yet.')}</p>
+      ) : (
+        <TabelleRahmen>
+          <table>
+            <thead>
+              <tr>
+                <th>{t('stock.col.model', 'Model')}</th>
+                <th>{t('library.submit.link', 'Datasheet link')}</th>
+                <th className="rechts">{t('library.col.ru', 'RU')}</th>
+                <th className="rechts">{t('library.col.watts', 'Watts')}</th>
+                <th>{t('library.col.status', 'Status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {eigene.map((i) => {
+                const a = b.typAngaben[i.id] ?? {}
+                const st = b.uploads[i.id]
+                return (
+                  <tr key={i.id}>
+                    <td data-spalte={t('stock.col.model', 'Model')}>
+                      {i.model}
+                      <span className="leise"> · {i.manufacturer}</span>
+                    </td>
+                    <td data-spalte={t('library.submit.link', 'Datasheet link')}>
+                      <input
+                        key={`${i.id}:${a.sourceUrl ?? ''}`}
+                        defaultValue={a.sourceUrl ?? ''}
+                        placeholder="https://"
+                        spellCheck={false}
+                        aria-label={format(t('library.own.linkFor', 'Datasheet link for {model}'), { model: i.model })}
+                        onBlur={(e) => setze(i.id, { sourceUrl: e.target.value.trim() || undefined })}
+                      />
+                    </td>
+                    <td className="rechts" data-spalte={t('library.col.ru', 'RU')}>
+                      <input
+                        key={`${i.id}:ru:${a.rackUnits ?? ''}`}
+                        className="schmal"
+                        type="number"
+                        min="0"
+                        max="60"
+                        step="1"
+                        defaultValue={a.rackUnits ?? ''}
+                        aria-label={format(t('library.own.ruFor', 'Rack units of {model}'), { model: i.model })}
+                        onBlur={(e) => {
+                          const n = zahlOderLeer(e.target.value)
+                          setze(i.id, { rackUnits: n === undefined ? undefined : Math.min(60, Math.round(n)) })
+                        }}
+                      />
+                    </td>
+                    <td className="rechts" data-spalte={t('library.col.watts', 'Watts')}>
+                      <input
+                        key={`${i.id}:w:${a.powerWatts ?? ''}`}
+                        className="schmal"
+                        type="number"
+                        min="0"
+                        defaultValue={a.powerWatts ?? ''}
+                        aria-label={format(t('library.own.wattsFor', 'Power of {model} in watts'), { model: i.model })}
+                        onBlur={(e) => setze(i.id, { powerWatts: zahlOderLeer(e.target.value) })}
+                      />
+                    </td>
+                    <td data-spalte={t('library.col.status', 'Status')}>
+                      {st?.slug ? (
+                        <a href={deviceUrl(b.server, st.slug)} target="_blank" rel="noreferrer">
+                          {hochladeStatusText(sperre.get(i.id), st, hash.get(i.id), t)}
+                        </a>
+                      ) : (
+                        hochladeStatusText(sperre.get(i.id), st, hash.get(i.id), t)
+                      )}
+                      {st?.detail && !sperre.has(i.id) ? <span className="leise"> · {st.detail}</span> : null}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </TabelleRahmen>
       )}
-      {ergebnis && <p className="hinweis">{ergebnis}</p>}
     </details>
   )
 }

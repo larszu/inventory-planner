@@ -4,7 +4,10 @@ import {
   bibliothekFehlerText,
   richtlinienUrl,
   artikelAusEintrag,
-  einreichenMaengel,
+  hochladeKandidaten,
+  hochladeStatusText,
+  inhaltsHash,
+  befundeText,
   facetAusArtikel,
   facetPruefen,
   leererCache,
@@ -75,12 +78,7 @@ describe('Facet-Format inventory', () => {
     expect(facetPruefen(f)).toEqual(f)
   })
 
-  it('Vorschlag: Kern aus dem Artikel, Gewicht hochgezogen, Datenblatt Pflicht', () => {
-    expect(einreichenMaengel(artikel, '')).toEqual(['sourceUrl'])
-    expect(einreichenMaengel({ ...artikel, manufacturer: ' ', category: undefined }, 'https://x.de/a.pdf')).toEqual([
-      'manufacturer',
-      'category',
-    ])
+  it('Vorschlag: Kern aus dem Artikel, Gewicht hochgezogen', () => {
     const { core, facet } = vorschlagAusArtikel(artikel, ' https://x.de/a.pdf ')
     expect(core).toEqual({
       manufacturer: 'Blackmagic Design',
@@ -274,29 +272,132 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     expect(store.getState().server).toBe(DEFAULT_DEVICE_LIBRARY_URL)
   })
 
-  it('Einreichen: vorhandenes Geraet (409) und veraltete Richtlinien werden erkannt, die Sitzung bleibt', async () => {
+  const mitBestand = async (items: InventoryItem[]) => {
+    const inv = (await import('../store/inventoryStore')).useInventoryStore
+    inv.setState({ items })
+    return inv
+  }
+
+  it('Hochladen: nur geaenderte, Stand je Artikel bleibt; 409/Richtlinien melden, Sitzung bleibt', async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init!.body))
+      return json({ planner: 'inventory', results: body.items.map((i: { localId: string }) => ({ localId: i.localId, state: 'created', slug: 'bmd-atem' })) })
+    })
+    vi.stubGlobal('fetch', fetchMock)
     localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
-    vi.stubGlobal('fetch', vi.fn(async () => json({ error: 'exists' }, {}, 409)))
+    const inv = await mitBestand([artikel, { ...artikel, id: 'i2', model: 'Ohne Link' }, { ...artikel, id: 'i3', manufacturer: undefined }])
     const store = await laden()
-    expect(await store.getState().einreichen(artikel, 'https://x.de/a.pdf')).toBeNull()
+    store.getState().setzeTypAngaben('i1', { sourceUrl: 'https://x.de/a.pdf', rackUnits: 1, powerWatts: 20 })
+    await store.getState().hochladen()
+
+    const [url, init] = fetchMock.mock.calls[0]!
+    expect(url).toBe('https://devices.zumpelars.de/api/upload')
+    const body = JSON.parse(String(init!.body))
+    expect(body.planner).toBe('inventory')
+    expect(body.items).toHaveLength(1)
+    expect(body.items[0].localId).toBe('i1')
+    expect(body.items[0].facet).toEqual(facetAusArtikel(artikel))
+    expect(body.items[0].core).toMatchObject({ rackUnits: 1, powerWatts: 20, sourceUrl: 'https://x.de/a.pdf' })
+    expect(JSON.stringify(body)).not.toContain('LAGER-1')
+    expect(store.getState().uploads.i1).toMatchObject({ state: 'created', slug: 'bmd-atem' })
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!).uploads.i1.state).toBe('created')
+
+    // Unveraendert: keine Anfrage. Geaendert: genau dieser eine.
+    await store.getState().hochladen()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    inv.setState({ items: [{ ...artikel, category: 'Switcher' }] })
+    await store.getState().hochladen()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    vi.stubGlobal('fetch', vi.fn(async () => json({ error: 'exists' }, {}, 409)))
+    await store.getState().hochladen(true)
     expect(store.getState()).toMatchObject({ fehler: 'exists', token: 'tok' })
     vi.stubGlobal('fetch', vi.fn(async () => json({ code: 'guidelines-outdated' }, {}, 403)))
-    await store.getState().einreichen(artikel, 'https://x.de/a.pdf')
+    await store.getState().hochladen(true)
     expect(store.getState()).toMatchObject({ fehler: 'guidelines-outdated', token: 'tok' })
   })
 
-  it('Einreichen schickt planners.inventory mit dem Facet', async () => {
-    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => json({ slug: 'bmd-atem', state: 'pending' }))
+  it('Jetzt synchronisieren: erst hoch, dann runter', async () => {
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) =>
+      url.endsWith('/api/upload') ? json({ results: [{ localId: 'i1', state: 'in-sync' }] }) : json(antwort(3, [])),
+    )
     vi.stubGlobal('fetch', fetchMock)
     localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    await mitBestand([artikel])
     const store = await laden()
-    const r = await store.getState().einreichen(artikel, 'https://x.de/a.pdf')
-    expect(r).toEqual({ slug: 'bmd-atem', state: 'pending' })
-    const [url, init] = fetchMock.mock.calls[0]!
-    expect(url).toBe('https://devices.zumpelars.de/api/proposals')
-    const body = JSON.parse(String(init!.body))
-    expect(body.data.planners.inventory).toEqual(facetAusArtikel(artikel))
-    expect(body.data.sourceUrl).toBe('https://x.de/a.pdf')
-    expect(JSON.stringify(body)).not.toContain('LAGER-1')
+    store.getState().setzeTypAngaben('i1', { sourceUrl: 'https://x.de/a.pdf' })
+    await store.getState().synchronisieren()
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual([
+      'https://devices.zumpelars.de/api/upload',
+      'https://devices.zumpelars.de/api/sync?planner=inventory&after=0',
+    ])
+    expect(store.getState().cache.latestSeq).toBe(3)
+  })
+
+  it('Automatik: Aenderung am Bestand laedt entprellt hoch; aus = nichts', async () => {
+    vi.useFakeTimers()
+    try {
+      const fetchMock = vi.fn(async (url: string, _init?: RequestInit) =>
+        url.endsWith('/api/upload') ? json({ results: [] }) : json(antwort(0, [])),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+      localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+      const inv = await mitBestand([])
+      const mod = await import('../store/bibliothekStore')
+      expect(mod.useBibliothekStore.getState().autoUpload).toBe(true)
+      mod.useBibliothekStore.getState().setzeTypAngaben('i1', { sourceUrl: 'https://x.de/a.pdf' })
+      const stopp = mod.autoAbgleichStarten(1000)
+      await vi.advanceTimersByTimeAsync(10)
+      const start = fetchMock.mock.calls.length
+      expect(start).toBeGreaterThan(0)
+      inv.setState({ items: [artikel] })
+      inv.setState({ items: [{ ...artikel, notes: 'x' }] })
+      await vi.advanceTimersByTimeAsync(500)
+      expect(fetchMock.mock.calls.length).toBe(start)
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(fetchMock.mock.calls.slice(start).map((c) => c[0])[0]).toBe('https://devices.zumpelars.de/api/upload')
+      const nachher = fetchMock.mock.calls.length
+      mod.useBibliothekStore.getState().setzeAutoUpload(false)
+      inv.setState({ items: [{ ...artikel, model: 'Neu' }] })
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(fetchMock.mock.calls.length).toBe(nachher)
+      stopp()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe('Hochlade-Kandidaten', () => {
+  it('ohne Hersteller nicht dabei, ohne Kategorie oder Link blockiert, Rackhoehe geprueft', () => {
+    const { bereit, gesperrt } = hochladeKandidaten(
+      [artikel, { ...artikel, id: 'k', category: undefined }, { ...artikel, id: 'l' }, { ...artikel, id: 'm', manufacturer: '' }],
+      { i1: { sourceUrl: 'https://x.de/a.pdf', rackUnits: 99, powerWatts: 5 }, k: { sourceUrl: 'https://x.de/b.pdf' } },
+    )
+    expect(bereit.map((b) => b.itemId)).toEqual(['i1'])
+    expect(bereit[0]!.item.core.rackUnits).toBeUndefined()
+    expect(bereit[0]!.item.core.powerWatts).toBe(5)
+    expect(gesperrt).toEqual([
+      { itemId: 'k', grund: 'category' },
+      { itemId: 'l', grund: 'sourceUrl' },
+    ])
+    expect(hochladeStatusText('sourceUrl', undefined, undefined)).toBe('Blocked: datasheet link missing')
+  })
+
+  it('Hash ist stabil gegen Schluesselreihenfolge und aendert sich mit dem Inhalt', () => {
+    expect(inhaltsHash({ a: 1, b: [1, { c: 2, d: 3 }] })).toBe(inhaltsHash({ b: [1, { d: 3, c: 2 }], a: 1 }))
+    expect(inhaltsHash({ a: 1 })).not.toBe(inhaltsHash({ a: 2 }))
+  })
+
+  it('Status: geaendert seit dem letzten Hochladen', () => {
+    const st = { hash: 'aaaa', state: 'in-sync' as const, at: '' }
+    expect(hochladeStatusText(undefined, st, 'aaaa')).toBe('In sync with the library')
+    expect(hochladeStatusText(undefined, st, 'bbbb')).toBe('Changed — waiting for upload')
+  })
+
+  it('Befunde: nur blockierende, Text aus detail oder message', () => {
+    expect(befundeText([{ kind: 'x', blocking: true, detail: 'kein Datenblatt' }, { kind: 'y', blocking: false }, { message: 'Required' }])).toBe(
+      'kein Datenblatt; Required',
+    )
   })
 })

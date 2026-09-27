@@ -22,7 +22,7 @@
 // unter `domain/lib/` waren zehn von hier aus unerreichbar; für den
 // Lageristen ist so ein Modul kein Code.
 // ───────────────────────────────────────────────────────────────────────────
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCheckoutStore } from '../domain/store/checkoutStore'
@@ -40,6 +40,7 @@ import { Bericht } from './Bericht'
 import { WerteUndSchaeden } from './WerteUndSchaeden'
 import { Wareneingang } from './Wareneingang'
 import { Bibliothek } from './Bibliothek'
+import { autoAbgleichStarten } from '../domain/store/bibliothekStore'
 
 type Reiter = 'bestand' | 'lager' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'cases' | 'fahrzeuge' | 'ladung' | 'bibliothek'
 
@@ -107,6 +108,8 @@ export function App() {
   const { t, format } = useT()
   const [reiter, setReiter] = useState<Reiter>('bestand')
   const REITER = reiterListe(t)
+  // Eigene Artikeltypen hoch-, Bibliotheksgeraete herunterladen (Einstellung „automatisch").
+  useEffect(() => autoAbgleichStarten(), [])
   const aktiv = REITER.find((r) => r.id === reiter)!
 
   // Aus dem Store gelesen und nicht durchgereicht: die Statusleiste zeigt den
