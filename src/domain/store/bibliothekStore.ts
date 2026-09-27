@@ -35,6 +35,7 @@ import {
   type BibliotheksCache,
   type HochladeStand,
   type TypAngaben,
+  wartetAufModeration,
 } from '../lib/geraetebibliothek'
 import { useInventoryStore } from './inventoryStore'
 
@@ -293,7 +294,7 @@ export const useBibliothekStore = create<BibliothekStand>((set, get) => {
       const { bereit } = hochladeKandidaten(items, get().typAngaben)
       const faellig = bereit.filter((k) => {
         const st = get().uploads[k.itemId]
-        return alle || !st || st.hash !== k.hash || st.state === 'error'
+        return alle || !st || st.hash !== k.hash || st.state === 'error' || wartetAufModeration(st)
       })
       // Staende geloeschter Artikel fallen weg.
       const lebend = new Set(items.map((i) => i.id))
@@ -313,6 +314,7 @@ export const useBibliothekStore = create<BibliothekStand>((set, get) => {
           if (!k) continue
           const stand: HochladeStand = { hash: k.hash, state: r.state, at }
           if (r.slug) stand.slug = r.slug
+          if (r.moderation) stand.moderation = r.moderation
           const detail = r.state === 'blocked' ? befundeText(r.findings) : r.error
           if (detail) stand.detail = detail
           uploads[r.localId] = stand

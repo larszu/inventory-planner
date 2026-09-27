@@ -377,8 +377,19 @@ export interface HochladeStand {
   state: UploadState
   slug?: string
   detail?: string
+  /** Stand in der Moderation laut Server; fehlt bei aelteren Staenden. */
+  moderation?: 'pending' | 'approved'
   at: string
 }
+
+const WARTENDE: readonly UploadState[] = ['created', 'edit-proposed', 'pending-updated']
+
+/**
+ * Wartet dieser Stand noch auf die Moderation? Dann schickt ihn der naechste
+ * Lauf erneut — unveraendert, nur um den Stand dort abzufragen.
+ */
+export const wartetAufModeration = (st: HochladeStand | undefined): boolean =>
+  !!st && (st.moderation === 'pending' || (st.moderation === undefined && WARTENDE.includes(st.state)))
 
 /** Die Statuszeile eines eigenen Artikels in der Bibliothek. */
 export function hochladeStatusText(
@@ -391,6 +402,12 @@ export function hochladeStatusText(
   if (sperre === 'category') return t('library.up.blockedCategory', 'Blocked: category missing')
   if (!stand) return t('library.up.never', 'Not uploaded yet')
   if (aktuellerHash && stand.hash !== aktuellerHash) return t('library.up.changed', 'Changed — waiting for upload')
+  if (stand.state !== 'blocked' && stand.state !== 'error') {
+    if (stand.moderation === 'approved') return t('library.up.approved', 'Live in the library')
+    if (stand.moderation === 'pending' && stand.state === 'in-sync') {
+      return t('library.up.inSyncPending', 'Uploaded, waiting for moderation')
+    }
+  }
   switch (stand.state) {
     case 'created':
       return t('library.up.created', 'Submitted, waiting for moderation')

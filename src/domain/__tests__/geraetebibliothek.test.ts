@@ -7,6 +7,7 @@ import {
   hochladeKandidaten,
   hochladeStatusText,
   inhaltsHash,
+  wartetAufModeration,
   befundeText,
   facetAusArtikel,
   facetPruefen,
@@ -281,7 +282,7 @@ describe('Store gegen den Server (fetch gemockt)', () => {
   it('Hochladen: nur geaenderte, Stand je Artikel bleibt; 409/Richtlinien melden, Sitzung bleibt', async () => {
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
       const body = JSON.parse(String(init!.body))
-      return json({ planner: 'inventory', results: body.items.map((i: { localId: string }) => ({ localId: i.localId, state: 'created', slug: 'bmd-atem' })) })
+      return json({ planner: 'inventory', results: body.items.map((i: { localId: string }) => ({ localId: i.localId, state: 'created', slug: 'bmd-atem', moderation: 'approved' })) })
     })
     vi.stubGlobal('fetch', fetchMock)
     localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
@@ -315,6 +316,27 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     vi.stubGlobal('fetch', vi.fn(async () => json({ code: 'guidelines-outdated' }, {}, 403)))
     await store.getState().hochladen(true)
     expect(store.getState()).toMatchObject({ fehler: 'guidelines-outdated', token: 'tok' })
+  })
+
+  it('Moderation: wartende Eintraege gehen unveraendert erneut mit, bis sie live sind', async () => {
+    let moderation: 'pending' | 'approved' = 'pending'
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) =>
+      json({ results: [{ localId: 'i1', state: 'in-sync', slug: 'bmd-atem', moderation }] }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    await mitBestand([artikel])
+    const store = await laden()
+    store.getState().setzeTypAngaben('i1', { sourceUrl: 'https://x.de/a.pdf' })
+    await store.getState().hochladen()
+    expect(store.getState().uploads.i1!.moderation).toBe('pending')
+    await store.getState().hochladen()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    moderation = 'approved'
+    await store.getState().hochladen()
+    expect(store.getState().uploads.i1!.moderation).toBe('approved')
+    await store.getState().hochladen()
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
   it('Jetzt synchronisieren: erst hoch, dann runter', async () => {
@@ -387,6 +409,25 @@ describe('Hochlade-Kandidaten', () => {
   it('Hash ist stabil gegen Schluesselreihenfolge und aendert sich mit dem Inhalt', () => {
     expect(inhaltsHash({ a: 1, b: [1, { c: 2, d: 3 }] })).toBe(inhaltsHash({ b: [1, { d: 3, c: 2 }], a: 1 }))
     expect(inhaltsHash({ a: 1 })).not.toBe(inhaltsHash({ a: 2 }))
+  })
+
+  it('Status aus der Moderation: wartet → live; alte Staende ohne Angabe gelten nach Zustand', () => {
+    const h = 'aaaa'
+    expect(hochladeStatusText(undefined, { hash: h, state: 'in-sync', moderation: 'pending', at: '' }, h)).toBe(
+      'Uploaded, waiting for moderation',
+    )
+    expect(hochladeStatusText(undefined, { hash: h, state: 'created', moderation: 'pending', at: '' }, h)).toBe(
+      'Submitted, waiting for moderation',
+    )
+    expect(hochladeStatusText(undefined, { hash: h, state: 'in-sync', moderation: 'approved', at: '' }, h)).toBe(
+      'Live in the library',
+    )
+    expect(hochladeStatusText(undefined, { hash: h, state: 'blocked', moderation: 'approved', at: '' }, h)).toBe(
+      'Blocked by the library checks',
+    )
+    expect(wartetAufModeration({ hash: h, state: 'created', at: '' })).toBe(true)
+    expect(wartetAufModeration({ hash: h, state: 'in-sync', at: '' })).toBe(false)
+    expect(wartetAufModeration({ hash: h, state: 'edit-proposed', moderation: 'approved', at: '' })).toBe(false)
   })
 
   it('Status: geaendert seit dem letzten Hochladen', () => {
