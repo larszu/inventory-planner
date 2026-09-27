@@ -78,6 +78,19 @@ export function BibliothekKonto() {
         {t('settings.library.serverHint', 'Changing the server signs you out and clears the cached devices.')}
       </p>
 
+      <label className="wahl">
+        <input type="checkbox" checked={s.autoUpload} onChange={(e) => s.setzeAutoUpload(e.target.checked)} />
+        <span>
+          {t('settings.library.auto', 'Upload own devices automatically')}
+          <em>
+            {t(
+              'settings.library.auto.hint',
+              'On start and a few seconds after a stock item changes: upload our device types, then fetch updates from the library. Only while signed in.',
+            )}
+          </em>
+        </span>
+      </label>
+
       {s.token && s.nutzer ? (
         <>
           <p>

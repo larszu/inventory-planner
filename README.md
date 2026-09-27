@@ -738,17 +738,38 @@ Auch die Desktop-Fassung nutzt `localStorage`: der Electron-Hauptprozess bietet
 bewusst kein IPC an (siehe *Drei Wege*), also auch keinen Weg zu `safeStorage`.
 Gespeichert wird nur das Token, nie das Passwort.
 
-**Abgleich.** *Sync* holt `GET /api/sync?planner=inventory&after=<latestSeq>`
-— beim ersten Mal alles, danach nur, was seitdem kam. Geräte mit `removed`
-fallen aus dem Cache. Der Cache überlebt den Neustart
-(`inventory-planner:deviceLibrary`). Jede Zeile zeigt Status und Zahl der
-Bestätigungen und verlinkt auf die Geräteseite. Geräte, deren Facet die
-Prüfung dieses Planers nicht besteht, erscheinen nicht in der Liste, sondern
-als Zahl *invalid* in der Leiste.
+**Abgleich.** *Sync now* lädt zuerst die eigenen Artikeltypen hoch und holt
+dann `GET /api/sync?planner=inventory&after=<latestSeq>` — beim ersten Mal
+alles, danach nur, was seitdem kam. Geräte mit `removed` fallen aus dem Cache.
+Der Cache überlebt den Neustart (`inventory-planner:deviceLibrary`). Jede Zeile
+zeigt Status und Zahl der Bestätigungen und verlinkt auf die Geräteseite.
+Geräte, deren Facet die Prüfung dieses Planers nicht besteht, erscheinen nicht
+in der Liste, sondern als Zahl *invalid* in der Leiste. *Add to stock* übernimmt
+Datenblattlink, Höheneinheiten und Leistung des Geräts in die Typangaben des
+neuen Artikels.
 
-**Einreichen.** Unter der Liste: einen eigenen Artikel wählen, Link zum
-Herstellerdatenblatt angeben (Pflicht), *Submit*. Das Gerät geht in die
-Moderation. Hersteller und Kategorie müssen am Artikel stehen.
+**Hochladen.** Jeder Lagerartikel mit Hersteller und Modell geht als Gerätetyp
+nach `POST /api/upload` (Stapel zu höchstens 100). Gleiches Gerät (Hersteller +
+Modell) wird dort nicht doppelt angelegt, sondern bekommt die Lager-Ansicht als
+nächste Version; das Ergebnis je Artikel (`created`, `edit-proposed`,
+`pending-updated`, `approved`, `in-sync`, `blocked`, `error`) steht im Block
+*Our devices in the library* und bleibt gespeichert. Hochgeladen wird nur, was
+sich seit dem letzten Mal geändert hat (Hash über Kern und Facet); *Upload all
+again* schickt alles. Ohne Kategorie oder ohne Datenblattlink bleibt ein Artikel
+lokal **blockiert** und wird gezählt — der Link lässt sich in der Tabelle
+nachtragen.
+
+**Automatisch.** *Einstellungen → Device library → Upload own devices
+automatically* (Vorgabe an, wirkt nur angemeldet): beim Start und vier Sekunden
+nach der letzten Änderung am Bestand oder an den Typangaben erst hoch, dann
+runter.
+
+**Typangaben außerhalb des Artikels.** Datenblattlink, Höheneinheiten (0–60)
+und Leistung in Watt gehören zum Typ, stehen aber nicht an `InventoryItem`: ein
+Feld dort wäre ein Versionssprung des portablen Formats `avplan-inventory` in
+allen Planern. Sie liegen je Artikel-Id im Bibliotheks-Speicher, gehen mit dem
+Kern (`core.sourceUrl`, `core.rackUnits`, `core.powerWatts`) hinauf und reisen
+**nicht** im Export mit.
 
 ### Das Facet-Format `planners.inventory`
 
@@ -766,7 +787,7 @@ Das Facet ist der **Artikeltyp** dieses Lagers in den Feldnamen von
 
 **Nicht darin**, weil es am Exemplar oder am Haus hängt: Menge, Mindestmenge,
 Mietpreis, Lieferant, Eigentum, Rückgabedatum, Code, Lagerort, Notizen,
-Seriennummern, Anschaffung, Versicherungswert, Fristen. Einreichen und
+Seriennummern, Anschaffung, Versicherungswert, Fristen. Hochladen und
 Einlesen nutzen dasselbe Format (`src/domain/lib/geraetebibliothek.ts`).
 Unbekannte Schlüssel werden ignoriert; ein bekannter mit falschem Typ macht das
 Gerät ungültig.
