@@ -23,6 +23,8 @@ import { useEffect, useState } from 'react'
 import { liesThema, setzeThema, type Thema } from '../lib/thema'
 import { useT, type Sprache } from '../i18n'
 import { BibliothekKonto } from './BibliothekKonto'
+import { Hauptlogo } from './Marke'
+import { APP_NAME } from '../lib/appName'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -107,7 +109,10 @@ export function Einstellungen({ onClose }: { onClose: () => void }) {
           <BibliothekKonto />
           <section>
             <h3>{t('settings.about', 'About')}</h3>
-            <p className="leise">Inventory Planner {__APP_VERSION__}</p>
+            <Hauptlogo />
+            <p className="app-name">{APP_NAME}</p>
+            <p className="leise">{__APP_VERSION__}</p>
+            <p className="leise">Lars Zumpe Medienproduktion</p>
             <p className="leise">{t('settings.about.body', 'The stock tool of the AV Planner suite (ADR-006).')}</p>
           </section>
         </div>

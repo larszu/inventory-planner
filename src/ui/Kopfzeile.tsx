@@ -40,6 +40,8 @@ import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
 import { Menue, MenuePunkt, MenueTrenner } from './Menue'
 import { Einstellungen } from './Einstellungen'
+import { Signet } from './Marke'
+import { APP_NAME } from '../lib/appName'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { serializeInventory, parseInventory } from '../domain/lib/inventoryPortable'
 
@@ -95,7 +97,10 @@ export function Kopfzeile() {
   return (
     <>
       <header className="kopf">
-        <span className="marke">{t('brand', 'Stock')}</span>
+        <span className="marke">
+          <Signet />
+          {APP_NAME}
+        </span>
 
         <Menue label={t('menu.file', 'File')}>
           {(zu) => (
@@ -146,7 +151,7 @@ export function Kopfzeile() {
 
         <Menue label={t('menu.help', 'Help')}>
           {(zu) => (
-            <MenuePunkt onClick={() => { zu(); setEinstellungenOffen(true) }}>{t('menu.about', 'About Inventory Planner…')}</MenuePunkt>
+            <MenuePunkt onClick={() => { zu(); setEinstellungenOffen(true) }}>{t('menu.about', 'About LZ Inventory Planner…')}</MenuePunkt>
           )}
         </Menue>
 

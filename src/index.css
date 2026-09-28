@@ -1541,3 +1541,19 @@ p.warnung { color: var(--warn); }
   cursor: pointer;
 }
 .dateiwahl input[type='file'] { display: none; }
+
+/* ── Firmenzeichen (Brand Guide 2.0) ─────────────────────────────────────
+ * Off-White auf dunklem, Navy auf hellem Thema. Beide Fassungen stehen im
+ * Markup (`ui/Marke.tsx`); hier wird die unpassende ausgeblendet, damit das
+ * Zeichen dem Thema folgt, ohne dass eine Farbe im Code steht. */
+.kopf .marke { display: inline-flex; align-items: center; gap: 12px; }
+.signet { height: 32px; width: auto; display: block; }
+.hauptlogo { width: 160px; height: auto; display: block; margin: 8px 0 12px; }
+.app-name { font-weight: 800; margin: 0 0 2px; }
+.auf-hell { display: none; }
+:root[data-thema='hell'] .auf-hell { display: block; }
+:root[data-thema='hell'] .auf-dunkel { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-thema='dunkel']) .auf-hell { display: block; }
+  :root:not([data-thema='dunkel']) .auf-dunkel { display: none; }
+}

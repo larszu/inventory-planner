@@ -186,10 +186,9 @@ export const de: Record<string, string> = {
   'checkouts.noDue': 'kein Termin vereinbart',
 
   // ── Kopfzeile und Datei-Menü ──
-  'brand': 'Lager',
   'file.importReport': '{ok} übernommen, {no} abgewiesen.',
   'file.unreadable': 'Die Datei ist kein lesbarer Lagerbestand (avplan-inventory).',
-  'menu.about': 'Über Inventory Planner…',
+  'menu.about': 'Über LZ Inventory Planner…',
   'menu.file': 'Datei',
   'menu.help': 'Hilfe',
   'menu.new': 'Neues Lager',
