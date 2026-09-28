@@ -113,7 +113,7 @@ export function Einstellungen({ onClose }: { onClose: () => void }) {
             <p className="app-name">{APP_NAME}</p>
             <p className="leise">{__APP_VERSION__}</p>
             <p className="leise">Lars Zumpe Medienproduktion</p>
-            <p className="leise">{t('settings.about.body', 'The stock tool of the AV Planner suite (ADR-006).')}</p>
+            <p className="leise">{t('settings.about.body', 'The stock tool of the LZ Planner Suite (ADR-006).')}</p>
           </section>
         </div>
         <footer className="dialog-fuss">

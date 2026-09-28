@@ -37,7 +37,7 @@ export function BibliothekKonto() {
       <p className="leise">
         {t(
           'settings.library.hint',
-          'Shared device data for the AV Planner suite. Reading it needs an account; the planner stores only the sign-in token, never the password.',
+          'Shared device data for the LZ Planner Suite. Reading it needs an account; the planner stores only the sign-in token, never the password.',
         )}
       </p>
 
