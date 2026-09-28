@@ -167,7 +167,7 @@ export function Inventur() {
         format(
           t(
             'audit.prefixMismatch',
-            '"{code}" does not start with "{prefix}". That is the code of a storage place in the house — if it sits on a case instead of a shelf, the stocktake starts at the wrong place.',
+            '"{code}" does not start with "{prefix}" — is this really a shelf code?',
           ),
           { code: c, prefix },
         ),
@@ -355,20 +355,52 @@ export function Inventur() {
     <section className="inventur">
       {/* ── Schritt 1 ────────────────────────────────────────────────── */}
       <div className="schritt">
-        <h2>{t('audit.step1', 'Step 1: storage place')}</h2>
+        <h2>{t('audit.step1', '1. Which shelf?')}</h2>
         <div className="zeile">
           <label>
-            {t('audit.code', 'Code')}
+            {t('audit.code', 'Scan or type the shelf code')}
             <input
               value={ortCode}
               onChange={(e) => ortSetzen(e.target.value)}
-              placeholder={prefix ? `${prefix}…` : t('audit.code.placeholder', 'Code of the shelf / room')}
+              placeholder={prefix ? `${prefix}…` : t('audit.code.placeholder', 'e.g. A1')}
               aria-label={t('audit.code.aria', 'Code of the storage place')}
               autoFocus
             />
           </label>
+          {/* Der Weg ohne Scan steht NEBEN dem Feld: ein unlesbares Etikett
+              ist kein Sonderfall. */}
           <label>
-            {t('audit.prefix', 'Expected prefix')}
+            {t('audit.pickWithoutScan', 'or pick it')}
+            <select
+              value={ortId ?? ''}
+              onChange={(e) => {
+                const n = nodes.find((x) => x.id === e.target.value)
+                setOrtId(n?.id ?? null)
+                setOrtCode(n?.code ?? '')
+                setMeldung(null)
+                setTreffer([])
+              }}
+              aria-label={t('audit.pick.aria', 'Choose a storage place from the list')}
+            >
+              <option value="">—</option>
+              {nodes.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {nodePathLabel(nodes, n.id)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {meldung && (
+          <p className="warnung" role="alert">
+            {meldung}
+          </p>
+        )}
+        {/* Die Hausregel für Regal-Codes ist Einrichtung, nicht Arbeit. */}
+        <details className="optionen">
+          <summary>{t('audit.prefixHead', 'Code check')}</summary>
+          <label>
+            {t('audit.prefix', 'Shelf codes start with')}
             <input
               value={prefix}
               onChange={(e) => prefixSichern(e.target.value)}
@@ -377,59 +409,14 @@ export function Inventur() {
               size={8}
             />
           </label>
-        </div>
-        {/*
-          Der Weg ohne Scan. Er steht NEBEN dem Feld und nicht hinter einem
-          zweiten Knopf: ein unlesbares Etikett ist kein Sonderfall.
-        */}
-        <label className="ohne-scan">
-          {t('audit.pickWithoutScan', 'Choose without scanning')}
-          <select
-            value={ortId ?? ''}
-            onChange={(e) => {
-              const n = nodes.find((x) => x.id === e.target.value)
-              setOrtId(n?.id ?? null)
-              setOrtCode(n?.code ?? '')
-              setMeldung(null)
-              setTreffer([])
-            }}
-            aria-label={t('audit.pick.aria', 'Choose a storage place from the list')}
-          >
-            <option value="">— {t('audit.place', 'Storage place')} —</option>
-            {nodes.map((n) => (
-              <option key={n.id} value={n.id}>
-                {nodePathLabel(nodes, n.id)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {meldung && (
-          <p className="warnung" role="alert">
-            {meldung}
-          </p>
-        )}
-        {!prefix && (
-          <p className="hinweis">
-            {t(
-              'audit.noPrefix',
-              'No prefix stored — then nothing is checked at this point. Enter the house rule if there is one.',
-            )}
-          </p>
-        )}
+        </details>
       </div>
 
       {/* ── Schritt 2 ────────────────────────────────────────────────── */}
-      {ortId === null ? (
-        <p className="leer">
-          {t(
-            'audit.placeFirst',
-            'The place first, then the objects. Without it no line can say whether something sits in the right spot — and that is the whole question of a stocktake.',
-          )}
-        </p>
-      ) : (
+      {ortId === null ? null : (
         <>
           <div className="schritt">
-            <h2>{format(t('audit.step2', 'Step 2: objects at {place}'), { place: nodePathLabel(nodes, ortId) })}</h2>
+            <h2>{format(t('audit.step2', '2. What is on {place}?'), { place: nodePathLabel(nodes, ortId) })}</h2>
             <div className="zeile">
               <input
                 ref={codeFeld}
@@ -494,7 +481,7 @@ export function Inventur() {
                   <p className="hinweis">
                     {t(
                       'audit.cam.hint',
-                      'Recognised codes land in the same list as typed ones. Holding the same label in front of the camera twice gives two lines — with a lock of one and a half seconds in between, so a sticker in frame does not produce thirty lines a second.',
+                      'Hold a label in front of the camera — each scan adds a line.',
                     )}
                   </p>
                 )}
@@ -525,7 +512,7 @@ export function Inventur() {
                 <p className="hinweis">
                   {t(
                     'audit.nothingExpected',
-                    'The record places nothing here. That is something other than "there is nothing here" — it can also mean that a location was never stored for the objects here.',
+                    'Nothing is recorded for this place.',
                   )}
                 </p>
               ) : (

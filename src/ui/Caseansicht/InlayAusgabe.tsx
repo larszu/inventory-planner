@@ -79,7 +79,7 @@ export function InlayAusgabe({ lagen, innen, titel }: Props) {
       <p className="hinweis">
         {t(
           'inlay.hint',
-          'The layout places the pieces at their true size; the inlay adds clearance, because a pocket the size of the device does not take it. One file per layer — layers are separate sheets.',
+          'One file per layer, with clearance added.',
         )}
       </p>
 
@@ -199,7 +199,7 @@ export function InlayAusgabe({ lagen, innen, titel }: Props) {
             {format(
               t(
                 'inlay.formats',
-                '3MF states the unit (millimetre) in the file and requires a watertight mesh — prefer it. STL states no unit at all; a reader has to guess, and the classic error is a factor of 25.4. Webs thinner than {min} mm are reported above.',
+                '3MF is preferred. Webs thinner than {min} mm are reported above.',
               ),
               { min: MINDEST_STEG_MM },
             )}

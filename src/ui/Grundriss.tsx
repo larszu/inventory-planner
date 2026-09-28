@@ -278,7 +278,7 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
         <p className="hinweis">
           {t(
             'floor.empty',
-            'Nothing is on the plan yet, and the hall has not been measured — so there is no drawing to show. Put a location on the plan, or give the top-level node its own footprint.',
+            'Nothing on the floor plan yet.',
           )}
         </p>
       ) : (
@@ -287,7 +287,7 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
             <p className="leise">
               {t(
                 'floor.derived',
-                'The outline follows what is on the plan, not a measured hall. Give the top-level location a footprint to draw the real one.',
+                'Outline drawn from what is on the plan.',
               )}
             </p>
           )}
@@ -454,7 +454,7 @@ export function Grundriss({ beschriftung }: GrundrissProps) {
           <p className="hinweis">
             {t(
               'area.blockedHint',
-              'Reported, not forbidden — during a rebuild a rack stands in the aisle because it cannot go anywhere else yet. But it does not stand there silently.',
+              'Shown, not forbidden.',
             )}
           </p>
           {imWeg.map((v) => (

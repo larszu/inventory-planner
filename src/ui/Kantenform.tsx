@@ -119,7 +119,7 @@ export function Kantenformen({ vehicle, onAendern }: Props) {
       <p className="hinweis">
         {t(
           'edge.intro',
-          'A cargo space is rarely a box: roof edges are rounded, walls taper, a car boot narrows towards the tailgate. What is not entered stays a sharp edge — that only ever leaves room unused, it never promises room that is not there.',
+          'Rounded roof edges or tapering walls — optional.',
         )}
       </p>
 
@@ -177,7 +177,7 @@ export function Kantenformen({ vehicle, onAendern }: Props) {
         </div>
         <p className="leise">
           {art === 'rundung'
-            ? t('edge.hintRound', 'Equal values give a quarter circle, different ones an ellipse. Measure how far the curve reaches into each direction.')
+            ? t('edge.hintRound', 'How far the curve reaches in each direction.')
             : t('edge.hintChamfer', 'A straight cut from one wall to the other — measure how far it reaches into each direction.')}
         </p>
         <button type="submit">{t('edge.add', 'Record this edge')}</button>

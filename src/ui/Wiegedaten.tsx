@@ -94,7 +94,7 @@ export function Wiegedaten({ vehicle, onAendern }: Props) {
       <p className="hinweis">
         {t(
           'weigh.intro',
-          'Weight is the harder limit: a 3.5-tonner is often done under 1,200 kg of payload. Nothing here is derived from anything else — payload is not gross minus kerb weight once a body, a tail lift or a full tank sits in between.',
+          'Payload is often the tighter limit. Enter what you know.',
         )}
       </p>
 
@@ -124,7 +124,7 @@ export function Wiegedaten({ vehicle, onAendern }: Props) {
       <p className="leise">
         {t(
           'weigh.floorOffsetWhy',
-          'Measured from the centre of the front axle to the front edge of the cargo floor. Without it the cargo space sits nowhere on the vehicle, and there is no lever arm to compute an axle load from.',
+          'From the front axle to the front edge of the cargo floor — needed for axle loads.',
         )}
       </p>
 
@@ -170,7 +170,7 @@ export function Wiegedaten({ vehicle, onAendern }: Props) {
       <p className="leise">
         {t(
           'weigh.axleWhy',
-          'The empty axle load comes off a weighbridge, not out of the papers: the papers give what an axle may carry, not what it carries empty. Without it the sheet states what the load puts on the axle and stays silent about whether the axle is overloaded.',
+          'Empty axle loads from a weighbridge — needed to check overload.',
         )}
       </p>
     </details>

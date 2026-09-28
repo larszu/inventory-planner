@@ -59,7 +59,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
       setMeldung(
         t(
           'vorlage.noSizeToApply',
-          'This template carries no dimensions yet. Measure the case, then save it back as a template — from then on it carries them.',
+          'This template has no dimensions yet.',
         ),
       )
       return
@@ -141,7 +141,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
         <p className="hinweis">
           {t(
             'vorlage.shippedHint',
-            'The shipped templates carry data-sheet figures with their source. A measured case beats the data sheet: measure once and save it back, and your numbers replace the shipped ones for this model.',
+            'Your measured case replaces the data-sheet values for this model.',
           )}
         </p>
 

@@ -134,7 +134,7 @@ export function Kennungsschemata() {
       <p className="hinweis">
         {t(
           'code.intro',
-          'There is no standard for this. Aisle, bay and level is the common addressing, but every warehouse cuts it differently — so the scheme is set here rather than assumed.',
+          'Set how your shelf codes are built.',
         )}
       </p>
 
@@ -210,7 +210,7 @@ export function Kennungsschemata() {
       <p className="hinweis">
         {t(
           'code.batchHint',
-          'Eight bays and four levels are thirty-two codes, and nobody types those. Only locations without a code are touched — a code already on a sticker is not changed silently.',
+          'Fills in codes only where none exist yet.',
         )}
       </p>
       <div className="zeile">
@@ -247,7 +247,7 @@ export function Kennungsschemata() {
       <p className="hinweis">
         {t(
           'label.hint',
-          'The code is printed as text, large, with its path beside it — a shelf label is read from five metres, not scanned. Only locations that carry a code are printed: a label without one is an empty sticker.',
+          'Prints a label for every place with a code.',
         )}
       </p>
       {mitKennung.length === 0 ? (

@@ -42,7 +42,7 @@ export function AussenFelder({ dimensions, onSetze }: Props) {
       <p className="hinweis">
         {t(
           'case.outer.hint',
-          'The load plan reads these. Without all three dimensions the case still travels, but it cannot be placed in the vehicle.',
+          'Needed to place the case in a vehicle.',
         )}
       </p>
     </>

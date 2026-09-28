@@ -196,6 +196,21 @@ export function WerteUndSchaeden() {
     updateUnit(unitId, { fristen: rest.length > 0 ? rest : undefined })
   }
 
+  // Ohne Einheiten und ohne Rückgaben sind alle vier Blöcke leer. Vier leere
+  // Kästen untereinander sehen aus wie vier Aufgaben — es ist aber keine.
+  if (units.length === 0 && records.length === 0) {
+    return (
+      <section className="werte">
+        <p className="leer">
+          {t(
+            'values.allEmpty',
+            'Nothing here yet. Values and inspection dates belong to serial-numbered units; damage comes from returned checkout notes.',
+          )}
+        </p>
+      </section>
+    )
+  }
+
   return (
     <section className="werte">
       {/* ── Fristen ──────────────────────────────────────────────────── */}
@@ -205,7 +220,7 @@ export function WerteUndSchaeden() {
           <p className="hinweis">
             {t(
               'checks.empty',
-              'No serialised units. An inspection date belongs to the single device, not to the model — "the ULXD2 were checked in March" is a claim about twelve devices, two of which sat in the workshop.',
+              'No serial-numbered units yet.',
             )}
           </p>
         ) : (
@@ -422,7 +437,7 @@ export function WerteUndSchaeden() {
             <p className="hinweis">
               {t(
                 'checks.ageNote',
-                'The age next to a unit comes from its purchase date and is a statement, not a verdict: when a battery is too old is for the house to decide — as a date of the "Battery" kind.',
+                'Age is counted from the purchase date.',
               )}
             </p>
 
@@ -440,7 +455,7 @@ export function WerteUndSchaeden() {
                 {format(
                   t(
                     'checks.kinds.hint',
-                    '{n} kinds are built in. Whatever this house additionally checks or lets expire goes here — and travels along in the stock file, so a date does not arrive over there without its reason.',
+                    '{n} kinds are built in. Add your own here.',
                   ),
                   { n: EINGEBAUTE_FRIST_ARTEN.length },
                 )}
@@ -532,7 +547,7 @@ export function WerteUndSchaeden() {
           <p className="hinweis">
             {t(
               'values.empty',
-              'No serialised units. An insured value belongs to the single unit, not to the model — without units there is nothing to value.',
+              'No serial-numbered units yet.',
             )}
           </p>
         ) : (
@@ -612,7 +627,7 @@ export function WerteUndSchaeden() {
           <p className="hinweis">
             {t(
               'damage.empty',
-              'No return has recorded any damage. That is something other than "nothing is broken": it means nothing was noted.',
+              'No damage recorded.',
             )}
           </p>
         ) : (
@@ -693,7 +708,7 @@ export function WerteUndSchaeden() {
         <p className="hinweis">
           {t(
             'committed.hint',
-            'The stock count includes these pieces; they are not on the shelf. Anyone who cannot see that looks for the fifth piece where it no longer is.',
+            'Counted in stock, but not on the shelf.',
           )}
         </p>
         {gebundeneZeilen.length === 0 ? (

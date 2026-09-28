@@ -109,22 +109,24 @@ export function Ladung() {
               </select>
             </label>
 
-            <p>
-              {format(t('load.pieces', '{n} pieces · {kg} kg known'), {
-                n: l.stuecke.length,
-                kg: Math.round(gewicht.bekanntKg),
-              })}
-              {gewicht.ohneGewicht > 0 && (
-                <> · {format(t('load.noWeight', '{n} without a weight'), { n: gewicht.ohneGewicht })}</>
-              )}
-            </p>
-
-            {rest && (
-              <p className={rest.bekannt && rest.wert < 0 ? 'befund nein' : undefined}>
-                {t('load.payloadLeft', 'Payload left:')}{' '}
-                {rest.bekannt
-                  ? format(t('load.payloadKg', '{kg} kg'), { kg: Math.round(rest.wert) })
-                  : rest.grund}
+            {l.stuecke.length > 0 && (
+              <p>
+                {format(t('load.pieces', '{n} pieces · {kg} kg known'), {
+                  n: l.stuecke.length,
+                  kg: Math.round(gewicht.bekanntKg),
+                })}
+                {gewicht.ohneGewicht > 0 && (
+                  <> · {format(t('load.noWeight', '{n} without a weight'), { n: gewicht.ohneGewicht })}</>
+                )}
+                {/* Die Restnutzlast nur, wenn sie eine Zahl ist: „kein Wert
+                    hinterlegt" stand sonst unter jeder Ladung. */}
+                {rest?.bekannt && (
+                  <span className={rest.wert < 0 ? 'befund nein' : undefined}>
+                    {' · '}
+                    {t('load.payloadLeft', 'Payload left:')}{' '}
+                    {format(t('load.payloadKg', '{kg} kg'), { kg: Math.round(rest.wert) })}
+                  </span>
+                )}
               </p>
             )}
 
@@ -161,10 +163,14 @@ export function Ladung() {
               </details>
             )}
 
-            <button type="button" onClick={() => setOffen(l.id === offen ? '' : l.id)}>
-              {l.id === offen ? t('load.closePick', 'Close picker') : t('load.openPick', 'Add containers')}
+            <button
+              type="button"
+              className={l.id === loads.find((x) => x.stuecke.length === 0)?.id && l.id !== offen ? 'knopf-primaer' : undefined}
+              onClick={() => setOffen(l.id === offen ? '' : l.id)}
+            >
+              {l.id === offen ? t('load.closePick', 'Close') : t('load.openPick', 'Add cases')}
             </button>
-            <button type="button" onClick={() => removeLadung(l.id)}>
+            <button type="button" className="still" onClick={() => removeLadung(l.id)}>
               {t('load.remove', 'Remove load')}
             </button>
 
@@ -244,7 +250,7 @@ function Gruppenzuordnung({
         {format(
           t(
             'load.groupSuggest',
-            '{n} of {total} pieces would get a group from their category, {offen} have none to take, {behalten} keep the group you set.',
+            '{n} of {total} pieces get a group from their category.',
           ),
           {
             n: vorschlag.setzen.length,

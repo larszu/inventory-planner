@@ -33,7 +33,7 @@ export function SubHire() {
       <p className="leer">
         {t(
           'subhire.empty',
-          'No foreign material in stock. What is missing here is not an assurance: a line without an ownership entry counts as our own — so it does not appear on this list, even when it is rented.',
+          'No hired-in equipment. Mark items as "Sub-hire" in Equipment.',
         )}
       </p>
     )

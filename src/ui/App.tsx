@@ -181,7 +181,6 @@ export function App() {
           Vorher trug `.app` beides — und damit endete auch die Kopfzeile bei
           1100 px, mitten auf dem Bildschirm. */}
       <main className="inhalt">
-        {aktiv.frage && <p className="frage">{aktiv.frage}</p>}
         {reiter === 'start' && <Start onGehe={setReiter} />}
         {reiter === 'bestand' && <Bestand />}
         {reiter === 'lager' && <Lagerbaum />}

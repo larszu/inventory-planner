@@ -510,6 +510,8 @@ body {
 
 .zeile + .case-neu { margin-top: var(--steg-4); padding-top: var(--steg-3); border-top: 1px solid var(--rand); }
 
+.lagerort-zelle input.hat-ort::placeholder { color: var(--text); opacity: 1; }
+
 /* ── Start ──────────────────────────────────────────────────────────────
  * Ein Schritt, ein Knopf. Gross genug, dass nichts anderes um Aufmerksamkeit
  * konkurriert. */
@@ -1465,9 +1467,14 @@ p.warnung { color: var(--warn); }
 
 /* „Aus allem heraus" — ohne diese Ablage gaebe es keinen Weg zurueck. */
 .baum-wurzelablage {
-  margin: var(--steg-3) 0;
-  padding: var(--steg-3);
+  position: fixed;
+  left: var(--steg-4);
+  right: var(--steg-4);
+  bottom: calc(var(--steg-6) + var(--steg-2));
+  z-index: 20;
+  padding: var(--steg-4);
   border: 1px dashed var(--rand);
+  background: var(--flaeche);
   color: var(--leise);
   text-align: center;
 }

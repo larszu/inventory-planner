@@ -37,7 +37,7 @@ export function BibliothekKonto() {
       <p className="leise">
         {t(
           'settings.library.hint',
-          'Shared device data for the LZ Planner Suite. Reading it needs an account; the planner stores only the sign-in token, never the password.',
+          'Shared device data. Needs an account; only the sign-in token is stored.',
         )}
       </p>
 
@@ -84,7 +84,7 @@ export function BibliothekKonto() {
           <em>
             {t(
               'settings.library.auto.hint',
-              'On start and a few seconds after a stock item changes: upload our device types, then fetch updates from the library. Only while signed in.',
+              'Syncs automatically while signed in.',
             )}
           </em>
         </span>

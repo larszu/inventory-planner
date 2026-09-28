@@ -85,7 +85,7 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
       <p className="hinweis">
         {t(
           'ausbau.innerHint',
-          'The inside does not follow from the outside — shell, foam and lid all take their share. Measure it, or give the wall thickness so it can be subtracted. Nothing is guessed here.',
+          'Measure the inside, or enter the wall thickness.',
         )}
       </p>
       <div className="zeile">
@@ -135,7 +135,7 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
           <p className="hinweis">
             {t(
               'ausbau.dividerHint',
-              'The division is your decision, not a result: the walls stay where you put them, and the question is what fits into them. Widths in mm, separated by commas.',
+              'Widths in mm, separated by commas.',
             )}
           </p>
           <div className="zeile">
@@ -203,7 +203,7 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
           <p className="hinweis">
             {t(
               'ausbau.drawersHint',
-              'Bottom first — which drawer sits low is a decision (the heavy one down), not a computed result. A drawer without a height is listed but not stacked; an assumed height would shift every drawer above it.',
+              'Bottom drawer first.',
             )}
           </p>
           <ul className="messliste">
@@ -267,7 +267,7 @@ export function AusbauFelder({ ausbau, innen, onSetze }: Props) {
           <p className="hinweis">
             {t(
               'ausbau.rackHint',
-              'The empty rack belongs to the warehouse: how many units this case has is a property of the case. What sits in them belongs to the signal plan — load the rack file from the Cable Planner and pick the rack below.',
+              'Load the rack file from the Cable Planner to see what sits inside.',
             )}
           </p>
           <div className="zeile">

@@ -36,8 +36,6 @@ type T = (key: string, en: string) => string
 export interface AnsichtDef {
   id: Ansicht
   titel: string
-  /** Ein Satz: wofür diese Ansicht da ist. */
-  frage: string
 }
 
 export interface BereichDef {
@@ -50,43 +48,43 @@ export const bereiche = (t: T): BereichDef[] => [
   {
     id: 'start',
     titel: t('area.start', 'Start'),
-    ansichten: [{ id: 'start', titel: t('area.start', 'Start'), frage: '' }],
+    ansichten: [{ id: 'start', titel: t('area.start', 'Start') }],
   },
   {
     id: 'lager',
     titel: t('area.stock', 'Stock'),
     ansichten: [
-      { id: 'bestand', titel: t('tab.stock', 'Equipment'), frage: t('tab.stock.q', 'What do you have, and how many?') },
-      { id: 'lager', titel: t('tab.storage', 'Storage places'), frage: t('tab.storage.q', 'Where does it sit — shelves, cases, and what is inside what.') },
-      { id: 'eingang', titel: t('tab.receiving', 'Receiving'), frage: t('tab.receiving.q', 'Book in what has arrived.') },
-      { id: 'inventur', titel: t('tab.audit', 'Stocktake'), frage: t('tab.audit.q', 'Check that what should be here is here.') },
-      { id: 'bibliothek', titel: t('tab.library', 'Device library'), frage: t('tab.library.q', 'Take device data from the shared library instead of typing it.') },
+      { id: 'bestand', titel: t('tab.stock', 'Equipment') },
+      { id: 'lager', titel: t('tab.storage', 'Storage places') },
+      { id: 'eingang', titel: t('tab.receiving', 'Receiving') },
+      { id: 'inventur', titel: t('tab.audit', 'Stocktake') },
+      { id: 'bibliothek', titel: t('tab.library', 'Device library') },
     ],
   },
   {
     id: 'packen',
     titel: t('area.pack', 'Pack'),
     ansichten: [
-      { id: 'cases', titel: t('tab.cases', 'Cases'), frage: t('tab.cases.q', 'Measure a case and lay out what goes inside.') },
-      { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles'), frage: t('tab.vehicles.q', 'Your vans and trucks and their cargo space.') },
-      { id: 'ladung', titel: t('tab.load', 'Load'), frage: t('tab.load.q', 'Pick the cases for a job and see how they fit into the vehicle.') },
-      { id: 'stapeln', titel: t('tab.stack', 'Stacking'), frage: t('tab.stack.q', 'Which case may stand on which, and how high.') },
+      { id: 'cases', titel: t('tab.cases', 'Cases') },
+      { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles') },
+      { id: 'ladung', titel: t('tab.load', 'Load') },
+      { id: 'stapeln', titel: t('tab.stack', 'Stacking') },
     ],
   },
   {
     id: 'verleih',
     titel: t('area.out', 'Out & back'),
     ansichten: [
-      { id: 'ausgabe', titel: t('tab.checkouts', 'Checkout notes'), frage: t('tab.checkouts.q', 'What is out, with whom, and since when.') },
-      { id: 'subhire', titel: t('tab.subhire', 'Sub-hire'), frage: t('tab.subhire.q', 'Gear that is not yours, and when it has to go back.') },
+      { id: 'ausgabe', titel: t('tab.checkouts', 'Checkout notes') },
+      { id: 'subhire', titel: t('tab.subhire', 'Sub-hire') },
     ],
   },
   {
     id: 'auswertung',
     titel: t('area.reports', 'Reports'),
     ansichten: [
-      { id: 'bericht', titel: t('tab.report', 'Report'), frage: t('tab.report.q', 'The stock at a glance, ready to print.') },
-      { id: 'werte', titel: t('tab.values', 'Values & damage'), frage: t('tab.values.q', 'What it is worth and what is broken.') },
+      { id: 'bericht', titel: t('tab.report', 'Report') },
+      { id: 'werte', titel: t('tab.values', 'Values & damage') },
     ],
   },
 ]

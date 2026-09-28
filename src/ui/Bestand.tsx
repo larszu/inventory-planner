@@ -70,6 +70,11 @@ export function Bestand() {
   // etwas darin hat.
   const mitKategorie = items.some((i) => i.category)
   const mitLieferant = items.some((i) => i.supplier)
+  // Zielmenge und Eigentum braucht man beim Anlegen nicht. Sichtbar, sobald
+  // eins davon irgendwo gesetzt ist, sonst über „More columns".
+  const [mehrSpaltenGewaehlt, setMehrSpalten] = useState(false)
+  const mehrSpaltenErzwungen = items.some((i) => i.mindestmenge !== undefined || i.ownership !== undefined)
+  const mehrSpalten = mehrSpaltenGewaehlt || mehrSpaltenErzwungen
 
   const gefiltert = useMemo(() => {
     const q = suche.trim().toLowerCase()
@@ -181,6 +186,11 @@ export function Bestand() {
             placeholder={t('stock.search', 'Search — model, manufacturer, supplier, location')}
             aria-label={t('stock.search.aria', 'Search the stock')}
           />
+          {!mehrSpaltenErzwungen && (
+            <button type="button" className="still" aria-pressed={mehrSpalten} onClick={() => setMehrSpalten(!mehrSpalten)}>
+              {mehrSpalten ? t('stock.fewerColumns', 'Fewer columns') : t('stock.moreColumns', 'More columns')}
+            </button>
+          )}
           <span className="zaehler">
             {format(t('stock.countOf', '{shown} of {all}'), {
               shown: gefiltert.length,
@@ -234,6 +244,8 @@ export function Bestand() {
                   ist, sagt das `title` der Zelle und der Satz unter der
                   Tabelle — eine abgeschnittene Ueberschrift sagt gar nichts.
                 */}
+                {mehrSpalten && (
+                  <>
                 <th
                   className="rechts"
                   title={t('stock.target.title', 'When to reorder or sub-hire. Empty means: not decided.')}
@@ -241,6 +253,8 @@ export function Bestand() {
                   {t('stock.col.target', 'Target')}
                 </th>
                 <th>{t('stock.col.ownership', 'Ownership')}</th>
+                  </>
+                )}
                 <th>{t('stock.col.location', 'Location')}</th>
                 {mitLieferant && <th>{t('stock.col.supplier', 'Supplier')}</th>}
                 <th />
@@ -267,6 +281,8 @@ export function Bestand() {
                       className="schmal"
                     />
                   </td>
+                  {mehrSpalten && (
+                    <>
                   <td className="rechts" data-spalte={t('stock.col.target', 'Target')}>
                     {/*
                       LEER IST EIN WERT, und zwar ein anderer als 0. Leer
@@ -323,6 +339,8 @@ export function Bestand() {
                       ))}
                     </select>
                   </td>
+                    </>
+                  )}
                   <td data-spalte={t('stock.col.location', 'Location')}>
                     {/* Die KENNUNG zuerst und der Pfad daneben: „A1" ist das,
                         was am Regal steht und was jemand im Gang sucht;
@@ -404,17 +422,16 @@ function LagerortZelle({
 
   return (
     <div className="lagerort-zelle">
-      {knoten ? (
-        <span>
-          {knoten.code && <strong className="lagerort-kennung">{knoten.code}</strong>}
-          <span className="leise">{pfad}</span>
-        </span>
-      ) : (
-        <span className="leise">{item.stockLocation ?? t('stock.nowhere', 'not put away')}</span>
-      )}
+      {/* Eine Zeile statt zwei: der aktuelle Ort steht IM Feld, Tippen
+          ersetzt ihn. Die Kennung zuerst — sie steht am Regal. */}
       <input
         value={text}
-        placeholder={t('stock.setPlace', 'Type a shelf or case…')}
+        className={knoten || item.stockLocation ? 'hat-ort' : undefined}
+        placeholder={
+          knoten
+            ? `${knoten.code ? `${knoten.code} · ` : ''}${pfad}`
+            : (item.stockLocation ?? t('stock.setPlace', 'Not put away — type a shelf or case'))
+        }
         aria-label={t('stock.setPlaceFor', 'Set the location')}
         onChange={(e) => setText(e.target.value)}
         onBlur={uebernehmen}
