@@ -243,6 +243,8 @@ export const de: Record<string, string> = {
   'stock.clearSearch': 'Suche zuruecksetzen',
   'stock.empty':
     'Noch nichts im Bestand. Anlegen — oder eine vorhandene Lagerdatei einlesen; das Format ist zwischen den Werkzeugen dasselbe.',
+  'stock.merged': '{n} zu {model} hinzugefügt — jetzt {total}.',
+  'stock.duplicate': '{model} lag schon an anderer Stelle im Bestand — als eigener Eintrag angelegt.',
   'stock.newModel': 'Neues Modell',
   'stock.newModel.aria': 'Modellbezeichnung',
   'stock.ownership.unset': 'nicht angegeben',
@@ -416,7 +418,7 @@ export const de: Record<string, string> = {
   'tab.report.q': 'Was steckt drin — und wie kommt es hier raus?',
   // ── Statusleiste (suite#231, ADR-007 Abschnitt 6) ──────────────────────
   // Je Reiter eine Zahl. Nichts davon wertet — es sind Anzahlen.
-  'status.stock': '{n} Modelle · {p} Lagerplaetze',
+  'status.stock': 'Modelle: {n} · Lagerplätze: {p}',
   'status.checkouts': '{n} Ausgabescheine · {out} noch draussen',
   'status.subhire': '{n} Positionen gehoeren uns nicht',
   'status.units': '{n} serialisierte Einheiten',
@@ -578,6 +580,7 @@ export const de: Record<string, string> = {
   'load.intro':
     'Die Container wählen, die mitfahren. Ein verschachteltes Case zählt einmal, zusammen mit seinem Transport-Case — nicht zweimal.',
   'load.name': 'Name der Ladung',
+  'load.allTaken': 'Jedes Case steht schon auf dieser Ladung.',
   'load.noContainers': 'Noch keine Cases oder Transport-Cases im Bestand.',
   'load.noVehicle': 'noch nicht gewählt',
   'load.noWeight': '{n} ohne Gewicht',
@@ -1125,9 +1128,15 @@ export const de: Record<string, string> = {
   'case.pick': 'Case',
   'case.pick.aria': 'Welches Case',
   'case.none':
-    'Noch kein Case im Lagerbaum. Ein Case ist ein Container-Knoten — ohne einen gibt es nichts aufzuteilen.',
+    'Noch kein Case im Lagerbaum. Anlegen unter Lager → Lagerort oder Case anlegen, Art Case oder Transport-Case.',
   'case.buildout': 'Innen',
   'case.inner.width': 'Innenbreite (mm)',
+  'case.outside': 'Außen',
+  'case.outer.width': 'Außenbreite (mm)',
+  'case.outer.height': 'Außenhöhe (mm)',
+  'case.outer.depth': 'Außentiefe (mm)',
+  'case.outer.weight': 'Leergewicht (kg)',
+  'case.outer.hint': 'Die Ladeplanung liest diese Werte. Ohne alle drei Maße fährt das Case trotzdem mit, lässt sich aber nicht im Fahrzeug platzieren.',
   'case.inner.height': 'Innenhöhe (mm)',
   'case.inner.depth': 'Innentiefe (mm)',
   'case.inner.measured': 'Gemessenes Innenmass — es schlägt jede Rechnung.',

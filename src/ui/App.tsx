@@ -23,6 +23,7 @@
 // Lageristen ist so ein Modul kein Code.
 // ───────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react'
+import { STORAGE_KEYS } from '../lib/storageKeys'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCheckoutStore } from '../domain/store/checkoutStore'
@@ -42,7 +43,6 @@ import { Wareneingang } from './Wareneingang'
 import { Bibliothek } from './Bibliothek'
 import { autoAbgleichStarten } from '../domain/store/bibliothekStore'
 
-type Reiter = 'bestand' | 'lager' | 'eingang' | 'inventur' | 'ausgabe' | 'subhire' | 'bericht' | 'werte' | 'stapeln' | 'cases' | 'fahrzeuge' | 'ladung' | 'bibliothek'
 
 type UebersetzFn = (key: string, en: string) => string
 
@@ -52,6 +52,9 @@ type UebersetzFn = (key: string, en: string) => string
  * Sprache stehen, die beim Laden galt — der Umschalter änderte dann alles
  * ausser ihr.
  */
+const REITER_IDS = ['bestand', 'lager', 'eingang', 'inventur', 'ausgabe', 'subhire', 'bericht', 'werte', 'stapeln', 'cases', 'fahrzeuge', 'ladung', 'bibliothek'] as const
+type Reiter = (typeof REITER_IDS)[number]
+
 const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string }[] => [
   { id: 'bestand', titel: t('tab.stock', 'Stock'), frage: t('tab.stock.q', 'What is here, how much of it, and where does it sit?') },
   { id: 'lager', titel: t('tab.storage', 'Storage'), frage: t('tab.storage.q', 'Where does it sit — and what is inside what?') },
@@ -97,7 +100,7 @@ const zaehler = (
     case 'werte':
       return format(t('status.units', '{n} serialised units'), { n: zahlen.einheiten })
     default:
-      return format(t('status.stock', '{n} models · {p} storage places'), {
+      return format(t('status.stock', 'Models: {n} · storage places: {p}'), {
         n: zahlen.artikel,
         p: zahlen.plaetze,
       })
@@ -106,7 +109,22 @@ const zaehler = (
 
 export function App() {
   const { t, format } = useT()
-  const [reiter, setReiter] = useState<Reiter>('bestand')
+  const [reiter, setReiterState] = useState<Reiter>(() => {
+    try {
+      const gemerkt = localStorage.getItem(STORAGE_KEYS.reiter)
+      return REITER_IDS.includes(gemerkt as Reiter) ? (gemerkt as Reiter) : 'bestand'
+    } catch {
+      return 'bestand'
+    }
+  })
+  const setReiter = (r: Reiter) => {
+    setReiterState(r)
+    try {
+      localStorage.setItem(STORAGE_KEYS.reiter, r)
+    } catch {
+      // Privates Fenster oder gesperrter Speicher: dann eben ohne Gedaechtnis.
+    }
+  }
   const REITER = reiterListe(t)
   // Eigene Artikeltypen hoch-, Bibliotheksgeraete herunterladen (Einstellung „automatisch").
   useEffect(() => autoAbgleichStarten(), [])

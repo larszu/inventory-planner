@@ -244,6 +244,13 @@ Deckel- plus Unterteiltiefe die Innenhöhe (`caseKatalog.test.ts`).
 **Gemessen schlägt Datenblatt.** Wer ein Case ausmisst und als Vorlage
 sichert, ersetzt die mitgelieferte Fassung dieses Modells.
 
+**Aussenmass und Leergewicht** stehen im Block *Outside* und am Case selbst,
+nicht im Ausbau — die Ladeplanung liest sie dort. *Apply* übernimmt sie aus
+der Vorlage, soweit sie welche trägt. Ohne alle drei Masse fährt ein Case in
+der Ladung mit, lässt sich aber nicht im Fahrzeug platzieren. Eine Ladung
+liest immer den aktuellen Stand: ein Case, das erst nach dem Hinzufügen
+vermessen wird, rückt sofort in den Ladeplan.
+
 ### Inlays als Datei: Schaumzuschnitt und 3D-Druck
 
 Aus jeder Schaum-Lage entsteht ein **Inlay** — die Datei, nach der geschnitten

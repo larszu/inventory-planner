@@ -15,11 +15,12 @@ import { useMemo, useState } from 'react'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useVehicleStore } from '../domain/store/vehicleStore'
+import { nodePathLabel } from '../domain/lib/storageTree'
 import { useLoadStore } from '../domain/store/loadStore'
 import { CONTAINER_KINDS } from '../domain/types/inventory'
 import type { InventoryItem } from '../domain/types/inventory'
 import type { Ladung } from '../domain/types/load'
-import { gesamtGewicht, gruppen, stueckeAusContainern, unplanbar } from '../domain/lib/ladung'
+import { gesamtGewicht, gruppen, mitAktuellenMassen, stueckeAusContainern, unplanbar } from '../domain/lib/ladung'
 import { gruppenVorschlaege } from '../domain/lib/abladegruppen'
 import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { nutzlastFrei } from '../domain/lib/laderaum'
@@ -29,8 +30,9 @@ export function Ladung() {
   const { t, format } = useT()
   const nodes = useInventoryStore((s) => s.nodes)
   const vehicles = useVehicleStore((s) => s.vehicles)
-  const { loads, addLadung, addStuecke, setVehicle, removeLadung, setGruppe, setGruppenReihenfolge } =
+  const { loads: gespeichert, addLadung, addStuecke, setVehicle, removeLadung, setGruppe, setGruppenReihenfolge } =
     useLoadStore()
+  const loads = useMemo(() => gespeichert.map((l) => mitAktuellenMassen(l, nodes)), [gespeichert, nodes])
   const items = useInventoryStore((s) => s.items)
 
   const container = useMemo(() => nodes.filter((n) => CONTAINER_KINDS.includes(n.kind)), [nodes])
@@ -48,6 +50,14 @@ export function Ladung() {
     if (!aktuell) return
     addStuecke(aktuell.id, stueckeAusContainern(nodes, wahl))
     setWahl([])
+    setOffen('')
+  }
+
+  // Was schon auf der Ladung steht, wird nicht noch einmal angeboten: ein
+  // zweites Hinzufuegen luede dasselbe Case doppelt.
+  const waehlbar = (l: { stuecke: { nodeId?: string }[] }) => {
+    const drin = new Set(l.stuecke.map((s) => s.nodeId))
+    return container.filter((c) => !drin.has(c.id))
   }
 
   return (
@@ -61,7 +71,7 @@ export function Ladung() {
       </p>
 
       <form
-        className="block"
+        className="block zeile"
         onSubmit={(e) => {
           e.preventDefault()
           if (!name.trim()) return
@@ -88,7 +98,7 @@ export function Ladung() {
           <div className="block" key={l.id}>
             <h3>{l.name}</h3>
 
-            <label>
+            <label className="feld">
               {t('load.vehicle', 'Vehicle')}
               <select value={l.vehicleId ?? ''} onChange={(e) => setVehicle(l.id, e.target.value || undefined)}>
                 <option value="">{t('load.noVehicle', 'not chosen yet')}</option>
@@ -159,6 +169,32 @@ export function Ladung() {
               {t('load.remove', 'Remove load')}
             </button>
 
+            {/* Die Auswahl direkt unter ihrem Knopf: am Seitenende, unter dem
+                ganzen Ladeplan, sah niemand, dass der Klick etwas getan hat. */}
+            {aktuell?.id === l.id && (
+              <div className="block">
+                <h3>{format(t('load.pickFor', 'Containers for {name}'), { name: aktuell.name })}</h3>
+                {container.length === 0 && <p>{t('load.noContainers', 'No cases or transport cases in stock yet.')}</p>}
+                {container.length > 0 && waehlbar(l).length === 0 && (
+                  <p>{t('load.allTaken', 'Every case is already on this load.')}</p>
+                )}
+                {waehlbar(l).map((c) => (
+                  <label key={c.id} className="wahl">
+                    <input type="checkbox" checked={wahl.includes(c.id)} onChange={() => umschalten(c.id)} />
+                    <span>
+                      {c.name}
+                      <em>{nodePathLabel(nodes, c.id)}</em>
+                    </span>
+                  </label>
+                ))}
+                {waehlbar(l).length > 0 && (
+                  <button type="button" onClick={uebernehmen} disabled={wahl.length === 0}>
+                    {t('load.take', 'Add to load')}
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Der Ladeplan steht IN der Ladung und nicht in einem eigenen
                 Reiter: er ist die Antwort auf die Frage, die diese Ansicht
                 stellt, und kein zweites Werkzeug. */}
@@ -167,21 +203,6 @@ export function Ladung() {
         )
       })}
 
-      {aktuell && (
-        <div className="block">
-          <h3>{format(t('load.pickFor', 'Containers for {name}'), { name: aktuell.name })}</h3>
-          {container.length === 0 && <p>{t('load.noContainers', 'No cases or transport cases in stock yet.')}</p>}
-          {container.map((c) => (
-            <label key={c.id}>
-              <input type="checkbox" checked={wahl.includes(c.id)} onChange={() => umschalten(c.id)} />
-              {c.name}
-            </label>
-          ))}
-          <button type="button" onClick={uebernehmen} disabled={wahl.length === 0}>
-            {t('load.take', 'Add to load')}
-          </button>
-        </div>
-      )}
     </section>
   )
 }

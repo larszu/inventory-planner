@@ -33,6 +33,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useT } from '../i18n'
+import { AussenFelder } from './Caseansicht/AussenFelder'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCaseAusbauStore } from '../domain/store/caseAusbauStore'
 import { useCaseVorlagenStore } from '../domain/store/caseVorlagenStore'
@@ -58,13 +59,14 @@ export function Caseausbau() {
   const { t, format } = useT()
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
+  const updateNode = useInventoryStore((s) => s.updateNode)
   const units = useInventoryStore((s) => s.units)
   const ausbauAlle = useCaseAusbauStore((s) => s.ausbau)
   const setzeAusbau = useCaseAusbauStore((s) => s.setzeAusbau)
   const eigeneVorlagen = useCaseVorlagenStore((s) => s.vorlagen)
   const setzeVorlage = useCaseVorlagenStore((s) => s.setzeVorlage)
 
-  const [gewaehlt, setGewaehlt] = useState('')
+  const [wahl, setGewaehlt] = useState('')
   const [fehler, setFehler] = useState<string | null>(null)
   const [kopiert, setKopiert] = useState(false)
   const [raum, setRaum] = useState<'2d' | '3d'>('2d')
@@ -77,6 +79,9 @@ export function Caseausbau() {
     () => nodes.filter((n) => isContainerKind(n.kind)).sort((a, b) => a.name.localeCompare(b.name)),
     [nodes],
   )
+  // Ohne Wahl das erste Case: vorher stand hier „—" und darunter nichts,
+  // obwohl es genau ein Case gab.
+  const gewaehlt = cases.some((c) => c.id === wahl) ? wahl : (cases[0]?.id ?? '')
   const node = cases.find((n) => n.id === gewaehlt)
   const ausbau = gewaehlt ? ausbauAlle[gewaehlt] : undefined
   const art = ausbauArt(ausbau)
@@ -212,7 +217,7 @@ export function Caseausbau() {
           <p className="hinweis">
             {t(
               'case.none',
-              'No case in the storage tree yet. A case is a container node — without one there is nothing to lay out.',
+              'No case in the storage tree yet. Create one under Storage → Add a location or case, with the kind Case or Transport case.',
             )}
           </p>
         ) : (
@@ -247,7 +252,14 @@ export function Caseausbau() {
               ausbau={ausbau}
               onUebernehmen={patch}
               onVorlageSpeichern={setzeVorlage}
+              onAussen={(d) => updateNode(node.id, { dimensions: d })}
             />
+          </div>
+
+          {/* ── Die Schale von aussen ──────────────────────────────────── */}
+          <div className="block">
+            <h3>{t('case.outside', 'Outside')}</h3>
+            <AussenFelder dimensions={node.dimensions} onSetze={(d) => updateNode(node.id, { dimensions: d })} />
           </div>
 
           {/* ── Der Ausbau ─────────────────────────────────────────────── */}

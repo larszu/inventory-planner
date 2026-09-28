@@ -23,6 +23,8 @@
 import { useMemo, useState } from 'react'
 import { useT } from '../i18n'
 import { useLoadStore } from '../domain/store/loadStore'
+import { useInventoryStore } from '../domain/store/inventoryStore'
+import { mitAktuellenMassen } from '../domain/lib/ladung'
 import {
   betroffenText,
   verankerteAusLadungen,
@@ -41,7 +43,9 @@ interface Props {
 
 export function Laderaumdaten({ vehicle, kinds, kindLabel, onAendern }: Props) {
   const { t, format } = useT()
-  const loads = useLoadStore((s) => s.loads)
+  const gespeichert = useLoadStore((s) => s.loads)
+  const nodes = useInventoryStore((s) => s.nodes)
+  const loads = useMemo(() => gespeichert.map((l) => mitAktuellenMassen(l, nodes)), [gespeichert, nodes])
 
   /** Was gerade im Formular steht — noch nicht im Store. */
   const [entwurf, setEntwurf] = useState<Vehicle['cargoMm']>(vehicle.cargoMm)

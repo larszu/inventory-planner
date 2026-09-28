@@ -61,6 +61,26 @@ export function stueckeAusContainern(nodes: readonly StorageNode[], ausgewaehlt:
 }
 
 /**
+ * Container-Stücke mit den AKTUELLEN Massen ihres Knotens.
+ *
+ * `stueckeAusContainern` hält die Masse zum Zeitpunkt des Hinzufügens fest.
+ * Wer ein Case erst in die Ladung nimmt und danach vermisst (der übliche
+ * Weg), sah es sonst für immer als „cannot be laid out". Ist der Knoten
+ * gelöscht, bleibt der alte Stand stehen — das Stück fährt trotzdem mit.
+ */
+export function mitAktuellenMassen(ladung: Ladung, nodes: readonly StorageNode[]): Ladung {
+  const proId = new Map(nodes.map((n) => [n.id, n]))
+  let geaendert = false
+  const stuecke = ladung.stuecke.map((s) => {
+    const n = s.herkunft === 'container' && s.nodeId ? proId.get(s.nodeId) : undefined
+    if (!n || (n.dimensions === s.dimensions && n.transport === s.transport)) return s
+    geaendert = true
+    return { ...s, dimensions: n.dimensions, transport: n.transport }
+  })
+  return geaendert ? { ...ladung, stuecke } : ladung
+}
+
+/**
  * Bedarfszeilen des Plans in Stücke verwandeln.
  *
  * Der Bedarf kennt Modell und Menge, aber keine Maße — die stehen am

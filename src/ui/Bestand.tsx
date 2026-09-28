@@ -31,8 +31,9 @@
 // `domain/lib/mindestmenge.ts`, gezeigt wird sie im Bericht. Diese Ansicht
 // vergleicht nichts; sie nimmt die Zahl entgegen.
 // ───────────────────────────────────────────────────────────────────────────
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useT } from '../i18n'
+import { useAnlegenOffen } from './useAnlegenOffen'
 import { TabelleRahmen } from './TabelleRahmen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { nodePathLabel } from '../domain/lib/storageTree'
@@ -49,6 +50,7 @@ export function Bestand() {
   const { t, format } = useT()
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
+  const anlegenBlock = useAnlegenOffen(items.length === 0)
   const addItem = useInventoryStore((s) => s.addItem)
   const updateItem = useInventoryStore((s) => s.updateItem)
   const removeItem = useInventoryStore((s) => s.removeItem)
@@ -60,6 +62,8 @@ export function Bestand() {
   const [suche, setSuche] = useState('')
   const [modell, setModell] = useState('')
   const [menge, setMenge] = useState('1')
+  const [meldung, setMeldung] = useState<string | null>(null)
+  const modellFeld = useRef<HTMLInputElement>(null)
 
   const gefiltert = useMemo(() => {
     const q = suche.trim().toLowerCase()
@@ -75,9 +79,31 @@ export function Bestand() {
     const name = modell.trim()
     if (!name) return
     const zahl = Number(menge)
-    addItem({ model: name, quantity: Number.isFinite(zahl) && zahl > 0 ? zahl : 1 })
+    const stueck = Number.isFinite(zahl) && zahl > 0 ? zahl : 1
+    // Derselbe Name ein zweites Mal war vorher still eine zweite Zeile. Liegt
+    // genau ein Eintrag dieses Namens noch nirgends, ist es dieselbe Ware: die
+    // Menge kommt dazu. Liegt er schon irgendwo, waere Zusammenlegen ein Umzug
+    // der neuen Stuecke dorthin — dann eine eigene Zeile, aber mit Hinweis.
+    const gleich = items.filter((i) => i.model.trim().toLowerCase() === name.toLowerCase())
+    const frei = gleich.filter((i) => !i.locationId && i.quantity !== undefined)
+    const ziel = frei.length === 1 ? frei[0]! : null
+    if (ziel) {
+      const neu = (ziel.quantity ?? 0) + stueck
+      updateItem(ziel.id, { quantity: neu })
+      setMeldung(format(t('stock.merged', 'Added {n} to {model} — now {total}.'), { n: stueck, model: ziel.model, total: neu }))
+    } else {
+      addItem({ model: name, quantity: stueck })
+      setMeldung(
+        gleich.length > 0
+          ? format(t('stock.duplicate', '{model} was already in stock elsewhere — created as a separate entry.'), {
+              model: name,
+            })
+          : null,
+      )
+    }
     setModell('')
     setMenge('1')
+    modellFeld.current?.focus()
   }
 
   return (
@@ -94,15 +120,14 @@ export function Bestand() {
 
         Jetzt ist das Anlegen ein `<details>`-Block mit Kopflinie: er ist
         offen, solange nichts im Bestand ist (dann ist es das Einzige, was zu
-        tun ist), und zugeklappt, sobald etwas dasteht — dann will man meist
-        nachsehen und nicht anlegen. `key` erzwingt das beim Wechsel von leer
-        auf nicht-leer: `open` ist ein Anfangswert, den React sonst nicht
-        nachzieht.
+        tun ist), und zugeklappt, wenn die Ansicht mit Bestand oeffnet — dann
+        will man meist nachsehen und nicht anlegen. Nach dem ersten Eintrag
+        bleibt er offen (`useAnlegenOffen`).
 
         Und es ist ein `<form>`: die Eingabetaste legt an. Vorher musste man
         zur Maus greifen, um ein Wort einzutragen.
       */}
-      <details className="block" open={items.length === 0} key={items.length === 0 ? 'leer' : 'voll'}>
+      <details className="block" {...anlegenBlock}>
         <summary>{t('stock.create.head', 'Add to stock')}</summary>
         <form
           className="zeile"
@@ -114,6 +139,7 @@ export function Bestand() {
           <label className="feld">
             {t('stock.newModel.aria', 'Model designation')}
             <input
+              ref={modellFeld}
               value={modell}
               onChange={(e) => setModell(e.target.value)}
               placeholder={t('stock.newModel', 'New model')}
@@ -127,6 +153,11 @@ export function Bestand() {
             {t('stock.create', 'Create')}
           </button>
         </form>
+        {meldung && (
+          <p className="hinweis" role="status">
+            {meldung}
+          </p>
+        )}
       </details>
 
       <div className="leiste">
