@@ -424,6 +424,14 @@ body {
   flex: none;
 }
 
+/* Ab 640 px bricht die Leiste um statt zu scrollen: 13 Reiter passen auch
+ * auf 1300 px nicht nebeneinander, und der letzte („Device library") lag
+ * unsichtbar hinter dem Rand — ein duenner Rollbalken sagt niemandem, dass
+ * dort noch etwas kommt. Auf dem Telefon bleibt das Scrollen (s. o.). */
+@media (min-width: 640px) {
+  .reiter-leiste { flex-wrap: wrap; overflow-x: visible; }
+}
+
 .reiter {
   background: none;
   border: 1px solid transparent;
@@ -1533,13 +1541,23 @@ p.warnung { color: var(--warn); }
 /* `.zeile label` macht aus jedem Label eine dehnbare Spalte mit Beschriftung
  * ÜBER dem Feld — hier gibt es kein Feld, also stand die Beschriftung allein
  * und eine halbe Zeile tiefer als der Knopf daneben. */
+/* Die Dateiwahl ist ein Label und sieht aus wie ein Knopf. In einer
+ * `.zeile` griff sonst die Feldbeschriftung (klein, gestapelt), und „Import"
+ * stand eine halbe Zeile hoeher und kleiner als „Export" daneben. */
 .zeile .dateiwahl,
 .dateiwahl {
   flex: 0 0 auto;
+  flex-direction: row;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  min-height: var(--ziel);
+  padding: 0 var(--steg-3);
+  border: 1px solid transparent;
+  font-size: inherit;
 }
+.dateiwahl.still { color: var(--leise); }
+.dateiwahl.still:hover { border-color: var(--rand); color: var(--text); }
 .dateiwahl input[type='file'] { display: none; }
 
 /* ── Firmenzeichen (Brand Guide 2.0) ─────────────────────────────────────

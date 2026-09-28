@@ -26,7 +26,7 @@ import {
   type KatalogCase,
 } from '../../domain/lib/caseKatalog'
 import { ausbauArt, type CaseAusbau } from '../../domain/types/caseAusbau'
-import type { StorageNode } from '../../domain/types/inventory'
+import type { PhysicalDimensions, StorageNode } from '../../domain/types/inventory'
 
 interface Props {
   eigene: readonly KatalogCase[]
@@ -34,9 +34,12 @@ interface Props {
   ausbau: CaseAusbau | undefined
   onUebernehmen: (patch: Partial<Omit<CaseAusbau, 'nodeId' | 'updatedAt'>>) => void
   onVorlageSpeichern: (v: KatalogCase) => void
+  /** Aussenmasse und Leergewicht der Schale — gehoeren an den Knoten, nicht
+   *  in den Ausbau: nur dort liest die Ladeplanung sie. */
+  onAussen: (d: PhysicalDimensions) => void
 }
 
-export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpeichern }: Props) {
+export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpeichern, onAussen }: Props) {
   const { t, format } = useT()
   const [gewaehlt, setGewaehlt] = useState('')
   const [hersteller, setHersteller] = useState('')
@@ -60,6 +63,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
       return
     }
     setMeldung(null)
+    if (vorlage.aussenMm) onAussen({ ...node.dimensions, ...vorlage.aussenMm })
     onUebernehmen({
       innenMm: vorlage.innenMm,
       art: vorlage.art,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   gesamtGewicht,
   gruppen,
+  mitAktuellenMassen,
   stueckeAusBedarf,
   stueckeAusContainern,
   stueckeAusCsv,
@@ -215,5 +216,27 @@ describe('Abladegruppen', () => {
     ])
 
     expect(gruppen(l)).toEqual(['Ton', 'Licht'])
+  })
+})
+
+describe('Masse, die nach dem Hinzufügen kommen', () => {
+  // Der übliche Weg: Case anlegen, auf die Ladung nehmen, DANN vermessen.
+  // Bis 2026-09-28 blieb es dann für immer „cannot be laid out", weil das
+  // Stück den leeren Stand von damals festhielt.
+  it('liest die Masse des Knotens, nicht den Stand beim Hinzufügen', () => {
+    const leer = [node('c1', 'Case FX6')]
+    const ladung = ladungMit(stueckeAusContainern(leer, ['c1']))
+    expect(unplanbar(ladung)).toHaveLength(1)
+
+    const vermessen = [node('c1', 'Case FX6', { dimensions: { widthMm: 628, heightMm: 303, depthMm: 497, weightKg: 9.1 } })]
+    const aktuell = mitAktuellenMassen(ladung, vermessen)
+    expect(unplanbar(aktuell)).toEqual([])
+    expect(gesamtGewicht(aktuell).bekanntKg).toBeCloseTo(9.1)
+  })
+
+  it('behält den alten Stand, wenn der Knoten gelöscht ist', () => {
+    const mit = [node('c1', 'Case', { dimensions: { widthMm: 1, heightMm: 1, depthMm: 1, weightKg: 2 } })]
+    const ladung = ladungMit(stueckeAusContainern(mit, ['c1']))
+    expect(mitAktuellenMassen(ladung, [])).toBe(ladung)
   })
 })

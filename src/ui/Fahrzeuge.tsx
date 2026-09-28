@@ -15,6 +15,7 @@
 import { useState } from 'react'
 import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
+import { useAnlegenOffen } from './useAnlegenOffen'
 import { useVehicleStore } from '../domain/store/vehicleStore'
 import { freierRaum, nutzlastFrei } from '../domain/lib/laderaum'
 import { rasterVon, vorgabeRasterMm, type VehicleKind } from '../domain/types/vehicle'
@@ -59,6 +60,7 @@ const liter = (n: number): string => Math.round(n).toLocaleString('en-GB')
 export function Fahrzeuge() {
   const { t, format } = useT()
   const vehicles = useVehicleStore((s) => s.vehicles)
+  const anlegenBlock = useAnlegenOffen(vehicles.length === 0)
   const addVehicle = useVehicleStore((s) => s.addVehicle)
   const updateVehicle = useVehicleStore((s) => s.updateVehicle)
   const removeVehicle = useVehicleStore((s) => s.removeVehicle)
@@ -128,40 +130,8 @@ export function Fahrzeuge() {
 
       {/* Dieselbe Bauart wie „Add to stock" im Bestand: der Block ist die
           Klappe. Offen, solange es kein Fahrzeug gibt. */}
-      <details className="block" open={vehicles.length === 0} key={vehicles.length === 0 ? 'leer' : 'voll'}>
+      <details className="block" {...anlegenBlock}>
         <summary>{t('vehicle.create.head', 'Add a vehicle')}</summary>
-        <form onSubmit={anlegen}>
-          <label>
-            {t('vehicle.name', 'Name')}
-            <input value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-          <label>
-            {t('vehicle.kind', 'Class')}
-            <select value={kind} onChange={(e) => setKind(e.target.value as VehicleKind)}>
-              {KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {labels[k]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="zeile">
-            <label>
-              {t('vehicle.length', 'Cargo length (mm)')}
-              <input type="number" value={laenge} onChange={(e) => setLaenge(e.target.value)} />
-            </label>
-            <label>
-              {t('vehicle.width', 'Cargo width (mm)')}
-              <input type="number" value={breite} onChange={(e) => setBreite(e.target.value)} />
-            </label>
-            <label>
-              {t('vehicle.height', 'Cargo height (mm)')}
-              <input type="number" value={hoehe} onChange={(e) => setHoehe(e.target.value)} />
-            </label>
-          </div>
-          <button type="submit">{t('vehicle.add', 'Add vehicle')}</button>
-        </form>
-
         {/* Der Startsatz. Er ist heute leer, und das steht da — ein Menü mit
             null Einträgen liesse den Benutzer suchen, wo nichts ist. */}
         {FAHRZEUG_KATALOG.length > 0 ? (
@@ -192,6 +162,41 @@ export function Fahrzeuge() {
             )}
           </p>
         )}
+
+        <form onSubmit={anlegen}>
+          <div className="zeile">
+            <label>
+              {t('vehicle.name', 'Name')}
+              <input value={name} onChange={(e) => setName(e.target.value)} />
+            </label>
+            <label>
+              {t('vehicle.kind', 'Class')}
+              <select value={kind} onChange={(e) => setKind(e.target.value as VehicleKind)}>
+                {KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {labels[k]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="zeile">
+            <label>
+              {t('vehicle.length', 'Cargo length (mm)')}
+              <input type="number" value={laenge} onChange={(e) => setLaenge(e.target.value)} />
+            </label>
+            <label>
+              {t('vehicle.width', 'Cargo width (mm)')}
+              <input type="number" value={breite} onChange={(e) => setBreite(e.target.value)} />
+            </label>
+            <label>
+              {t('vehicle.height', 'Cargo height (mm)')}
+              <input type="number" value={hoehe} onChange={(e) => setHoehe(e.target.value)} />
+            </label>
+          </div>
+          <button type="submit">{t('vehicle.add', 'Add vehicle')}</button>
+        </form>
+
       </details>
 
       {/* Die Ausmessen-Hilfe steht NEBEN dem Formular und nicht darin: wer

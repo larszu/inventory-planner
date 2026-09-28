@@ -93,4 +93,6 @@ export const STORAGE_KEYS = {
    * der Hauptprozess bewusst kein IPC anbietet (electron/main.cjs).
    */
   deviceLibraryToken: 'inventory-planner:deviceLibraryToken',
+  /** Der zuletzt offene Reiter. Nur Bequemlichkeit: fehlt er, oeffnet der Bestand. */
+  reiter: 'inventory-planner:reiter',
 } as const

@@ -41,6 +41,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { herunterladen } from '../lib/herunterladen'
 import { useT } from '../i18n'
+import { useAnlegenOffen } from './useAnlegenOffen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useStorageMoveStore } from '../domain/store/storageMoveStore'
 import { isContainerKind, itemsInNode, nodePathLabel } from '../domain/lib/storageTree'
@@ -253,6 +254,7 @@ export function Lagerbaum() {
   const { t, format } = useT()
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
+  const anlegenBlock = useAnlegenOffen(nodes.length === 0)
   const addNode = useInventoryStore((s) => s.addNode)
   const moveNode = useInventoryStore((s) => s.moveNode)
   const moveItem = useInventoryStore((s) => s.moveItem)
@@ -432,7 +434,7 @@ export function Lagerbaum() {
           Offen, solange es keinen Lagerort gibt: dann ist Anlegen das
           Einzige, was hier zu tun ist. `key` zieht das beim Wechsel von leer
           auf nicht-leer nach; `open` ist nur ein Anfangswert. */}
-      <details className="block" open={nodes.length === 0} key={nodes.length === 0 ? 'leer' : 'voll'}>
+      <details className="block" {...anlegenBlock}>
         <summary>{t('tree.create.head', 'Add a location or case')}</summary>
         <form onSubmit={anlegen}>
           <div className="zeile">
