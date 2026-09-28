@@ -504,9 +504,11 @@ body {
 .optionen { display: inline-flex; align-items: center; gap: var(--steg-2); }
 .optionen > summary { cursor: pointer; color: var(--leise); list-style: none; min-height: var(--ziel); display: inline-flex; align-items: center; }
 .optionen > summary::-webkit-details-marker { display: none; }
-.optionen > summary::after { content: ' +'; }
-.optionen[open] > summary::after { content: ' –'; }
+.optionen > summary::after { content: '+'; margin-left: var(--steg-1); }
+.optionen[open] > summary::after { content: '–'; }
 .optionen[open] { flex-wrap: wrap; }
+
+.zeile + .case-neu { margin-top: var(--steg-4); padding-top: var(--steg-3); border-top: 1px solid var(--rand); }
 
 /* ── Start ──────────────────────────────────────────────────────────────
  * Ein Schritt, ein Knopf. Gross genug, dass nichts anderes um Aufmerksamkeit

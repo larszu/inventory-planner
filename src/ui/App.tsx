@@ -192,7 +192,7 @@ export function App() {
         {reiter === 'werte' && <WerteUndSchaeden />}
         {reiter === 'subhire' && <SubHire />}
         {reiter === 'stapeln' && <Stapeln />}
-        {reiter === 'cases' && <Caseausbau onZuLagerorten={() => setReiter('lager')} />}
+        {reiter === 'cases' && <Caseausbau />}
         {reiter === 'fahrzeuge' && <Fahrzeuge />}
         {reiter === 'ladung' && <Ladung />}
         {reiter === 'bibliothek' && <Bibliothek />}

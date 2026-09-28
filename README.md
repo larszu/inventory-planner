@@ -156,6 +156,10 @@ Wer die Ansicht mit vorhandenen Einträgen öffnet, findet sie zugeklappt.
 ## Cases — wie es darin liegt, und was drin sein muss
 
 Die Ansicht **Pack › Cases** beantwortet zwei Fragen an derselben Kiste.
+Ein Case lässt sich dort direkt anlegen (*New case*, Art Case oder
+Transport-Case); es liegt dann zunächst nirgends und wird in den Lagerorten
+eingeräumt. Die Wahl eines Modells unter *Case model* übernimmt Maße und
+Leergewicht sofort.
 
 ### Der Layout-Generator
 
@@ -264,8 +268,8 @@ Deckel- plus Unterteiltiefe die Innenhöhe (`caseKatalog.test.ts`).
 sichert, ersetzt die mitgelieferte Fassung dieses Modells.
 
 **Aussenmass und Leergewicht** stehen im Block *Outside* und am Case selbst,
-nicht im Ausbau — die Ladeplanung liest sie dort. *Apply* übernimmt sie aus
-der Vorlage, soweit sie welche trägt. Ohne alle drei Masse fährt ein Case in
+nicht im Ausbau — die Ladeplanung liest sie dort. Die Wahl eines *Case model*
+übernimmt sie aus der Vorlage, soweit sie welche trägt. Ohne alle drei Masse fährt ein Case in
 der Ladung mit, lässt sich aber nicht im Fahrzeug platzieren. Eine Ladung
 liest immer den aktuellen Stand: ein Case, das erst nach dem Hinzufügen
 vermessen wird, rückt sofort in den Ladeplan.

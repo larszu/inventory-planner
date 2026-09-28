@@ -55,11 +55,14 @@ const Case3D = lazy(() => import('./Caseansicht/Case3D'))
 
 const heuteIso = () => new Date().toISOString().slice(0, 10)
 
-export function Caseausbau({ onZuLagerorten }: { onZuLagerorten?: () => void } = {}) {
+export function Caseausbau() {
   const { t, format } = useT()
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
   const updateNode = useInventoryStore((s) => s.updateNode)
+  const addNode = useInventoryStore((s) => s.addNode)
+  const [neuName, setNeuName] = useState('')
+  const [neuArt, setNeuArt] = useState<'case' | 'transportCase'>('case')
   const units = useInventoryStore((s) => s.units)
   const ausbauAlle = useCaseAusbauStore((s) => s.ausbau)
   const setzeAusbau = useCaseAusbauStore((s) => s.setzeAusbau)
@@ -210,30 +213,22 @@ export function Caseausbau({ onZuLagerorten }: { onZuLagerorten?: () => void } =
 
   return (
     <section className="bericht">
-      {/* ── Welches Case ─────────────────────────────────────────────── */}
+      {/* ── Welches Case — oder ein neues ─────────────────────────────
+          Anlegen steht HIER und nicht nur im Lagerbaum: wer in „Cases"
+          ankommt, will ein Case, und vorher stand hier nur der Verweis in
+          eine andere Ansicht. Ein neues Case liegt zunächst nirgends und
+          lässt sich später in den Lagerorten einräumen. */}
       <div className="block">
         <h3>{t('case.pick', 'Case')}</h3>
-        {cases.length === 0 ? (
-          <>
-            <p className="hinweis">
-              {t('case.none', 'No cases yet. Create one in Storage places — kind Case or Transport case.')}
-            </p>
-            {onZuLagerorten && (
-              <button type="button" className="knopf-primaer" onClick={onZuLagerorten}>
-                {t('case.toPlaces', 'Go to Storage places')}
-              </button>
-            )}
-          </>
-        ) : (
+        {cases.length > 0 && (
           <div className="zeile">
             <label>
-              {t('case.pick', 'Case')}
+              {t('case.pick.current', 'Case')}
               <select
                 value={gewaehlt}
                 onChange={(e) => setGewaehlt(e.target.value)}
                 aria-label={t('case.pick.aria', 'Which case')}
               >
-                <option value="">—</option>
                 {cases.map((c) => (
                   <option key={c.id} value={c.id}>
                     {nodePathLabel(nodes, c.id)}
@@ -243,6 +238,34 @@ export function Caseausbau({ onZuLagerorten }: { onZuLagerorten?: () => void } =
             </label>
           </div>
         )}
+        <form
+          className="zeile case-neu"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!neuName.trim()) return
+            setGewaehlt(addNode({ name: neuName.trim(), kind: neuArt }))
+            setNeuName('')
+          }}
+        >
+          <label>
+            {t('case.new.name', 'New case')}
+            <input
+              value={neuName}
+              onChange={(e) => setNeuName(e.target.value)}
+              placeholder={t('case.new.example', 'e.g. Camera case 1')}
+            />
+          </label>
+          <label className="schmal">
+            {t('case.new.kind', 'Kind')}
+            <select value={neuArt} onChange={(e) => setNeuArt(e.target.value as 'case' | 'transportCase')}>
+              <option value="case">{t('tree.kind.case', 'Case')}</option>
+              <option value="transportCase">{t('tree.kind.transportCase', 'Transport case')}</option>
+            </select>
+          </label>
+          <button type="submit" className={cases.length === 0 ? 'knopf-primaer' : undefined} disabled={!neuName.trim()}>
+            {t('case.new.create', 'Create case')}
+          </button>
+        </form>
       </div>
 
       {node && (
@@ -251,6 +274,7 @@ export function Caseausbau({ onZuLagerorten }: { onZuLagerorten?: () => void } =
           <div className="block">
             <h3>{t('case.template', 'Template')}</h3>
             <VorlagenWahl
+              key={node.id}
               eigene={eigeneVorlagen}
               node={node}
               ausbau={ausbau}
