@@ -59,7 +59,8 @@ export interface BibliotheksEintrag {
 }
 
 export interface BibliotheksCache {
-  /** Der Server, zu dem dieser Stand gehoert. Ein anderer Server = leerer Cache. */
+  /** Der Server, zu dem dieser Stand gehoert. Jeder Server hat seinen eigenen
+   *  Stand; ein Wechsel loescht den des anderen nicht (siehe `ServerStand`). */
   server: string
   latestSeq: number
   eintraege: Record<string, BibliotheksEintrag>
@@ -68,6 +69,61 @@ export interface BibliotheksCache {
 }
 
 export const leererCache = (server: string): BibliotheksCache => ({ server, latestSeq: 0, eintraege: {}, ungueltig: [] })
+
+/**
+ * Was je Server-Adresse liegen bleibt: der Cache, wann er zuletzt abgeglichen
+ * wurde, und die Hochlade-Staende (die gehoeren zum Server wie der Cache).
+ *
+ * Frueher gab es genau einen Stand, und eine andere Adresse hiess: leeren.
+ * Wer auf einen Ersatzserver umstellte, weil devices.zumpelars.de gerade
+ * nicht lief, und zurueckwechselte, hatte danach eine leere Bibliothek.
+ * Jetzt hat jeder Server seinen Platz (Vertrag Punkt 2 in `syncFrom`,
+ * `deviceLibraryClient.ts`).
+ */
+export interface ServerStand {
+  cache: BibliotheksCache
+  zuletzt?: string
+  uploads?: Record<string, HochladeStand>
+}
+
+const istCache = (v: unknown, server: string): v is BibliotheksCache => {
+  const c = v as Partial<BibliotheksCache> | null
+  return (
+    !!c &&
+    typeof c === 'object' &&
+    c.server === server &&
+    typeof c.latestSeq === 'number' &&
+    !!c.eintraege &&
+    typeof c.eintraege === 'object' &&
+    Array.isArray(c.ungueltig)
+  )
+}
+
+/**
+ * Die Staende aller Server aus dem Abgelegten lesen. Das Altformat — ein
+ * einzelner `cache` mit `zuletzt` und `uploads` daneben — gilt als Platz
+ * SEINES Servers (`cache.server`), nicht des gerade eingestellten: so geht
+ * beim ersten Start nach dem Umbau nichts verloren. Kaputte Plaetze fallen
+ * weg, als gaebe es sie nicht.
+ */
+export function serverStaendeLesen(ab: {
+  jeServer?: unknown
+  cache?: unknown
+  zuletzt?: string
+  uploads?: Record<string, HochladeStand>
+}): Record<string, ServerStand> {
+  const aus: Record<string, ServerStand> = {}
+  const alt = ab.cache as Partial<BibliotheksCache> | undefined
+  if (alt && typeof alt.server === 'string' && istCache(alt, alt.server)) {
+    aus[alt.server] = { cache: alt, zuletzt: ab.zuletzt, uploads: ab.uploads ?? {} }
+  }
+  if (ab.jeServer && typeof ab.jeServer === 'object') {
+    for (const [server, st] of Object.entries(ab.jeServer as Record<string, Partial<ServerStand>>)) {
+      if (st && istCache(st.cache, server)) aus[server] = { cache: st.cache, zuletzt: st.zuletzt, uploads: st.uploads ?? {} }
+    }
+  }
+  return aus
+}
 
 const MATERIAL: readonly InventoryMaterialKind[] = ['rental', 'consumable']
 const MASSE = ['widthMm', 'heightMm', 'depthMm', 'weightKg'] as const
@@ -244,8 +300,17 @@ export function serverAdresse(roh: string): string | null {
   return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
 }
 
+/**
+ * Ein Fehler der Bibliothek, wie das Lager ihn meldet: die Codes des Clients
+ * plus `server-empty` — der Server wurde neu aufgesetzt und hat nichts, der
+ * lokale Stand bleibt (`syncFrom` wirft dafuer `LibraryError('server', 200,
+ * 'server-empty')`, eigener Text, weil „Fehler, spaeter erneut" hier falsch
+ * waere: spaeter ist der Server genauso leer).
+ */
+export type BibliothekFehlerCode = LibraryErrorCode | 'server-empty'
+
 /** Was eine Fehlermeldung der Bibliothek fuer den Nutzer heisst. */
-export function bibliothekFehlerText(code: LibraryErrorCode, t: Uebersetzen = quelle): string {
+export function bibliothekFehlerText(code: BibliothekFehlerCode, t: Uebersetzen = quelle): string {
   switch (code) {
     case 'wrong-credentials':
       return t('library.error.credentials', 'Sign-in failed: the e-mail, user name or password is not correct.')
@@ -262,7 +327,9 @@ export function bibliothekFehlerText(code: LibraryErrorCode, t: Uebersetzen = qu
     case 'not-signed-in':
       return t('library.error.session', 'You are not signed in, or the session has ended. Please sign in again.')
     case 'offline':
-      return t('library.error.offline', 'The library server cannot be reached. Check the connection and the server address.')
+      return t('library.error.offline', 'The library server cannot be reached. The devices from the last sync stay available; check the connection and the server address.')
+    case 'server-empty':
+      return t('library.error.serverEmpty', 'The library server was set up anew and has no devices yet. The local devices from the last sync were kept.')
     default:
       return t('library.error.server', 'The library server answered with an error. Try again later.')
   }

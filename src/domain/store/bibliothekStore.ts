@@ -6,9 +6,15 @@
 // Artikel erst, wenn jemand ihn aus der Liste anlegt.
 //
 // DIE SERVER-ADRESSE GEHOERT ZUM TOKEN UND ZUM CACHE. Wird sie geaendert,
-// verfallen beide: ein Token gilt nur bei dem Server, der es ausgegeben hat,
-// und ein `latestSeq` des einen Servers ist bei einem anderen eine
-// beliebige Zahl — der inkrementelle Abgleich liesse dann Geraete aus.
+// verfaellt das Token — es gilt nur bei dem Server, der es ausgegeben hat.
+// Der Cache verfaellt NICHT: jeder Server hat seinen eigenen Platz
+// (`jeServer`), denn ein `latestSeq` des einen ist bei einem anderen eine
+// beliebige Zahl. Wer zurueckwechselt, hat seinen alten Stand wieder.
+//
+// DER OFFLINE-VERTRAG (`syncFrom` im gemeinsamen Client): der Cache aendert
+// sich nur durch eine erfolgreiche Antwort. Offline, Zeitueberschreitung,
+// Serverfehler, abgelaufene Anmeldung, Abmelden — der letzte Stand bleibt
+// benutzbar.
 // ───────────────────────────────────────────────────────────────────────────
 import { create } from 'zustand'
 import {
@@ -17,10 +23,9 @@ import {
   currentUser,
   signIn,
   signOut,
-  sync,
+  syncFrom,
   upload,
   verifySecondFactor,
-  type LibraryErrorCode,
   type LibraryUser,
   type SignInResult,
 } from '../../lib/deviceLibraryClient'
@@ -32,8 +37,11 @@ import {
   hochladeKandidaten,
   leererCache,
   serverAdresse,
+  serverStaendeLesen,
+  type BibliothekFehlerCode,
   type BibliotheksCache,
   type HochladeStand,
+  type ServerStand,
   type TypAngaben,
   wartetAufModeration,
 } from '../lib/geraetebibliothek'
@@ -43,10 +51,14 @@ interface Abgelegt {
   /** Nur gesetzt, wenn vom Werk abweichend — ein Release-Wechsel des Werks greift sonst nicht. */
   server?: string
   nutzer?: LibraryUser | null
-  cache?: BibliotheksCache
-  zuletzt?: string
+  /** Cache, letzter Abgleich und Hochlade-Staende je Server-Adresse. */
+  jeServer?: Record<string, ServerStand>
   autoUpload?: boolean
   typAngaben?: Record<string, TypAngaben>
+  /** Altformat (bis 2026-09): EIN Stand, der zu `cache.server` gehoert.
+   *  Wird beim Lesen als dessen Platz in `jeServer` uebernommen. */
+  cache?: BibliotheksCache
+  zuletzt?: string
   uploads?: Record<string, HochladeStand>
 }
 
@@ -86,7 +98,7 @@ export interface BibliothekStand {
   zuletzt?: string
   schritt: AnmeldeSchritt
   laeuft: boolean
-  fehler: LibraryErrorCode | null
+  fehler: BibliothekFehlerCode | null
   /** Eigene Artikeltypen automatisch hochladen (Vorgabe an; wirkt nur angemeldet). */
   autoUpload: boolean
   /** Datenblattlink, Rackhoehe, Leistung je Artikel-Id — Typdaten ausserhalb von `InventoryItem`. */
@@ -115,13 +127,15 @@ export interface BibliothekStand {
 const persistieren = (
   s: Pick<BibliothekStand, 'server' | 'nutzer' | 'cache' | 'zuletzt' | 'autoUpload' | 'typAngaben' | 'uploads'>,
 ) => {
+  // Die Plaetze der anderen Server bleiben, wie sie liegen; nur der des
+  // eingestellten wird ersetzt.
+  const jeServer = serverStaendeLesen(lies())
+  jeServer[s.server] = { cache: s.cache, zuletzt: s.zuletzt, uploads: s.uploads }
   const ab: Abgelegt = {
     nutzer: s.nutzer,
-    cache: s.cache,
-    zuletzt: s.zuletzt,
+    jeServer,
     autoUpload: s.autoUpload,
     typAngaben: s.typAngaben,
-    uploads: s.uploads,
   }
   if (s.server !== DEFAULT_DEVICE_LIBRARY_URL) ab.server = s.server
   try {
@@ -134,23 +148,22 @@ const persistieren = (
 const anfangsStand = () => {
   const ab = lies()
   const server = (ab.server && serverAdresse(ab.server)) || DEFAULT_DEVICE_LIBRARY_URL
-  const cache = ab.cache && ab.cache.server === server ? ab.cache : leererCache(server)
+  const platz = serverStaendeLesen(ab)[server]
   const token = liesToken()
-  // Hochlade-Staende gehoeren zum Server wie der Cache.
-  const uploads = ab.cache && ab.cache.server === server ? (ab.uploads ?? {}) : {}
   return {
     server,
     token,
     nutzer: token ? (ab.nutzer ?? null) : null,
-    cache,
-    zuletzt: ab.zuletzt,
+    cache: platz?.cache ?? leererCache(server),
+    zuletzt: platz?.zuletzt,
+    // Hochlade-Staende gehoeren zum Server wie der Cache.
+    uploads: platz?.uploads ?? {},
     autoUpload: ab.autoUpload ?? true,
     typAngaben: ab.typAngaben ?? {},
-    uploads,
   }
 }
 
-const sitzungVorbei = (code: LibraryErrorCode) => code === 'not-signed-in' || code === 'wrong-credentials'
+const sitzungVorbei = (code: BibliothekFehlerCode) => code === 'not-signed-in' || code === 'wrong-credentials'
 
 export const useBibliothekStore = create<BibliothekStand>((set, get) => {
   const angemeldet = (r: SignInResult) => {
@@ -165,7 +178,8 @@ export const useBibliothekStore = create<BibliothekStand>((set, get) => {
     }
   }
 
-  const abgemeldet = (fehler: LibraryErrorCode | null) => {
+  /** Nur das Token geht. Der Cache bleibt — Abmelden ist kein Loeschen. */
+  const abgemeldet = (fehler: BibliothekFehlerCode | null) => {
     schreibeToken(null)
     set({ token: null, nutzer: null, schritt: { art: 'aus' }, fehler })
     persistieren(get())
@@ -184,13 +198,17 @@ export const useBibliothekStore = create<BibliothekStand>((set, get) => {
       if (server === alt.server) return true
       if (alt.token) void signOut(alt.server, alt.token)
       schreibeToken(null)
+      // Der Platz des alten Servers ist schon abgelegt (jede Aenderung
+      // persistiert); der des neuen kommt zurueck, falls es ihn gibt.
+      persistieren(alt)
+      const platz = serverStaendeLesen(lies())[server]
       set({
         server,
         token: null,
         nutzer: null,
-        cache: leererCache(server),
-        zuletzt: undefined,
-        uploads: {},
+        cache: platz?.cache ?? leererCache(server),
+        zuletzt: platz?.zuletzt,
+        uploads: platz?.uploads ?? {},
         schritt: { art: 'aus' },
         fehler: null,
       })
@@ -253,14 +271,20 @@ export const useBibliothekStore = create<BibliothekStand>((set, get) => {
       }
       set({ laeuft: true, fehler: null })
       try {
-        const antwort = await sync(server, token, PLANNER, cache.latestSeq)
+        // Ob der Server noch derselbe ist, entscheidet `syncFrom` — dieselbe
+        // Regel in jedem Planner. `reset`: die Antwort ist der GANZE Stand und
+        // ersetzt den Cache. Ein leerer neuer Server kommt gar nicht als
+        // Antwort an, sondern als Fehler `server-empty`, und der Cache bleibt.
+        const { reset, response } = await syncFrom(server, token, PLANNER, cache.latestSeq)
         // Waehrend der Anfrage kann die Adresse gewechselt haben.
         if (get().server !== server) return
-        set({ cache: abgleichAnwenden(get().cache, antwort), zuletzt: new Date().toISOString() })
+        const basis = reset ? leererCache(server) : get().cache
+        set({ cache: abgleichAnwenden(basis, response), zuletzt: new Date().toISOString() })
         persistieren(get())
       } catch (e) {
         const code = e instanceof LibraryError ? e.code : 'server'
         if (sitzungVorbei(code)) abgemeldet('not-signed-in')
+        else if (e instanceof LibraryError && e.message === 'server-empty') set({ fehler: 'server-empty' })
         else set({ fehler: code })
       } finally {
         set({ laeuft: false })

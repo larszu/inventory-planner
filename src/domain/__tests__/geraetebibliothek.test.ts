@@ -161,7 +161,7 @@ describe('Abgleich', () => {
 
 describe('Fehlertexte', () => {
   it('jeder Code hat einen eigenen Text; Richtlinien-Link zeigt auf /guidelines', () => {
-    const codes = ['wrong-credentials', 'email-not-verified', 'guidelines-outdated', 'exists', 'wrong-code', 'rate-limited', 'not-signed-in', 'offline', 'server'] as const
+    const codes = ['wrong-credentials', 'email-not-verified', 'guidelines-outdated', 'exists', 'wrong-code', 'rate-limited', 'not-signed-in', 'offline', 'server', 'server-empty'] as const
     expect(new Set(codes.map((c) => bibliothekFehlerText(c))).size).toBe(codes.length)
     expect(richtlinienUrl('https://devices.zumpelars.de/')).toBe('https://devices.zumpelars.de/guidelines')
   })
@@ -255,7 +255,7 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     expect(localStorage.getItem(STORAGE_KEYS.deviceLibraryToken)).toBeNull()
   })
 
-  it('anderer Server: Token und Cache verfallen; Zuruecksetzen fuehrt zum Werk', async () => {
+  it('anderer Server: das Token verfaellt, der Cache nicht; Zuruecksetzen fuehrt zum Werk', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => json({})))
     localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
     localStorage.setItem(
@@ -271,6 +271,128 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!).server).toBe('https://test.example')
     store.getState().serverZuruecksetzen()
     expect(store.getState().server).toBe(DEFAULT_DEVICE_LIBRARY_URL)
+    // Zurueck beim Werk: der alte Stand ist wieder da.
+    expect(store.getState().cache.latestSeq).toBe(9)
+  })
+
+  // ── Offline-Vertrag (`syncFrom`, deviceLibraryClient.ts) ──────────────────
+
+  const mitGeraet = (server: string, seq: number, slug = 'a') =>
+    abgleichAnwenden(leererCache(server), antwort(seq, [geraet(slug, seq, { model: slug.toUpperCase() })]))
+
+  it('Serverwechsel: jeder Server behaelt seinen Stand, auch ueber einen Neustart', async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.startsWith('https://test.example')
+        ? json(antwort(4, [geraet('b', 4, { model: 'B' })]))
+        : json(antwort(1, [geraet('a', 1, { model: 'A' })])),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    let store = await laden()
+    await store.getState().abgleichen()
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['a'])
+
+    store.getState().setzeServer('https://test.example')
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok2')
+    store.setState({ token: 'tok2' })
+    await store.getState().abgleichen()
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['b'])
+
+    // Neustart, eingestellt ist test.example; zurueck zum Werk bringt 'a' wieder.
+    vi.resetModules()
+    store = await laden()
+    expect(store.getState().server).toBe('https://test.example')
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['b'])
+    store.getState().serverZuruecksetzen()
+    expect(store.getState().cache.latestSeq).toBe(1)
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['a'])
+    const abgelegt = JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!)
+    expect(Object.keys(abgelegt.jeServer).sort()).toEqual([DEFAULT_DEVICE_LIBRARY_URL, 'https://test.example'])
+  })
+
+  it('Altformat: der einzelne Cache wird zum Platz SEINES Servers, nichts geht verloren', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => json({})))
+    localStorage.setItem(
+      STORAGE_KEYS.deviceLibrary,
+      JSON.stringify({
+        server: 'https://alt.example',
+        cache: mitGeraet('https://alt.example', 6),
+        zuletzt: '2026-09-01T10:00:00.000Z',
+        uploads: { i1: { hash: 'h', state: 'created', at: '2026-09-01' } },
+      }),
+    )
+    const store = await laden()
+    expect(store.getState()).toMatchObject({ server: 'https://alt.example', zuletzt: '2026-09-01T10:00:00.000Z' })
+    expect(store.getState().cache.latestSeq).toBe(6)
+    expect(store.getState().uploads.i1!.state).toBe('created')
+
+    // Der naechste Schreibvorgang legt ihn im neuen Format ab.
+    store.getState().setzeAutoUpload(false)
+    const abgelegt = JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!)
+    expect(abgelegt.cache).toBeUndefined()
+    expect(abgelegt.jeServer['https://alt.example'].cache.latestSeq).toBe(6)
+
+    // Altstand eines ANDEREN Servers als des eingestellten: bleibt dessen Platz.
+    localStorage.setItem(STORAGE_KEYS.deviceLibrary, JSON.stringify({ cache: mitGeraet('https://alt.example', 6) }))
+    vi.resetModules()
+    const s2 = await laden()
+    expect(s2.getState().server).toBe(DEFAULT_DEVICE_LIBRARY_URL)
+    expect(s2.getState().cache.latestSeq).toBe(0)
+    s2.getState().setzeServer('https://alt.example')
+    expect(s2.getState().cache.latestSeq).toBe(6)
+  })
+
+  it('reset: kleinerer latestSeq holt alles und ERSETZT den Cache', async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.endsWith('after=0') ? json(antwort(2, [geraet('neu', 2, { model: 'Neu' })])) : json(antwort(2, [])),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    localStorage.setItem(STORAGE_KEYS.deviceLibrary, JSON.stringify({ cache: mitGeraet(DEFAULT_DEVICE_LIBRARY_URL, 50, 'alt') }))
+    const store = await laden()
+    await store.getState().abgleichen()
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual([
+      'https://devices.zumpelars.de/api/sync?planner=inventory&after=50',
+      'https://devices.zumpelars.de/api/sync?planner=inventory&after=0',
+    ])
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['neu'])
+    expect(store.getState().cache.latestSeq).toBe(2)
+    expect(store.getState().fehler).toBeNull()
+  })
+
+  it('leerer neuer Server: Fehler server-empty, der Cache bleibt', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => json(antwort(0, []))))
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    localStorage.setItem(STORAGE_KEYS.deviceLibrary, JSON.stringify({ cache: mitGeraet(DEFAULT_DEVICE_LIBRARY_URL, 50) }))
+    const store = await laden()
+    await store.getState().abgleichen()
+    expect(store.getState().fehler).toBe('server-empty')
+    expect(store.getState().token).toBe('tok')
+    expect(store.getState().cache.latestSeq).toBe(50)
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['a'])
+    expect(bibliothekFehlerText('server-empty')).toContain('kept')
+  })
+
+  it('offline, Serverfehler und Abmelden lassen den Cache stehen', async () => {
+    localStorage.setItem(STORAGE_KEYS.deviceLibraryToken, 'tok')
+    localStorage.setItem(STORAGE_KEYS.deviceLibrary, JSON.stringify({ cache: mitGeraet(DEFAULT_DEVICE_LIBRARY_URL, 5) }))
+    const store = await laden()
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch') }))
+    await store.getState().abgleichen()
+    expect(store.getState().fehler).toBe('offline')
+    expect(store.getState().cache.latestSeq).toBe(5)
+    vi.stubGlobal('fetch', vi.fn(async () => json({ error: 'boom' }, {}, 500)))
+    await store.getState().abgleichen()
+    expect(store.getState().fehler).toBe('server')
+    expect(store.getState().cache.latestSeq).toBe(5)
+
+    vi.stubGlobal('fetch', vi.fn(async () => json({})))
+    await store.getState().abmelden()
+    expect(store.getState().token).toBeNull()
+    expect(Object.keys(store.getState().cache.eintraege)).toEqual(['a'])
+    vi.resetModules()
+    const nachStart = await laden()
+    expect(nachStart.getState().cache.latestSeq).toBe(5)
   })
 
   const mitBestand = async (items: InventoryItem[]) => {
@@ -301,7 +423,7 @@ describe('Store gegen den Server (fetch gemockt)', () => {
     expect(body.items[0].core).toMatchObject({ rackUnits: 1, powerWatts: 20, sourceUrl: 'https://x.de/a.pdf' })
     expect(JSON.stringify(body)).not.toContain('LAGER-1')
     expect(store.getState().uploads.i1).toMatchObject({ state: 'created', slug: 'bmd-atem' })
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!).uploads.i1.state).toBe('created')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.deviceLibrary)!).jeServer[DEFAULT_DEVICE_LIBRARY_URL].uploads.i1.state).toBe('created')
 
     // Unveraendert: keine Anfrage. Geaendert: genau dieser eine.
     await store.getState().hochladen()
