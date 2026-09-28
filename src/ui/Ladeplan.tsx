@@ -160,6 +160,12 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
       ) : (
       <>
       <div className="ladeplan-leiste">
+        <button type="button" className="still" onClick={() => setZeige3d((z) => !z)}>
+          {zeige3d ? t('plan.hide3d', 'Hide 3D') : t('plan.show3d', 'Show in 3D')}
+        </button>
+        {/* Raster und Einrasten sind Feinarbeit; zugeklappt, bis jemand sie sucht. */}
+        <details className="optionen">
+          <summary>{t('plan.options', 'Grid options')}</summary>
         <label>
           {t('plan.grid', 'Snap')}
           <select value={raster} onChange={(e) => setRaster(Number(e.target.value))}>
@@ -183,9 +189,7 @@ export function Ladeplan({ ladung }: { ladung: Ladung }) {
             </select>
           </label>
         )}
-        <button type="button" className="still" onClick={() => setZeige3d((z) => !z)}>
-          {zeige3d ? t('plan.hide3d', 'Hide 3D') : t('plan.show3d', 'Show in 3D')}
-        </button>
+        </details>
         {verankert.length > 0 && (
           <button
             type="button"

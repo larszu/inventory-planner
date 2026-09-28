@@ -97,22 +97,41 @@ Web-Manifest in `public/`. Die Kopfzeile trägt das Signet „lz" ohne Tally-Pun
 das Hauptlogo; beide Zeichen liegen als Originalkonturen aus dem Brand Kit 2.0
 unter `src/assets/brand/` und folgen dem Thema (Off-White dunkel, Navy hell).
 
-**Die Web-Seite ist noch nicht live.** Eine GitHub-Pages-Site kann nur ein
-Mensch in den Repo-Einstellungen anlegen (*Settings → Pages → Source:
-**GitHub Actions***); der `GITHUB_TOKEN` darf es nicht. Solange sie fehlt, baut
-`pages.yml` trotzdem und überspringt nur das Veröffentlichen — mit einer
-Warnung am Lauf statt einer roten Spalte auf `main`. Sobald die Freigabe da
-ist, veröffentlicht der nächste Push von selbst; an der Datei ist nichts zu
-ändern.
+**Die Web-Seite** steht unter https://larszu.github.io/lz-inventory-planner/;
+`pages.yml` veröffentlicht sie bei jedem Push auf `main`.
 
 **Keine gekaufte Signatur.** Die macOS-Pakete tragen eine Ad-hoc-Signatur, die
 Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
 Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
 Downloads.
 
+## Bedienung auf einen Blick
+
+Die App öffnet beim ersten Mal auf **Start**: ein Satz, wofür sie da ist, und
+fünf **erste Schritte** mit Stand — Equipment anlegen, Regale und Cases
+anlegen, Cases vermessen, Fahrzeug anlegen, Ladung planen. Der nächste offene
+Schritt trägt den Hauptknopf; jede Ansicht dieses Wegs endet mit
+„Next: …" zur nächsten.
+
+Oben stehen fünf **Bereiche**, darunter die Ansichten des gewählten Bereichs
+in der Reihenfolge der Arbeit:
+
+| Bereich | Ansichten |
+|---|---|
+| Start | Erste Schritte, Überblick |
+| Stock | Equipment · Storage places · Receiving · Stocktake · Device library |
+| Pack | Cases · Vehicles · Load · Stacking |
+| Out & back | Checkout notes · Sub-hire |
+| Reports | Report · Values & damage |
+
+Feinarbeit ist zugeklappt: Innenausbau und Inhaltsliste eines Cases, die
+Rasteroptionen des Ladeplans, das Umlagerungs-Journal. Leere Spalten
+(Kategorie, Lieferant) erscheinen erst, wenn eine Zeile etwas darin hat. Die
+zuletzt offene Ansicht bleibt nach dem Neuladen offen.
+
 ## Lager — wo liegt es, und was steckt worin?
 
-Die Ansicht **Storage** zeigt den Lagerbaum: Depot, Raum, Regal, Fach, Case,
+Die Ansicht **Stock › Storage places** zeigt den Lagerbaum: Depot, Raum, Regal, Fach, Case,
 Transport-Case, und darin die Artikel. **Gezogen wird mit dem Finger** — ein
 Lagerort, ein Case oder ein Artikel wandert dorthin, wo er hingehört, mit der
 Maus genauso wie auf dem Telefon im Regalgang. (HTML5-`draggable` gibt es auf
@@ -130,13 +149,13 @@ sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
 **Anlegen ist eine Klappe über dem Baum** („Add a location or case"), wie
-„Add to stock" im Bestand und „Add a vehicle" bei den Fahrzeugen: offen,
-solange noch nichts da ist, danach zugeklappt — wer den Baum öffnet, will
-meist nachsehen und nicht anlegen.
+„Add equipment" im Bestand und „Add a vehicle" bei den Fahrzeugen: offen,
+solange noch nichts da ist, und nach dem ersten Eintrag bleibt sie offen.
+Wer die Ansicht mit vorhandenen Einträgen öffnet, findet sie zugeklappt.
 
 ## Cases — wie es darin liegt, und was drin sein muss
 
-Die Ansicht **Cases** beantwortet zwei Fragen an derselben Kiste.
+Die Ansicht **Pack › Cases** beantwortet zwei Fragen an derselben Kiste.
 
 ### Der Layout-Generator
 
@@ -461,7 +480,7 @@ selben Store liegen.
 
 ## Ladeplanung
 
-Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Load** rechnet einen
+Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Pack › Load** rechnet einen
 Ladeplan und zeigt ihn, statt Koordinaten aufzulisten.
 
 **Der Packer** (`src/domain/lib/loadPacker/`) rechnet **frei in 3D**, nicht im

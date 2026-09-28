@@ -447,6 +447,105 @@ body {
 
 .reiter:hover { color: var(--text); }
 
+/* Die Ansichten des gewaehlten Bereichs — eine Stufe leiser als die
+ * Bereiche, damit klar ist, was oben und was darunter steht. */
+.unterreiter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-1);
+  padding: var(--steg-2) var(--steg-3);
+  border-bottom: 1px solid var(--rand);
+  background: var(--erhoben);
+  flex: none;
+}
+.unterreiter-knopf {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--leise);
+  padding: 0 var(--steg-3);
+  min-height: var(--ziel);
+  font: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.unterreiter-knopf:hover { color: var(--text); }
+.unterreiter-knopf.aktiv { color: var(--text); border-bottom-color: var(--text); }
+
+/* Der naechste Schritt des Hauptwegs, am Ende der Ansicht. */
+.weiter {
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--steg-5) 0 var(--steg-4);
+  padding-top: var(--steg-3);
+  border-top: 1px solid var(--rand);
+}
+
+/* Zweiter Schritt einer Ansicht, zugeklappt: eine Zeile statt vier Bloecke. */
+.mehr { margin: 0 0 var(--steg-4); }
+.mehr > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  padding: var(--steg-2) var(--steg-4);
+  border: 1px dashed var(--rand);
+  color: var(--leise);
+}
+.mehr > summary::-webkit-details-marker { display: none; }
+.mehr > summary::before { content: '+'; }
+.mehr[open] > summary::before { content: '–'; }
+.mehr > summary:hover { color: var(--text); border-style: solid; }
+.mehr[open] > summary { margin-bottom: var(--steg-4); }
+
+/* Feinoptionen in einer Werkzeugleiste: ein unauffaelliger Aufklapper. */
+.optionen { display: inline-flex; align-items: center; gap: var(--steg-2); }
+.optionen > summary { cursor: pointer; color: var(--leise); list-style: none; min-height: var(--ziel); display: inline-flex; align-items: center; }
+.optionen > summary::-webkit-details-marker { display: none; }
+.optionen > summary::after { content: ' +'; }
+.optionen[open] > summary::after { content: ' –'; }
+.optionen[open] { flex-wrap: wrap; }
+
+/* ── Start ─────────────────────────────────────────────────────────────── */
+.start-zweck {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: 40rem;
+  margin: 0 0 var(--steg-5);
+  color: var(--text);
+}
+.schritte { list-style: none; margin: 0; padding: 0; }
+.schritt {
+  display: flex;
+  align-items: center;
+  gap: var(--steg-4);
+  padding: var(--steg-3) 0;
+  border-bottom: 1px solid var(--rand);
+}
+.schritt:last-child { border-bottom: none; }
+.schritt-nr { flex: none; width: 1.5rem; font-weight: 700; color: var(--leise); }
+.schritt-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.schritt.erledigt .schritt-text strong { color: var(--leise); font-weight: 500; }
+.schritt.erledigt .schritt-nr::after { content: ' ✓'; }
+.bereich-liste { list-style: none; margin: 0; padding: 0; }
+.bereich-liste li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--steg-4);
+  padding: var(--steg-2) 0;
+  border-bottom: 1px solid var(--rand);
+}
+.bereich-liste li:last-child { border-bottom: none; }
+.bereich-titel { flex: 0 0 10rem; text-align: left; font-weight: 700; }
+@media (max-width: 639px) {
+  .schritt { flex-wrap: wrap; }
+  .bereich-liste li { flex-direction: column; gap: var(--steg-1); }
+  .bereich-titel { flex: none; }
+}
+
 .reiter.aktiv {
   /* Der gewaehlte Reiter ist die erhobene Flaeche, nicht dieselbe wie die
      Bloecke darunter — sonst haette „hier bin ich" keine eigene Stufe und

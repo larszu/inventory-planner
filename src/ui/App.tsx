@@ -24,6 +24,8 @@
 // ───────────────────────────────────────────────────────────────────────────
 import { useEffect, useState } from 'react'
 import { STORAGE_KEYS } from '../lib/storageKeys'
+import { ANSICHT_IDS, bereiche, bereichVon, type Ansicht } from './navigation'
+import { Start } from './Start'
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useCheckoutStore } from '../domain/store/checkoutStore'
@@ -47,31 +49,6 @@ import { autoAbgleichStarten } from '../domain/store/bibliothekStore'
 type UebersetzFn = (key: string, en: string) => string
 
 /**
- * Die Reiter werden IN der Komponente gebaut und nicht als Modul-Konstante:
- * eine Liste, die beim Laden des Moduls einmal übersetzt wird, bleibt in der
- * Sprache stehen, die beim Laden galt — der Umschalter änderte dann alles
- * ausser ihr.
- */
-const REITER_IDS = ['bestand', 'lager', 'eingang', 'inventur', 'ausgabe', 'subhire', 'bericht', 'werte', 'stapeln', 'cases', 'fahrzeuge', 'ladung', 'bibliothek'] as const
-type Reiter = (typeof REITER_IDS)[number]
-
-const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string }[] => [
-  { id: 'bestand', titel: t('tab.stock', 'Stock'), frage: t('tab.stock.q', 'What is here, how much of it, and where does it sit?') },
-  { id: 'lager', titel: t('tab.storage', 'Storage'), frage: t('tab.storage.q', 'Where does it sit — and what is inside what?') },
-  { id: 'eingang', titel: t('tab.receiving', 'Receiving'), frage: t('tab.receiving.q', 'What arrived — and what does that do to the stock?') },
-  { id: 'inventur', titel: t('tab.audit', 'Stocktake'), frage: t('tab.audit.q', 'Is what should be here actually here?') },
-  { id: 'ausgabe', titel: t('tab.checkouts', 'Checkout notes'), frage: t('tab.checkouts.q', 'What is out, with whom, and since when?') },
-  { id: 'bericht', titel: t('tab.report', 'Report'), frage: t('tab.report.q', 'What is inside — and how does it get out of here?') },
-  { id: 'werte', titel: t('tab.values', 'Values & damage'), frage: t('tab.values.q', 'What is it worth, what is broken, and what is committed?') },
-  { id: 'subhire', titel: t('tab.subhire', 'Sub-hire'), frage: t('tab.subhire.q', 'What is not ours — and when must it go back?') },
-  { id: 'stapeln', titel: t('tab.stack', 'Stacking'), frage: t('tab.stack.q', 'Does this case go on that one — and how high does the stack get?') },
-  { id: 'cases', titel: t('tab.cases', 'Cases'), frage: t('tab.cases.q', 'How does it lie inside — and what has to be in there?') },
-  { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles'), frage: t('tab.vehicles.q', 'What fits in — and who is allowed to drive it?') },
-  { id: 'ladung', titel: t('tab.load', 'Load'), frage: t('tab.load.q', 'What travels — and does the vehicle carry it?') },
-  { id: 'bibliothek', titel: t('tab.library', 'Device library'), frage: t('tab.library.q', 'Which device types does the shared library know — and which of ours are missing there?') },
-]
-
-/**
  * Der Zaehler der Statusleiste — was in DIESER Ansicht gezaehlt wird.
  *
  * ADR-007 Abschnitt 6 sagt „Meldungen links · Zaehler rechts" und dazu, was
@@ -84,7 +61,7 @@ const reiterListe = (t: UebersetzFn): { id: Reiter; titel: string; frage: string
  * wieviele Artikel es insgesamt gibt.
  */
 const zaehler = (
-  reiter: Reiter,
+  reiter: Ansicht,
   t: UebersetzFn,
   format: (s: string, v: Record<string, string | number>) => string,
   zahlen: { artikel: number; plaetze: number; einheiten: number; scheine: number; draussen: number; fremd: number },
@@ -107,34 +84,49 @@ const zaehler = (
   }
 }
 
+/** Der Hauptweg vom leeren Lager zur gepackten Ladung — derselbe wie die
+ *  Schritte auf der Startseite. Am Ende jeder dieser Ansichten steht der
+ *  naechste, damit niemand in dreizehn Ansichten suchen muss. */
+const WEITER: Partial<Record<Ansicht, Ansicht>> = {
+  bestand: 'lager',
+  lager: 'cases',
+  cases: 'fahrzeuge',
+  fahrzeuge: 'ladung',
+}
+
 export function App() {
   const { t, format } = useT()
-  const [reiter, setReiterState] = useState<Reiter>(() => {
+  const bereichListe = bereiche(t)
+  const items = useInventoryStore((s) => s.items)
+  const [reiter, setReiterState] = useState<Ansicht>(() => {
     try {
       const gemerkt = localStorage.getItem(STORAGE_KEYS.reiter)
-      return REITER_IDS.includes(gemerkt as Reiter) ? (gemerkt as Reiter) : 'bestand'
+      if (ANSICHT_IDS.includes(gemerkt as Ansicht)) return gemerkt as Ansicht
     } catch {
-      return 'bestand'
+      // ohne Speicher: Start
     }
+    return 'start'
   })
-  const setReiter = (r: Reiter) => {
+  const setReiter = (r: Ansicht) => {
     setReiterState(r)
+    window.scrollTo(0, 0)
     try {
       localStorage.setItem(STORAGE_KEYS.reiter, r)
     } catch {
       // Privates Fenster oder gesperrter Speicher: dann eben ohne Gedaechtnis.
     }
   }
-  const REITER = reiterListe(t)
   // Eigene Artikeltypen hoch-, Bibliotheksgeraete herunterladen (Einstellung „automatisch").
   useEffect(() => autoAbgleichStarten(), [])
-  const aktiv = REITER.find((r) => r.id === reiter)!
+  const weiter = WEITER[reiter]
+  const weiterTitel = weiter && bereichListe.flatMap((b) => b.ansichten).find((a) => a.id === weiter)?.titel
+  const bereich = bereichVon(bereichListe, reiter)
+  const aktiv = bereich.ansichten.find((a) => a.id === reiter)!
 
   // Aus dem Store gelesen und nicht durchgereicht: die Statusleiste zeigt den
   // Stand, nicht den Stand von vorhin. Eine Ansicht, die eine Zahl als Prop
   // bekaeme, muesste sie weiterreichen — und die naechste, die es vergisst,
   // zeigt schweigend eine alte.
-  const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
   const units = useInventoryStore((s) => s.units)
   const records = useCheckoutStore((s) => s.records)
@@ -155,24 +147,42 @@ export function App() {
           jetzt die Menues und rechts aussen die Einstellungen (wie im Cable
           Planner), die Reiter stehen darunter und ordnen die Module. */}
       <Kopfzeile />
-      <nav className="reiter-leiste">
-        {REITER.map((r) => (
+      {/* Fuenf Bereiche statt dreizehn gleichrangiger Reiter; die Ansichten
+          eines Bereichs stehen darunter, in der Reihenfolge der Arbeit. */}
+      <nav className="reiter-leiste" aria-label={t('nav.areas', 'Areas')}>
+        {bereichListe.map((b) => (
           <button
-            key={r.id}
+            key={b.id}
             type="button"
-            onClick={() => setReiter(r.id)}
-            aria-pressed={r.id === reiter}
-            className={r.id === reiter ? 'reiter aktiv' : 'reiter'}
+            onClick={() => setReiter(b.id === bereich.id ? reiter : b.ansichten[0]!.id)}
+            aria-pressed={b.id === bereich.id}
+            className={b.id === bereich.id ? 'reiter aktiv' : 'reiter'}
           >
-            {r.titel}
+            {b.titel}
           </button>
         ))}
       </nav>
+      {bereich.ansichten.length > 1 && (
+        <nav className="unterreiter" aria-label={bereich.titel}>
+          {bereich.ansichten.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setReiter(a.id)}
+              aria-pressed={a.id === reiter}
+              className={a.id === reiter ? 'unterreiter-knopf aktiv' : 'unterreiter-knopf'}
+            >
+              {a.titel}
+            </button>
+          ))}
+        </nav>
+      )}
       {/* Der Inhalt bekommt seine Satzbreite, der Rahmen nicht (suite#231).
           Vorher trug `.app` beides — und damit endete auch die Kopfzeile bei
           1100 px, mitten auf dem Bildschirm. */}
       <main className="inhalt">
-        <p className="frage">{aktiv.frage}</p>
+        {aktiv.frage && <p className="frage">{aktiv.frage}</p>}
+        {reiter === 'start' && <Start bereiche={bereichListe} onGehe={setReiter} />}
         {reiter === 'bestand' && <Bestand />}
         {reiter === 'lager' && <Lagerbaum />}
         {reiter === 'eingang' && <Wareneingang />}
@@ -182,15 +192,22 @@ export function App() {
         {reiter === 'werte' && <WerteUndSchaeden />}
         {reiter === 'subhire' && <SubHire />}
         {reiter === 'stapeln' && <Stapeln />}
-        {reiter === 'cases' && <Caseausbau />}
+        {reiter === 'cases' && <Caseausbau onZuLagerorten={() => setReiter('lager')} />}
         {reiter === 'fahrzeuge' && <Fahrzeuge />}
         {reiter === 'ladung' && <Ladung />}
         {reiter === 'bibliothek' && <Bibliothek />}
+        {weiter && weiterTitel && (
+          <div className="weiter">
+            <button type="button" onClick={() => setReiter(weiter)}>
+              {format(t('nav.next', 'Next: {view} →'), { view: weiterTitel })}
+            </button>
+          </div>
+        )}
       </main>
       {/* Die Statusleiste des Rahmens (ADR-007 Abschnitt 6). Links steht,
           welche Frage gerade offen ist, rechts ihre Zahl. */}
       <footer className="statusleiste">
-        <span>{aktiv.titel}</span>
+        <span>{bereich.id === 'start' ? bereich.titel : `${bereich.titel} › ${aktiv.titel}`}</span>
         <span className="rechts">{stand}</span>
       </footer>
     </div>

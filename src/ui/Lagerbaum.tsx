@@ -424,7 +424,7 @@ export function Lagerbaum() {
       <p className="hinweis">
         {t(
           'tree.intro',
-          'Drag a location, a case or an article onto the place it belongs — with the mouse or with your finger. Every move is written to the journal, and a move that cannot happen says why before you let go.',
+          'Drag equipment onto a shelf or case to put it away — with the mouse or your finger.',
         )}
       </p>
 
@@ -475,7 +475,7 @@ export function Lagerbaum() {
       )}
 
       {nodes.length === 0 ? (
-        <p>{t('tree.none', 'No locations yet. A case needs a place before anything can go into it.')}</p>
+        <p>{t('tree.none', 'No shelves or cases yet — add one above.')}</p>
       ) : (
         <ul className="baum-liste wurzel">
           {wurzeln.map((n) => (
@@ -486,12 +486,11 @@ export function Lagerbaum() {
 
       {/* Die Ablage „aus allem heraus". Ohne sie gäbe es keinen Weg zurück:
           was einmal in einem Case liegt, käme nie wieder auf die Fläche. */}
-      <div
-        data-ablage=""
-        className={`baum-wurzelablage${zug?.ziel === '' ? ' ziel' : ''}`}
-      >
-        {t('tree.dropRoot', 'Drop here to take it out of everything')}
-      </div>
+      {nodes.length > 0 && (
+        <div data-ablage="" className={`baum-wurzelablage${zug?.ziel === '' ? ' ziel' : ''}`}>
+          {t('tree.dropRoot', 'Drop here to take it out of everything')}
+        </div>
+      )}
 
       {ohneOrt.length > 0 && (
         <div className="block">
@@ -506,8 +505,9 @@ export function Lagerbaum() {
         </div>
       )}
 
-      <div className="block">
-        <h3>{t('tree.journal', 'Moves')}</h3>
+      {/* Das Journal ist Nachschlagewerk, keine Arbeitsflaeche: zugeklappt. */}
+      <details className="block">
+        <summary>{format(t('tree.journalCount', 'Moves ({n})'), { n: moves.length })}</summary>
         <p className="hinweis">
           {t(
             'tree.journalHint',
@@ -539,7 +539,7 @@ export function Lagerbaum() {
             </button>
           </>
         )}
-      </div>
+      </details>
 
       </>
       )}

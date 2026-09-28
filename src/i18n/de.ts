@@ -229,7 +229,7 @@ export const de: Record<string, string> = {
   'stock.aria.target': 'Mindestmenge von {model}',
   'stock.col.category': 'Kategorie',
   'stock.col.location': 'Lagerort',
-  'stock.col.model': 'Modell',
+  'stock.col.model': 'Name',
   'stock.col.ownership': 'Eigentum',
   'stock.col.qty': 'Menge',
   'stock.col.supplier': 'Lieferant',
@@ -238,22 +238,19 @@ export const de: Record<string, string> = {
   'stock.create': 'Anlegen',
   // suite#231 — der Bestand hat jetzt einen eigenen Anlege-Block und einen
   // eigenen Zustand fuer „Suche ohne Treffer".
-  'stock.create.head': 'In den Bestand aufnehmen',
+  'stock.create.head': 'Equipment anlegen',
   'stock.noHit': 'Nichts passt zu „{q}". Im Bestand stehen {all} Modelle.',
   'stock.clearSearch': 'Suche zuruecksetzen',
-  'stock.empty':
-    'Noch nichts im Bestand. Anlegen — oder eine vorhandene Lagerdatei einlesen; das Format ist zwischen den Werkzeugen dasselbe.',
+  'stock.empty': 'Noch nichts da. Oben einen Namen eintippen und Anlegen drücken. Schon eine Liste? Datei → Öffnen.',
   'stock.merged': '{n} zu {model} hinzugefügt — jetzt {total}.',
   'stock.duplicate': '{model} lag schon an anderer Stelle im Bestand — als eigener Eintrag angelegt.',
-  'stock.newModel': 'Neues Modell',
-  'stock.newModel.aria': 'Modellbezeichnung',
+  'stock.newModel': 'z. B. Sony FX6',
+  'stock.newModel.aria': 'Name',
   'stock.ownership.unset': 'nicht angegeben',
   'stock.remove': 'Entfernen',
   'stock.search': 'Suchen — Modell, Hersteller, Lieferant, Ort',
   'stock.search.aria': 'Bestand durchsuchen',
   'stock.target.title': 'Ab wann nachbestellt oder sub-hired wird. Leer heisst: nicht festgelegt.',
-  'stock.targetExplain':
-    'Ziel ist die Mindestmenge, ab der nachbestellt oder sub-hired wird — eine Entscheidung des Hauses, keine Vorgabe aus einer Show. Leer heisst nicht null, sondern nicht festgelegt; solche Artikel führt der Bericht unter „unbewertet" statt unter „reicht". Wie es aktuell steht, sagt dort der Block „Unter Ziel".',
 
   // ── Scannen und Beleg-Erkennung (lib/codeLeser.ts, lib/belegOcr.ts) ──
   'ocr.blocked.cancelled': 'Die Texterkennung wurde abgebrochen. Der Beleg ist unverändert.',
@@ -409,13 +406,9 @@ export const de: Record<string, string> = {
 
   // ── Reiter und ihre Fragen ──
   'tab.audit': 'Inventur',
-  'tab.audit.q': 'Liegt hier, was hier liegen soll?',
   'tab.checkouts': 'Ausgabescheine',
-  'tab.checkouts.q': 'Was ist draußen, bei wem, und seit wann?',
   'tab.receiving': 'Wareneingang',
-  'tab.receiving.q': 'Was ist gekommen — und was macht das mit dem Bestand?',
   'tab.report': 'Bericht',
-  'tab.report.q': 'Was steckt drin — und wie kommt es hier raus?',
   // ── Statusleiste (suite#231, ADR-007 Abschnitt 6) ──────────────────────
   // Je Reiter eine Zahl. Nichts davon wertet — es sind Anzahlen.
   'status.stock': 'Modelle: {n} · Lagerplätze: {p}',
@@ -466,13 +459,11 @@ export const de: Record<string, string> = {
   'stack.weightUnknown': 'Für das obere Case ist kein Gewicht bekannt.',
 
   'tab.stack': 'Stapeln',
-  'tab.stack.q': 'Kommt dieses Case auf jenes — und wie hoch wird der Turm?',
 
   'vehicle.add': 'Fahrzeug anlegen',
   'vehicle.aperture': 'Ladeöffnung:',
   'vehicle.apertureSize': '{w} x {h} mm',
   'vehicle.create.head': 'Fahrzeug anlegen',
-  'vehicle.head': 'Fahrzeuge',
   // Einbauten und Laderaum-Bearbeitung (Nutzer-Frage 2026-09-19).
   // „Radkasten", „Ersatzrad" sind Bauteile und keine Normbegriffe – sie
   // werden übersetzt; die Reifengröße selbst (235/65 R16C) nicht.
@@ -544,8 +535,7 @@ export const de: Record<string, string> = {
   'vehicle.sourcePlaceholder': 'Datenblatt-Link oder Zulassungsbescheinigung',
   'vehicle.notes': 'Notizen',
   'vehicle.height': 'Laderaum-Höhe (mm)',
-  'vehicle.intro':
-    'Ein Laderaum ist kein Quader: Radkästen verengen den Boden, und die Heckklappe ist kleiner als der Innenraum. Was nicht vermessen wurde, steht als nicht vermessen da.',
+  'vehicle.intro': 'Aus einem Stammdatensatz starten oder den Laderaum eintragen. Radkästen und Ladeöffnung lassen sich später ergänzen.',
   'vehicle.itemNoDims': 'Für das Stück liegen keine vollständigen Außenmaße vor.',
   'vehicle.kind': 'Klasse',
   'vehicle.kind.boot': 'Kofferraum',
@@ -571,14 +561,11 @@ export const de: Record<string, string> = {
   'vehicle.width': 'Laderaum-Breite (mm)',
 
   'tab.vehicles': 'Fahrzeuge',
-  'tab.vehicles.q': 'Was passt hinein — und wer darf es fahren?',
 
   'load.add': 'Ladung anlegen',
   'load.closePick': 'Auswahl schließen',
   'load.groups': 'Abladegruppen:',
-  'load.head': 'Ladungen',
-  'load.intro':
-    'Die Container wählen, die mitfahren. Ein verschachteltes Case zählt einmal, zusammen mit seinem Transport-Case — nicht zweimal.',
+  'load.intro': 'Ladung anlegen, Fahrzeug wählen, Cases hinzufügen. Ein Case in einem Transport-Case zählt einmal.',
   'load.name': 'Name der Ladung',
   'load.allTaken': 'Jedes Case steht schon auf dieser Ladung.',
   'load.noContainers': 'Noch keine Cases oder Transport-Cases im Bestand.',
@@ -596,14 +583,9 @@ export const de: Record<string, string> = {
   'load.vehicle': 'Fahrzeug',
 
   'tab.load': 'Ladung',
-  'tab.load.q': 'Was fährt mit — und trägt das Fahrzeug es?',
 
-  'tab.stock': 'Bestand',
-  'tab.stock.q': 'Was ist da, wieviel, und wo liegt es?',
   'tab.subhire': 'Sub-Hire',
-  'tab.subhire.q': 'Was gehört uns nicht — und wann muss es zurück?',
   'tab.values': 'Werte & Schäden',
-  'tab.values.q': 'Was ist es wert, was ist kaputt, und was ist gebunden?',
 
   // ── Ladeplan: Packer, Draufsicht, 3D (#20, #22, #23) ────────────────────
   'pack.noAperture':
@@ -744,8 +726,6 @@ export const de: Record<string, string> = {
   // „Umlagern" ist der Begriff des Hauses; „verschieben" wäre die Geste und
   // nicht der Vorgang. Der Unterschied steht mit Grund in
   // `types/storageMove.ts`: es ist eine Buchung und keine Nebenwirkung.
-  'tab.storage': 'Lager',
-  'tab.storage.q': 'Wo liegt es — und was steckt worin?',
 
   'move.subject.node': 'Lagerort/Container',
   'move.subject.item': 'Artikel',
@@ -770,7 +750,7 @@ export const de: Record<string, string> = {
   'tree.kind.case': 'Case',
   'tree.kind.transportCase': 'Transport-Case',
   'tree.intro':
-    'Zieh einen Lagerort, ein Case oder einen Artikel dorthin, wo er hingehört — mit der Maus oder mit dem Finger. Jeder Umzug geht ins Journal, und was nicht geht, sagt seinen Grund, bevor du loslässt.',
+    'Equipment auf ein Regal oder Case ziehen, um es einzuräumen — mit der Maus oder dem Finger.',
   'tree.create.head': 'Lagerort oder Case anlegen',
   'tree.name': 'Name',
   'tree.kind': 'Art',
@@ -782,10 +762,10 @@ export const de: Record<string, string> = {
   'tree.remove': 'Entfernen',
   'tree.qty': '{n} Stk',
   'tree.moved': '{what} liegt jetzt in {where}.',
-  'tree.none': 'Noch keine Lagerorte. Ein Case braucht einen Platz, bevor etwas hineinkann.',
+  'tree.none': 'Noch keine Regale oder Cases — oben eins anlegen.',
   'tree.dropRoot': 'Hierher ziehen, um es aus allem herauszunehmen',
   'tree.unplaced': 'Nicht eingeräumt ({n})',
-  'tree.journal': 'Umlagerungen',
+  'tree.journalCount': 'Umlagerungen ({n})',
   'tree.journalHint':
     'Jeder Umzug wird festgehalten. Das ist der Nachweis, der „wo war es zuletzt" beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.',
   'tree.journalEmpty': 'Noch nichts umgelagert.',
@@ -884,7 +864,7 @@ export const de: Record<string, string> = {
   'place.ambiguous': 'Das passt auf {n} Lagerorte: {list}. Welcher?',
   'place.unknown': 'Kein Lagerort mit diesem Namen oder dieser Kennung.',
   'stock.nowhere': 'nicht eingeräumt',
-  'stock.setPlace': 'Kennung oder Pfad…',
+  'stock.setPlace': 'Regal oder Case eintippen…',
   'stock.setPlaceFor': 'Lagerort setzen',
   'floor.levelName': 'Ebene {n}',
   'floor.makeLevels': 'Die {n} Ebenen als Lagerorte anlegen',
@@ -1124,11 +1104,10 @@ export const de: Record<string, string> = {
     'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
   // ── Cases: Layout und Inhaltsliste ──────────────────────────────────────
   'tab.cases': 'Cases',
-  'tab.cases.q': 'Wie liegt es darin — und was muss drin sein?',
   'case.pick': 'Case',
   'case.pick.aria': 'Welches Case',
-  'case.none':
-    'Noch kein Case im Lagerbaum. Anlegen unter Lager → Lagerort oder Case anlegen, Art Case oder Transport-Case.',
+  'case.none': 'Noch keine Cases. Unter Lagerorte anlegen — Art Case oder Transport-Case.',
+  'case.toPlaces': 'Zu den Lagerorten',
   'case.buildout': 'Innen',
   'case.inner.width': 'Innenbreite (mm)',
   'case.outside': 'Außen',
@@ -1395,5 +1374,54 @@ export const de: Record<string, string> = {
   'settings.library.signedOut': 'Nicht angemeldet.',
   'settings.library.verify': 'Bestätigen',
   'tab.library': 'Geräte-Bibliothek',
-  'tab.library.q': 'Welche Gerätetypen kennt die gemeinsame Bibliothek — und welche von unseren fehlen dort?',
+  'plan.options': 'Rasteroptionen',
+  'case.more': 'Innenausbau, Schaumlayout und Inhaltsliste',
+  'nav.areas': 'Bereiche',
+  'nav.next': 'Weiter: {view} →',
+  'area.start': 'Start',
+  'area.stock': 'Lager',
+  'area.stock.why': 'Was du hast und wo es liegt. Equipment anlegen, Regale und Cases einrichten, zählen.',
+  'area.pack': 'Packen',
+  'area.pack.why': 'Für einen Job vorbereiten: was in welches Case kommt und wie die Cases ins Fahrzeug passen.',
+  'area.out': 'Raus & zurück',
+  'area.out.why': 'Equipment, das das Haus verlässt: Ausgabescheine, Rückgaben und zugemietetes Material.',
+  'area.reports': 'Auswertung',
+  'area.reports.why': 'Übersichten zum Drucken oder Weitergeben: Bestandsbericht, Werte, Schäden.',
+  'tab.stock': 'Equipment',
+  'tab.stock.q': 'Was hast du, und wie viel davon?',
+  'tab.storage': 'Lagerorte',
+  'tab.storage.q': 'Wo liegt es — Regale, Cases, und was steckt worin.',
+  'tab.receiving.q': 'Was angekommen ist, einbuchen.',
+  'tab.audit.q': 'Prüfen, ob da ist, was da sein soll.',
+  'tab.library.q': 'Gerätedaten aus der gemeinsamen Bibliothek übernehmen statt abtippen.',
+  'tab.cases.q': 'Ein Case vermessen und festlegen, was hineinkommt.',
+  'tab.vehicles.q': 'Deine Transporter und LKW und ihr Laderaum.',
+  'tab.load.q': 'Cases für einen Job wählen und sehen, wie sie ins Fahrzeug passen.',
+  'tab.stack.q': 'Welches Case auf welchem stehen darf, und wie hoch.',
+  'tab.checkouts.q': 'Was draußen ist, bei wem, und seit wann.',
+  'tab.subhire.q': 'Material, das nicht dir gehört, und wann es zurück muss.',
+  'tab.report.q': 'Der Bestand auf einen Blick, druckfertig.',
+  'tab.values.q': 'Was es wert ist und was kaputt ist.',
+  'start.purpose': 'Behalte dein Equipment im Blick — was du hast und wo es liegt — und plane, wie es für einen Job in Cases und Fahrzeuge kommt.',
+  'start.steps.head': 'Erste Schritte — {n} von 5 erledigt',
+  'start.steps.done': 'Erste Schritte — alles erledigt',
+  'start.step.items': 'Equipment anlegen',
+  'start.step.items.why': 'Name und Menge reichen für den Anfang.',
+  'start.step.items.count': '{n} Modelle',
+  'start.step.places': 'Regale und Cases anlegen',
+  'start.step.places.why': 'Dann das Equipment dorthin ziehen, wo es liegt.',
+  'start.step.places.count': '{n} Orte · {c} Cases',
+  'start.step.measure': 'Cases vermessen',
+  'start.step.measure.why': 'Vorlage wählen oder Außenmaß eintragen — nötig, um ein Fahrzeug zu packen.',
+  'start.step.measure.count': '{m} von {c} vermessen',
+  'start.step.vehicle': 'Fahrzeug anlegen',
+  'start.step.vehicle.why': 'Länge, Breite und Höhe des Laderaums.',
+  'start.step.vehicle.count': '{n} Fahrzeuge',
+  'start.step.load': 'Ladung planen',
+  'start.step.load.why': 'Cases für einen Job wählen — die App legt sie im Fahrzeug aus.',
+  'start.step.load.count': '{n} Ladungen',
+  'start.go': 'Loslegen',
+  'start.open': 'Öffnen',
+  'start.areas': 'Was willst du tun?',
+  'load.name.example': 'z. B. Festival Samstag',
 }

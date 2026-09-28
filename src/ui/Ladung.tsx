@@ -62,11 +62,10 @@ export function Ladung() {
 
   return (
     <section>
-      <h2>{t('load.head', 'Loads')}</h2>
       <p className="hinweis">
         {t(
           'load.intro',
-          'Pick the containers that travel. A nested case is counted once, with its transport case — not twice.',
+          'Create a load, choose a vehicle, add the cases. A case inside a transport case counts once.',
         )}
       </p>
 
@@ -81,7 +80,7 @@ export function Ladung() {
       >
         <label>
           {t('load.name', 'Load name')}
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('load.name.example', 'e.g. Festival Saturday')} />
         </label>
         <button type="submit">{t('load.add', 'Create load')}</button>
       </form>

@@ -55,7 +55,7 @@ const Case3D = lazy(() => import('./Caseansicht/Case3D'))
 
 const heuteIso = () => new Date().toISOString().slice(0, 10)
 
-export function Caseausbau() {
+export function Caseausbau({ onZuLagerorten }: { onZuLagerorten?: () => void } = {}) {
   const { t, format } = useT()
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
@@ -214,12 +214,16 @@ export function Caseausbau() {
       <div className="block">
         <h3>{t('case.pick', 'Case')}</h3>
         {cases.length === 0 ? (
-          <p className="hinweis">
-            {t(
-              'case.none',
-              'No case in the storage tree yet. Create one under Storage → Add a location or case, with the kind Case or Transport case.',
+          <>
+            <p className="hinweis">
+              {t('case.none', 'No cases yet. Create one in Storage places — kind Case or Transport case.')}
+            </p>
+            {onZuLagerorten && (
+              <button type="button" className="knopf-primaer" onClick={onZuLagerorten}>
+                {t('case.toPlaces', 'Go to Storage places')}
+              </button>
             )}
-          </p>
+          </>
         ) : (
           <div className="zeile">
             <label>
@@ -262,6 +266,11 @@ export function Caseausbau() {
             <AussenFelder dimensions={node.dimensions} onSetze={(d) => updateNode(node.id, { dimensions: d })} />
           </div>
 
+          {/* Innenausbau, Layout, Inlay und Inhaltsliste sind der zweite
+              Schritt. Wer nur einen LKW packen will, braucht bis hier: Case,
+              Vorlage, Aussenmass. Deshalb zugeklappt, bis es einen Ausbau gibt. */}
+          <details className="mehr" open={!!ausbau}>
+            <summary>{t('case.more', 'Inside, foam layout and contents list')}</summary>
           {/* ── Der Ausbau ─────────────────────────────────────────────── */}
           <div className="block">
             <h3>{t('case.buildout', 'Inside')}</h3>
@@ -495,6 +504,7 @@ export function Caseausbau() {
               </>
             )}
           </div>
+          </details>
         </>
       )}
     </section>

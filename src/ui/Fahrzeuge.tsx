@@ -120,11 +120,10 @@ export function Fahrzeuge() {
 
   return (
     <section>
-      <h2>{t('vehicle.head', 'Vehicles')}</h2>
       <p className="hinweis">
         {t(
           'vehicle.intro',
-          'A loading space is not a box: wheel arches narrow the floor, and the rear opening is smaller than the interior. What has not been measured is shown as not measured.',
+          'Start from a master record or enter the cargo space. Wheel arches and the door opening can be added later.',
         )}
       </p>
 
