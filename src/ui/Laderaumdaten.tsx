@@ -45,7 +45,11 @@ export function Laderaumdaten({ vehicle, kinds, kindLabel, onAendern }: Props) {
   const { t, format } = useT()
   const gespeichert = useLoadStore((s) => s.loads)
   const nodes = useInventoryStore((s) => s.nodes)
-  const loads = useMemo(() => gespeichert.map((l) => mitAktuellenMassen(l, nodes)), [gespeichert, nodes])
+  const items = useInventoryStore((s) => s.items)
+  const loads = useMemo(
+    () => gespeichert.map((l) => mitAktuellenMassen(l, nodes, items)),
+    [gespeichert, nodes, items],
+  )
 
   /** Was gerade im Formular steht — noch nicht im Store. */
   const [entwurf, setEntwurf] = useState<Vehicle['cargoMm']>(vehicle.cargoMm)
@@ -131,7 +135,7 @@ export function Laderaumdaten({ vehicle, kinds, kindLabel, onAendern }: Props) {
             {format(
               t(
                 'vehicle.affected',
-                'These {n} pieces were placed by hand and would no longer fit. They stay where they are — nothing is moved for you:',
+                'These {n} hand-placed pieces would no longer fit:',
               ),
               { n: betroffen.length },
             )}

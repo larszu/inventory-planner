@@ -59,7 +59,7 @@ export function Ladeausgabe({ ladungName, vehicle, plan, gruppen, datum, onFehle
       <p className="hinweis">
         {t(
           'out.intro',
-          'At the dock nobody stands with the 3D view. Every sheet carries the vehicle, the date, the placed weight and what could not be laid out, with the reason.',
+          'Sheets for the dock: vehicle, date, weight and loading order.',
         )}
       </p>
       <div className="zeile">

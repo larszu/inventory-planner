@@ -73,6 +73,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 import { useMemo, useRef, useState } from 'react'
 import { herunterladen } from '../lib/herunterladen'
+import { ownershipLabel } from '../domain/lib/ownership'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { buildInventoryReport, type CountValue } from '../domain/lib/inventoryReport'
 import { serializeInventory, parseInventory } from '../domain/lib/inventoryPortable'
@@ -102,6 +103,28 @@ import type { ImportReport } from '../domain/store/inventoryStore'
 // Schluessel, ein ganzer Satz, Platzhalter ueber `format()`.
 
 /** Ein Block der Aufschlüsselung. Fünf davon sehen gleich aus — also einmal. */
+/**
+ * Die Rechnung liefert ihre Sammelschluessel deutsch („unbekannt", „ohne
+ * Lagerort") und die Eigentumsarten als Kennung; gezeigt wird beides in der
+ * Sprache der Oberflaeche. Leere Kategorie ist „—" und bleibt es.
+ */
+const gruppenName = (key: string, t: (key: string, en: string) => string): string => {
+  switch (key) {
+    case 'unbekannt':
+      return t('report.group.unknown', 'not stated')
+    case 'unklassifiziert':
+      return t('report.group.unclassified', 'not classified')
+    case 'ohne Lagerort':
+      return t('report.group.noPlace', 'not put away')
+    case 'owned':
+    case 'rented':
+    case 'subhire':
+      return ownershipLabel(key, t)
+    default:
+      return key
+  }
+}
+
 function Aufschluesselung({
   titel,
   zeilen,
@@ -130,7 +153,7 @@ function Aufschluesselung({
         <tbody>
           {zeilen.map((z) => (
             <tr key={z.key}>
-              <td>{z.key}</td>
+              <td>{gruppenName(z.key, t)}</td>
               <td className="rechts">{z.items}</td>
               <td className="rechts">{z.units}</td>
             </tr>
@@ -319,7 +342,7 @@ export function Bericht() {
           ? format(
               t(
                 'report.noPrice',
-                '{without} of {all} lines carry no rental price — the daily rate above is the sum over the rest, not over the stock.',
+                '{without} of {all} lines have no rental price.',
               ),
               { without: zahlen.itemsWithoutPrice, all: zahlen.itemCount },
             )
@@ -347,7 +370,7 @@ export function Bericht() {
               : format(
                   t(
                     'report.noTargets',
-                    'Not one of the {n} items in stock has a minimum quantity. Without such a number there is nothing to compare — the "Target" column in the stock view sets it.',
+                    'No item has a target quantity yet — set it in Equipment.',
                   ),
                   { n: lage.unbewertet },
                 )}
@@ -442,7 +465,7 @@ export function Bericht() {
           <p className="hinweis">
             {t(
               'report.packList.empty',
-              'No root storage location set up. A pack list describes a container with everything inside it — without a tree there is nothing to describe.',
+              'No storage places yet.',
             )}
           </p>
         ) : (

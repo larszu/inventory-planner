@@ -62,7 +62,7 @@ export function Einbauten({ vehicle, onAendern }: Props) {
       <p className="hinweis">
         {t(
           'obstacle.intro',
-          'Wheel arches, a seat bench, the spare wheel: the packer treats them as occupied space, and the top view and the 3D view draw them. The origin is the rear-left-bottom corner of the cargo space; x runs across, y upwards, z towards the front.',
+          'Wheel arches, benches, spare wheel — the packer keeps them free.',
         )}
       </p>
 
@@ -232,7 +232,7 @@ function RadkastenAusReifen({
       <p className="hinweis">
         {t(
           'tyre.intro',
-          'A tyre size is a standardised figure, not an estimate: 235/65 R16 gives width and outer diameter exactly. The height above the cargo floor does not follow from it — it depends on the body, so it is asked for.',
+          'Enter the tyre size, e.g. 235/65 R16.',
         )}
       </p>
 
@@ -255,7 +255,7 @@ function RadkastenAusReifen({
         <p className="befund offen">
           {t(
             'tyre.unreadable',
-            'Not a metric tyre size with an aspect ratio. Sizes like 7.50 R16 do not carry the sidewall height — enter the measurements by hand below.',
+            'Size not readable — enter the measurements below.',
           )}
         </p>
       )}
@@ -302,7 +302,7 @@ function RadkastenAusReifen({
           </button>
           {!bereit && (
             <p className="leise">
-              {t('tyre.needHeight', 'The height is missing. A derived height would look like a measured one on the load plan — and the packer stacks on top of it.')}
+              {t('tyre.needHeight', 'Enter the height above the cargo floor.')}
             </p>
           )}
         </>

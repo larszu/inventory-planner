@@ -61,6 +61,34 @@ export function stueckeAusContainern(nodes: readonly StorageNode[], ausgewaehlt:
 }
 
 /**
+ * Lose Artikel direkt auf die Ladung — ohne Case.
+ *
+ * Nicht alles fährt in einem Case: Truss, Stative, Taschen. Vorher ging nur
+ * ein Container auf eine Ladung, und wer schnell planen wollte, musste für
+ * jedes lose Stück erst ein Case anlegen. Artikel, die in einem Container
+ * liegen, fahren mit ihm und werden hier nicht noch einmal angeboten.
+ */
+export function stueckeAusArtikeln(items: readonly InventoryItem[], ausgewaehlt: readonly string[]): LadungsStueck[] {
+  const wahl = new Set(ausgewaehlt)
+  return items
+    .filter((i) => wahl.has(i.id))
+    .map((i) => ({
+      id: neueId('a'),
+      label: i.model,
+      herkunft: 'artikel' as const,
+      itemId: i.id,
+      quantity: i.quantity ?? 1,
+      dimensions: i.dimensions,
+    }))
+}
+
+/** Artikel, die nicht in einem Container liegen — die „losen". */
+export function loseArtikel(items: readonly InventoryItem[], nodes: readonly StorageNode[]): InventoryItem[] {
+  const container = new Set(nodes.filter((n) => CONTAINER_KINDS.includes(n.kind)).map((n) => n.id))
+  return items.filter((i) => !i.locationId || !container.has(i.locationId))
+}
+
+/**
  * Container-Stücke mit den AKTUELLEN Massen ihres Knotens.
  *
  * `stueckeAusContainern` hält die Masse zum Zeitpunkt des Hinzufügens fest.
@@ -68,10 +96,21 @@ export function stueckeAusContainern(nodes: readonly StorageNode[], ausgewaehlt:
  * Weg), sah es sonst für immer als „cannot be laid out". Ist der Knoten
  * gelöscht, bleibt der alte Stand stehen — das Stück fährt trotzdem mit.
  */
-export function mitAktuellenMassen(ladung: Ladung, nodes: readonly StorageNode[]): Ladung {
+export function mitAktuellenMassen(
+  ladung: Ladung,
+  nodes: readonly StorageNode[],
+  items: readonly InventoryItem[] = [],
+): Ladung {
   const proId = new Map(nodes.map((n) => [n.id, n]))
+  const artikel = new Map(items.map((i) => [i.id, i]))
   let geaendert = false
   const stuecke = ladung.stuecke.map((s) => {
+    if (s.herkunft === 'artikel' && s.itemId) {
+      const a = artikel.get(s.itemId)
+      if (!a || a.dimensions === s.dimensions) return s
+      geaendert = true
+      return { ...s, dimensions: a.dimensions }
+    }
     const n = s.herkunft === 'container' && s.nodeId ? proId.get(s.nodeId) : undefined
     if (!n || (n.dimensions === s.dimensions && n.transport === s.transport)) return s
     geaendert = true

@@ -65,7 +65,7 @@ export function Stapeln() {
       <p className="hinweis">
         {t(
           'stack.intro',
-          'Pick the lower and the upper container. The answer distinguishes "does not fit" from "not measured" — those are different problems.',
+          'Pick the lower and the upper case.',
         )}
       </p>
 

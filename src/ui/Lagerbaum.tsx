@@ -44,7 +44,7 @@ import { useT } from '../i18n'
 import { useAnlegenOffen } from './useAnlegenOffen'
 import { useInventoryStore } from '../domain/store/inventoryStore'
 import { useStorageMoveStore } from '../domain/store/storageMoveStore'
-import { isContainerKind, itemsInNode, nodePathLabel } from '../domain/lib/storageTree'
+import { itemsInNode, nodePathLabel } from '../domain/lib/storageTree'
 import { moveRefusal, moveTable } from '../domain/lib/storageMoves'
 import { moveRefusalLabel, moveSubjectLabel } from '../domain/types/storageMove'
 import { toCsv } from '../lib/csv'
@@ -141,7 +141,6 @@ function Knoten({
   const drin = itemsInNode(items, nodes, n.id)
   const unterKnoten = kinder.get(n.id) ?? []
   const offen = !zu.has(n.id)
-  const container = isContainerKind(n.kind)
   const nein = zug && zug.ziel === n.id ? absage(zug, n.id) : null
   const angepeilt = zug?.ziel === n.id
 
@@ -165,7 +164,7 @@ function Knoten({
             })
           }
         >
-          {unterKnoten.length + drin.length === 0 ? '·' : offen ? '−' : '+'}
+          {unterKnoten.length + drin.length === 0 ? '' : offen ? '−' : '+'}
         </button>
 
         {/* Der Griff. Er ist ein eigenes Element und nicht die ganze Zeile:
@@ -188,7 +187,6 @@ function Knoten({
         <span className="leise">
           {kindLabel(n.kind, t)}
           {n.code ? ` · ${n.code}` : ''}
-          {container ? ` · ${t('tree.container', 'container')}` : ''}
         </span>
 
         <button type="button" className="still" onClick={() => removeNode(n.id)}>
@@ -227,9 +225,7 @@ function Artikel({
   const { t, format, greife, zeigerBewegt, zeigerLos } = ctx
   return (
     <div className="baum-zeile artikel" style={{ paddingLeft: `calc(${tiefe} * var(--steg-4))` }}>
-      <span className="baum-falten" aria-hidden>
-        ·
-      </span>
+      <span className="baum-falten" aria-hidden />
       <span
         className="baum-griff"
         role="button"
@@ -245,7 +241,7 @@ function Artikel({
         ⠿
       </span>
       {it.model}
-      <span className="leise">{format(t('tree.qty', '{n} pcs'), { n: it.quantity })}</span>
+      <span className="leise">{format(t('tree.qty', 'Qty {n}'), { n: it.quantity })}</span>
     </div>
   )
 }
@@ -424,7 +420,7 @@ export function Lagerbaum() {
       <p className="hinweis">
         {t(
           'tree.intro',
-          'Drag a location, a case or an article onto the place it belongs — with the mouse or with your finger. Every move is written to the journal, and a move that cannot happen says why before you let go.',
+          'Drag equipment onto a shelf or case to put it away — with the mouse or your finger.',
         )}
       </p>
 
@@ -475,7 +471,7 @@ export function Lagerbaum() {
       )}
 
       {nodes.length === 0 ? (
-        <p>{t('tree.none', 'No locations yet. A case needs a place before anything can go into it.')}</p>
+        <p>{t('tree.none', 'No shelves or cases yet — add one above.')}</p>
       ) : (
         <ul className="baum-liste wurzel">
           {wurzeln.map((n) => (
@@ -486,12 +482,13 @@ export function Lagerbaum() {
 
       {/* Die Ablage „aus allem heraus". Ohne sie gäbe es keinen Weg zurück:
           was einmal in einem Case liegt, käme nie wieder auf die Fläche. */}
-      <div
-        data-ablage=""
-        className={`baum-wurzelablage${zug?.ziel === '' ? ' ziel' : ''}`}
-      >
-        {t('tree.dropRoot', 'Drop here to take it out of everything')}
-      </div>
+      {/* Nur waehrend eines Zugs, und fest am unteren Rand: im Fluss
+          verschob sie beim Erscheinen die Liste unter dem Finger. */}
+      {zug && (
+        <div data-ablage="" className={`baum-wurzelablage${zug?.ziel === '' ? ' ziel' : ''}`}>
+          {t('tree.dropRoot', 'Drop here to take it out of everything')}
+        </div>
+      )}
 
       {ohneOrt.length > 0 && (
         <div className="block">
@@ -506,12 +503,14 @@ export function Lagerbaum() {
         </div>
       )}
 
-      <div className="block">
-        <h3>{t('tree.journal', 'Moves')}</h3>
+      {/* Das Journal ist Nachschlagewerk, keine Arbeitsflaeche: zugeklappt. */}
+      {moves.length > 0 && (
+      <details className="block">
+        <summary>{format(t('tree.journalCount', 'Moves ({n})'), { n: moves.length })}</summary>
         <p className="hinweis">
           {t(
             'tree.journalHint',
-            'Every move is recorded. This is the record that answers "where was it last", when the recorded location and reality have drifted apart.',
+            'Every move is recorded here.',
           )}
         </p>
         {moves.length === 0 ? (
@@ -539,7 +538,8 @@ export function Lagerbaum() {
             </button>
           </>
         )}
-      </div>
+      </details>
+      )}
 
       </>
       )}

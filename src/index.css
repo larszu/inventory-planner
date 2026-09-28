@@ -447,6 +447,96 @@ body {
 
 .reiter:hover { color: var(--text); }
 
+/* Die Ansichten des gewaehlten Bereichs — eine Stufe leiser als die
+ * Bereiche, damit klar ist, was oben und was darunter steht. */
+.unterreiter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--steg-1);
+  padding: var(--steg-2) var(--steg-3);
+  border-bottom: 1px solid var(--rand);
+  background: var(--erhoben);
+  flex: none;
+}
+.unterreiter-knopf {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--leise);
+  padding: 0 var(--steg-3);
+  min-height: var(--ziel);
+  font: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.unterreiter-knopf:hover { color: var(--text); }
+.unterreiter-knopf.aktiv { color: var(--text); border-bottom-color: var(--text); }
+
+/* Der naechste Schritt des Hauptwegs, am Ende der Ansicht. */
+.weiter {
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--steg-5) 0 var(--steg-4);
+  padding-top: var(--steg-3);
+  border-top: 1px solid var(--rand);
+}
+
+/* Zweiter Schritt einer Ansicht, zugeklappt: eine Zeile statt vier Bloecke. */
+.mehr { margin: 0 0 var(--steg-4); }
+.mehr > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--steg-2);
+  min-height: var(--ziel);
+  padding: var(--steg-2) var(--steg-4);
+  border: 1px dashed var(--rand);
+  color: var(--leise);
+}
+.mehr > summary::-webkit-details-marker { display: none; }
+.mehr > summary::before { content: '+'; }
+.mehr[open] > summary::before { content: '–'; }
+.mehr > summary:hover { color: var(--text); border-style: solid; }
+.mehr[open] > summary { margin-bottom: var(--steg-4); }
+
+/* Feinoptionen in einer Werkzeugleiste: ein unauffaelliger Aufklapper. */
+.optionen { display: inline-flex; align-items: center; gap: var(--steg-2); }
+.optionen > summary { cursor: pointer; color: var(--leise); list-style: none; min-height: var(--ziel); display: inline-flex; align-items: center; }
+.optionen > summary::-webkit-details-marker { display: none; }
+.optionen > summary::after { content: '+'; margin-left: var(--steg-1); }
+.optionen[open] > summary::after { content: '–'; }
+.optionen[open] { flex-wrap: wrap; }
+
+.zeile + .case-neu { margin-top: var(--steg-4); padding-top: var(--steg-3); border-top: 1px solid var(--rand); }
+
+.lagerort-zelle input.hat-ort::placeholder { color: var(--text); opacity: 1; }
+
+.kicker-klein { margin: var(--steg-3) 0 var(--steg-1); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise); }
+.optionen.masse-liste { display: block; }
+.masse-zeile { align-items: flex-end; flex-wrap: nowrap; padding: var(--steg-2) 0; border-bottom: 1px solid var(--rand); }
+.masse-zeile > strong { flex: 1 1 auto; align-self: center; }
+.masse-zeile > label.schmal { flex: 0 0 6.5rem; }
+@media (max-width: 639px) { .masse-zeile { flex-wrap: wrap; } }
+
+/* ── Start ──────────────────────────────────────────────────────────────
+ * Ein Schritt, ein Knopf. Gross genug, dass nichts anderes um Aufmerksamkeit
+ * konkurriert. */
+.start { max-width: 40rem; margin: var(--steg-6) auto; }
+.start-zweck { font-size: 1.1rem; color: var(--leise); margin: 0 0 var(--steg-5); }
+.naechster-schritt h2 { font-size: 2rem; font-weight: 900; margin: var(--steg-3) 0 var(--steg-2); }
+.naechster-schritt p { font-size: 1.1rem; margin: 0 0 var(--steg-5); }
+.naechster-schritt .kicker { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise); margin: 0; }
+.fortschritt { display: flex; gap: var(--steg-1); margin-top: var(--steg-2); }
+.fortschritt span { flex: 1; height: 4px; background: var(--rand); }
+.fortschritt span.fertig { background: var(--leise); }
+.fortschritt span.jetzt { background: var(--text); }
+.knopf-primaer.gross { min-height: 48px; padding: 0 var(--steg-5); font-size: 1.05rem; }
+.kacheln { list-style: none; margin: 0 0 var(--steg-5); padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--steg-3); }
+.kachel-knopf { width: 100%; min-height: 96px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--steg-1); text-align: left; }
+.kachel-knopf strong { font-size: 2rem; font-weight: 900; line-height: 1; }
+.kachel-knopf span { color: var(--leise); }
+
 .reiter.aktiv {
   /* Der gewaehlte Reiter ist die erhobene Flaeche, nicht dieselbe wie die
      Bloecke darunter — sonst haette „hier bin ich" keine eigene Stufe und
@@ -1384,9 +1474,14 @@ p.warnung { color: var(--warn); }
 
 /* „Aus allem heraus" — ohne diese Ablage gaebe es keinen Weg zurueck. */
 .baum-wurzelablage {
-  margin: var(--steg-3) 0;
-  padding: var(--steg-3);
+  position: fixed;
+  left: var(--steg-4);
+  right: var(--steg-4);
+  bottom: calc(var(--steg-6) + var(--steg-2));
+  z-index: 20;
+  padding: var(--steg-4);
   border: 1px dashed var(--rand);
+  background: var(--flaeche);
   color: var(--leise);
   text-align: center;
 }

@@ -257,11 +257,17 @@ export const hatUebernehmbares = (v: KatalogCase): boolean =>
  * Zusatz sähe aus wie eine mit Massen, und der Unterschied ist der ganze
  * Punkt dieses Katalogs.
  */
+/** Das Abrufdatum steht im Datensatz deutsch (Test-Format); gezeigt wird es übersetzt. */
+const quelleText = (q: string | undefined, t: Uebersetzen): string =>
+  (q ?? '').replace(/\(abgerufen (\d{4}-\d{2}-\d{2})\)/, (_, d: string) =>
+    format(t('katalog.retrieved', '(retrieved {date})'), { date: d }),
+  )
+
 export function massAuskunft(v: KatalogCase, t: Uebersetzen = quelle): string {
   if (!hatMasse(v) && v.hoeheHE && v.herkunft === 'hersteller') {
     return format(
       t('katalog.rackOnlySheet', 'outer dimensions not published — rack units and mounting depth only · {quelle}'),
-      { quelle: v.quelle ?? '' },
+      { quelle: quelleText(v.quelle, t) },
     )
   }
   if (!hatMasse(v)) {
@@ -269,12 +275,12 @@ export function massAuskunft(v: KatalogCase, t: Uebersetzen = quelle): string {
   }
   if (v.herkunft === 'gemessen') {
     return v.quelle
-      ? format(t('katalog.measuredBy', 'measured · {quelle}'), { quelle: v.quelle })
+      ? format(t('katalog.measuredBy', 'measured · {quelle}'), { quelle: quelleText(v.quelle, t) })
       : t('katalog.measured', 'measured in this house')
   }
   if (v.herkunft === 'hersteller') {
     return v.quelle
-      ? format(t('katalog.fromSheet', 'from the data sheet · {quelle}'), { quelle: v.quelle })
+      ? format(t('katalog.fromSheet', 'from the data sheet · {quelle}'), { quelle: quelleText(v.quelle, t) })
       : t('katalog.fromSheetPlain', 'from the data sheet')
   }
   return t('katalog.unknownSource', 'dimensions recorded, source not stated')

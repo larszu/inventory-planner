@@ -49,7 +49,7 @@ export function Ausgabescheine() {
       <p className="leer">
         {t(
           'checkouts.empty',
-          'No checkout note yet. A note comes into being when a case leaves the store — and it records what was really inside, not what should have been.',
+          'No checkout notes yet.',
         )}
       </p>
     )

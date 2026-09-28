@@ -41,7 +41,7 @@ interface Props {
 
 export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpeichern, onAussen }: Props) {
   const { t, format } = useT()
-  const [gewaehlt, setGewaehlt] = useState('')
+  const [gewaehlt, setGewaehlt] = useState(ausbau?.vorlageId ?? '')
   const [hersteller, setHersteller] = useState('')
   const [modell, setModell] = useState('')
   const [meldung, setMeldung] = useState<string | null>(null)
@@ -49,7 +49,9 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
   const liste = alleVorlagen(eigene)
   const vorlage = liste.find((v) => v.id === gewaehlt)
 
-  const uebernehmen = () => {
+  // Übernommen wird beim Auswählen: ein zweiter Knopf „Apply" hinter der
+  // Auswahl war ein Schritt, den niemand erwartet.
+  const uebernehmen = (vorlage: KatalogCase | undefined) => {
     if (!vorlage) return
     if (!hatUebernehmbares(vorlage)) {
       // Ehrlich statt hilfreich-aussehend: eine Vorlage ohne Masse zu
@@ -57,7 +59,7 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
       setMeldung(
         t(
           'vorlage.noSizeToApply',
-          'This template carries no dimensions yet. Measure the case, then save it back as a template — from then on it carries them.',
+          'This template has no dimensions yet.',
         ),
       )
       return
@@ -110,14 +112,15 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
     <>
       <div className="zeile">
         <label>
-          {t('vorlage.pick', 'Shell from a template')}
+          {t('vorlage.pick', 'Case model')}
           <select
             value={gewaehlt}
             onChange={(e) => {
               setGewaehlt(e.target.value)
               setMeldung(null)
+              uebernehmen(liste.find((v) => v.id === e.target.value))
             }}
-            aria-label={t('vorlage.pick', 'Shell from a template')}
+            aria-label={t('vorlage.pick', 'Case model')}
           >
             <option value="">—</option>
             {liste.map((v) => (
@@ -129,43 +132,43 @@ export function VorlagenWahl({ eigene, node, ausbau, onUebernehmen, onVorlageSpe
             ))}
           </select>
         </label>
-        <button type="button" onClick={uebernehmen} disabled={!vorlage}>
-          {t('vorlage.apply', 'Apply')}
-        </button>
       </div>
       {vorlage && massZeile(vorlage, t).length > 0 && <p>{massZeile(vorlage, t).join(' · ')}</p>}
       {vorlage && <p className="hinweis">{massAuskunft(vorlage, t)}</p>}
 
-      <p className="hinweis">
-        {t(
-          'vorlage.shippedHint',
-          'The shipped templates carry data-sheet figures with their source. A measured case beats the data sheet: measure once and save it back, and your numbers replace the shipped ones for this model.',
-        )}
-      </p>
+      <details className="optionen">
+        <summary>{t('vorlage.saveOwn', 'Measured it yourself? Save as your own template')}</summary>
+        <p className="hinweis">
+          {t(
+            'vorlage.shippedHint',
+            'Your measured case replaces the data-sheet values for this model.',
+          )}
+        </p>
 
-      <div className="zeile">
-        <label>
-          {t('vorlage.maker', 'Manufacturer')}
-          <input
-            value={hersteller}
-            onChange={(e) => setHersteller(e.target.value)}
-            placeholder="Peli"
-            aria-label={t('vorlage.maker', 'Manufacturer')}
-          />
-        </label>
-        <label>
-          {t('vorlage.model', 'Model')}
-          <input
-            value={modell}
-            onChange={(e) => setModell(e.target.value)}
-            placeholder="1510"
-            aria-label={t('vorlage.model', 'Model')}
-          />
-        </label>
-        <button type="button" onClick={alsVorlage}>
-          {t('vorlage.save', 'Save this case as a template')}
-        </button>
-      </div>
+        <div className="zeile">
+          <label>
+            {t('vorlage.maker', 'Manufacturer')}
+            <input
+              value={hersteller}
+              onChange={(e) => setHersteller(e.target.value)}
+              placeholder="Peli"
+              aria-label={t('vorlage.maker', 'Manufacturer')}
+            />
+          </label>
+          <label>
+            {t('vorlage.model', 'Model')}
+            <input
+              value={modell}
+              onChange={(e) => setModell(e.target.value)}
+              placeholder="1510"
+              aria-label={t('vorlage.model', 'Model')}
+            />
+          </label>
+          <button type="button" onClick={alsVorlage}>
+            {t('vorlage.save', 'Save this case as a template')}
+          </button>
+        </div>
+      </details>
       {meldung && <p className="hinweis">{meldung}</p>}
     </>
   )

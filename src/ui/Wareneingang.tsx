@@ -170,7 +170,7 @@ export function Wareneingang() {
         <p className="hinweis">
           {t(
             'receiving.receipt.hint',
-            'Type or paste the delivery note lines here — one per line. Readable are "4 x Shure ULXD2", "Shure ULXD2; 4; 249.00" (semicolon or tab, as from a portal) and the bare name. With the bare name the quantity is missing, and it is not invented as 1.',
+            'One line per item, e.g. "4 x Shure ULXD2".',
           )}
         </p>
         <textarea
@@ -307,7 +307,7 @@ export function Wareneingang() {
           <p className="hinweis">
             {t(
               'receiving.ownership.hint',
-              'The ownership applies to the items that are newly CREATED. What the house hires in belongs on the sub-hire list — a default would be wrong for half of all deliveries, and for the more expensive half.',
+              'Applies only to newly created items.',
             )}
           </p>
           {gebucht && (

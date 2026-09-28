@@ -60,6 +60,9 @@ export function Caseausbau() {
   const items = useInventoryStore((s) => s.items)
   const nodes = useInventoryStore((s) => s.nodes)
   const updateNode = useInventoryStore((s) => s.updateNode)
+  const addNode = useInventoryStore((s) => s.addNode)
+  const [neuName, setNeuName] = useState('')
+  const [neuArt, setNeuArt] = useState<'case' | 'transportCase'>('case')
   const units = useInventoryStore((s) => s.units)
   const ausbauAlle = useCaseAusbauStore((s) => s.ausbau)
   const setzeAusbau = useCaseAusbauStore((s) => s.setzeAusbau)
@@ -210,26 +213,22 @@ export function Caseausbau() {
 
   return (
     <section className="bericht">
-      {/* ── Welches Case ─────────────────────────────────────────────── */}
+      {/* ── Welches Case — oder ein neues ─────────────────────────────
+          Anlegen steht HIER und nicht nur im Lagerbaum: wer in „Cases"
+          ankommt, will ein Case, und vorher stand hier nur der Verweis in
+          eine andere Ansicht. Ein neues Case liegt zunächst nirgends und
+          lässt sich später in den Lagerorten einräumen. */}
       <div className="block">
         <h3>{t('case.pick', 'Case')}</h3>
-        {cases.length === 0 ? (
-          <p className="hinweis">
-            {t(
-              'case.none',
-              'No case in the storage tree yet. Create one under Storage → Add a location or case, with the kind Case or Transport case.',
-            )}
-          </p>
-        ) : (
+        {cases.length > 0 && (
           <div className="zeile">
             <label>
-              {t('case.pick', 'Case')}
+              {t('case.pick.current', 'Case')}
               <select
                 value={gewaehlt}
                 onChange={(e) => setGewaehlt(e.target.value)}
                 aria-label={t('case.pick.aria', 'Which case')}
               >
-                <option value="">—</option>
                 {cases.map((c) => (
                   <option key={c.id} value={c.id}>
                     {nodePathLabel(nodes, c.id)}
@@ -239,6 +238,34 @@ export function Caseausbau() {
             </label>
           </div>
         )}
+        <form
+          className="zeile case-neu"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!neuName.trim()) return
+            setGewaehlt(addNode({ name: neuName.trim(), kind: neuArt }))
+            setNeuName('')
+          }}
+        >
+          <label>
+            {t('case.new.name', 'New case')}
+            <input
+              value={neuName}
+              onChange={(e) => setNeuName(e.target.value)}
+              placeholder={t('case.new.example', 'e.g. Camera case 1')}
+            />
+          </label>
+          <label className="schmal">
+            {t('case.new.kind', 'Kind')}
+            <select value={neuArt} onChange={(e) => setNeuArt(e.target.value as 'case' | 'transportCase')}>
+              <option value="case">{t('tree.kind.case', 'Case')}</option>
+              <option value="transportCase">{t('tree.kind.transportCase', 'Transport case')}</option>
+            </select>
+          </label>
+          <button type="submit" className={cases.length === 0 ? 'knopf-primaer' : undefined} disabled={!neuName.trim()}>
+            {t('case.new.create', 'Create case')}
+          </button>
+        </form>
       </div>
 
       {node && (
@@ -247,6 +274,7 @@ export function Caseausbau() {
           <div className="block">
             <h3>{t('case.template', 'Template')}</h3>
             <VorlagenWahl
+              key={node.id}
               eigene={eigeneVorlagen}
               node={node}
               ausbau={ausbau}
@@ -262,6 +290,11 @@ export function Caseausbau() {
             <AussenFelder dimensions={node.dimensions} onSetze={(d) => updateNode(node.id, { dimensions: d })} />
           </div>
 
+          {/* Innenausbau, Layout, Inlay und Inhaltsliste sind der zweite
+              Schritt. Wer nur einen LKW packen will, braucht bis hier: Case,
+              Vorlage, Aussenmass. Deshalb zugeklappt, bis es einen Ausbau gibt. */}
+          <details className="mehr" open={!!ausbau}>
+            <summary>{t('case.more', 'Inside, foam layout and contents list')}</summary>
           {/* ── Der Ausbau ─────────────────────────────────────────────── */}
           <div className="block">
             <h3>{t('case.buildout', 'Inside')}</h3>
@@ -495,6 +528,7 @@ export function Caseausbau() {
               </>
             )}
           </div>
+          </details>
         </>
       )}
     </section>

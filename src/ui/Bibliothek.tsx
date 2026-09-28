@@ -184,7 +184,7 @@ function EigeneGeraete() {
       <p className="leise">
         {t(
           'library.own.hint',
-          'Every stock item with manufacturer and model goes up as a device type: model, manufacturer, category, dimensions, weight, material kind, country of origin, plus datasheet link, rack units and power from this table. Quantities, locations, prices and serial numbers stay here.',
+          'Items with manufacturer and model are shared as device types. Quantities, places and prices stay here.',
         )}
       </p>
       <div className="leiste">

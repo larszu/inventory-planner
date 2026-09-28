@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   gesamtGewicht,
   gruppen,
+  loseArtikel,
+  stueckeAusArtikeln,
   mitAktuellenMassen,
   stueckeAusBedarf,
   stueckeAusContainern,
@@ -238,5 +240,23 @@ describe('Masse, die nach dem Hinzufügen kommen', () => {
     const mit = [node('c1', 'Case', { dimensions: { widthMm: 1, heightMm: 1, depthMm: 1, weightKg: 2 } })]
     const ladung = ladungMit(stueckeAusContainern(mit, ['c1']))
     expect(mitAktuellenMassen(ladung, [])).toBe(ladung)
+  })
+})
+
+describe('Loses Equipment ohne Case', () => {
+  const artikel = (id: string, model: string, over: Partial<InventoryItem> = {}): InventoryItem =>
+    ({ id, model, quantity: 2, createdAt: '2026-09-17T00:00:00.000Z', updatedAt: '2026-09-17T00:00:00.000Z', ...over }) as InventoryItem
+
+  it('bietet nur an, was nicht in einem Container liegt', () => {
+    const nodes = [node('c1', 'Case'), node('r1', 'Regal', { kind: 'shelf' })]
+    const items = [artikel('a', 'Truss', { locationId: 'r1' }), artikel('b', 'FX6', { locationId: 'c1' }), artikel('c', 'Stativ')]
+    expect(loseArtikel(items, nodes).map((i) => i.id)).toEqual(['a', 'c'])
+  })
+
+  it('wird ein Stück mit Menge und Massen des Artikels', () => {
+    const items = [artikel('a', 'Truss', { dimensions: { widthMm: 290, heightMm: 290, depthMm: 2000, weightKg: 9 } })]
+    const [s] = stueckeAusArtikeln(items, ['a'])
+    expect(s).toMatchObject({ label: 'Truss', herkunft: 'artikel', itemId: 'a', quantity: 2 })
+    expect(unplanbar(ladungMit([s!]))).toEqual([])
   })
 })

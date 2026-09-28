@@ -97,22 +97,48 @@ Web-Manifest in `public/`. Die Kopfzeile trägt das Signet „lz" ohne Tally-Pun
 das Hauptlogo; beide Zeichen liegen als Originalkonturen aus dem Brand Kit 2.0
 unter `src/assets/brand/` und folgen dem Thema (Off-White dunkel, Navy hell).
 
-**Die Web-Seite ist noch nicht live.** Eine GitHub-Pages-Site kann nur ein
-Mensch in den Repo-Einstellungen anlegen (*Settings → Pages → Source:
-**GitHub Actions***); der `GITHUB_TOKEN` darf es nicht. Solange sie fehlt, baut
-`pages.yml` trotzdem und überspringt nur das Veröffentlichen — mit einer
-Warnung am Lauf statt einer roten Spalte auf `main`. Sobald die Freigabe da
-ist, veröffentlicht der nächste Push von selbst; an der Datei ist nichts zu
-ändern.
+**Die Web-Seite** steht unter https://larszu.github.io/lz-inventory-planner/;
+`pages.yml` veröffentlicht sie bei jedem Push auf `main`.
 
 **Keine gekaufte Signatur.** Die macOS-Pakete tragen eine Ad-hoc-Signatur, die
 Windows-Installer gar keine. Beim ersten Start meldet sich der jeweilige
 Wächter des Betriebssystems; das ist erwartet und kein Zeichen eines defekten
 Downloads.
 
+## Bedienung auf einen Blick
+
+Die App öffnet auf **Start** und zeigt dort genau **einen** nächsten Schritt
+mit einem Knopf — Equipment anlegen, Fahrzeug anlegen, Ladung planen. Mehr
+braucht eine Planung nicht: Regale, Cases und Maße verbessern sie, sind aber
+keine Bedingung. Sind die drei Schritte erledigt, zeigt Start einen Überblick
+aus fünf Zahlen. Jede Ansicht dieses Wegs endet mit „Next: …".
+
+**Nichts muss vollständig sein, um weiterzukommen.** Eine Ladung nimmt Cases
+und loses Equipment; ohne Namen heißt sie „Load 1", bei genau einem Fahrzeug
+ist es vorausgewählt. Stücke ohne Maße fahren mit und stehen unter „No place
+in the plan yet" — die Maße lassen sich dort direkt eintragen und landen am
+Case bzw. am Artikel. Ein Fahrzeug braucht nur seinen Laderaum; ohne Namen
+heißt es wie seine Klasse, und das Formular sagt, was fehlt.
+
+Oben stehen fünf **Bereiche**, darunter die Ansichten des gewählten Bereichs
+in der Reihenfolge der Arbeit:
+
+| Bereich | Ansichten |
+|---|---|
+| Start | Erste Schritte, Überblick |
+| Stock | Equipment · Storage places · Receiving · Stocktake · Device library |
+| Pack | Cases · Vehicles · Load · Stacking |
+| Out & back | Checkout notes · Sub-hire |
+| Reports | Report · Values & damage |
+
+Feinarbeit ist zugeklappt: Innenausbau und Inhaltsliste eines Cases, die
+Rasteroptionen des Ladeplans, das Umlagerungs-Journal. Leere Spalten
+(Kategorie, Lieferant) erscheinen erst, wenn eine Zeile etwas darin hat. Die
+zuletzt offene Ansicht bleibt nach dem Neuladen offen.
+
 ## Lager — wo liegt es, und was steckt worin?
 
-Die Ansicht **Storage** zeigt den Lagerbaum: Depot, Raum, Regal, Fach, Case,
+Die Ansicht **Stock › Storage places** zeigt den Lagerbaum: Depot, Raum, Regal, Fach, Case,
 Transport-Case, und darin die Artikel. **Gezogen wird mit dem Finger** — ein
 Lagerort, ein Case oder ein Artikel wandert dorthin, wo er hingehört, mit der
 Maus genauso wie auf dem Telefon im Regalgang. (HTML5-`draggable` gibt es auf
@@ -130,13 +156,17 @@ sich als CSV ausgeben. Das ist der Nachweis, der „wo war es zuletzt"
 beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.
 
 **Anlegen ist eine Klappe über dem Baum** („Add a location or case"), wie
-„Add to stock" im Bestand und „Add a vehicle" bei den Fahrzeugen: offen,
-solange noch nichts da ist, danach zugeklappt — wer den Baum öffnet, will
-meist nachsehen und nicht anlegen.
+„Add equipment" im Bestand und „Add a vehicle" bei den Fahrzeugen: offen,
+solange noch nichts da ist, und nach dem ersten Eintrag bleibt sie offen.
+Wer die Ansicht mit vorhandenen Einträgen öffnet, findet sie zugeklappt.
 
 ## Cases — wie es darin liegt, und was drin sein muss
 
-Die Ansicht **Cases** beantwortet zwei Fragen an derselben Kiste.
+Die Ansicht **Pack › Cases** beantwortet zwei Fragen an derselben Kiste.
+Ein Case lässt sich dort direkt anlegen (*New case*, Art Case oder
+Transport-Case); es liegt dann zunächst nirgends und wird in den Lagerorten
+eingeräumt. Die Wahl eines Modells unter *Case model* übernimmt Maße und
+Leergewicht sofort.
 
 ### Der Layout-Generator
 
@@ -245,8 +275,8 @@ Deckel- plus Unterteiltiefe die Innenhöhe (`caseKatalog.test.ts`).
 sichert, ersetzt die mitgelieferte Fassung dieses Modells.
 
 **Aussenmass und Leergewicht** stehen im Block *Outside* und am Case selbst,
-nicht im Ausbau — die Ladeplanung liest sie dort. *Apply* übernimmt sie aus
-der Vorlage, soweit sie welche trägt. Ohne alle drei Masse fährt ein Case in
+nicht im Ausbau — die Ladeplanung liest sie dort. Die Wahl eines *Case model*
+übernimmt sie aus der Vorlage, soweit sie welche trägt. Ohne alle drei Masse fährt ein Case in
 der Ladung mit, lässt sich aber nicht im Fahrzeug platzieren. Eine Ladung
 liest immer den aktuellen Stand: ein Case, das erst nach dem Hinzufügen
 vermessen wird, rückt sofort in den Ladeplan.
@@ -461,7 +491,7 @@ selben Store liegen.
 
 ## Ladeplanung
 
-Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Load** rechnet einen
+Was fährt mit — und trägt das Fahrzeug es? Die Ansicht **Pack › Load** rechnet einen
 Ladeplan und zeigt ihn, statt Koordinaten aufzulisten.
 
 **Der Packer** (`src/domain/lib/loadPacker/`) rechnet **frei in 3D**, nicht im

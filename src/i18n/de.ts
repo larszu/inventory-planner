@@ -16,13 +16,12 @@ export const de: Record<string, string> = {
   // ── Inventur (Sicht + domain/lib/inventoryAudit.ts) ──
   'audit.cam.back': 'Auf Rückkamera',
   'audit.cam.front': 'Auf Frontkamera',
-  'audit.cam.hint':
-    'Erkannte Codes landen in derselben Liste wie getippte. Wer zweimal dasselbe Etikett vor die Kamera hält, bekommt zwei Zeilen — dazwischen liegt eine Sperre von anderthalb Sekunden, damit ein Aufkleber im Bild nicht dreissig Zeilen pro Sekunde erzeugt.',
+  'audit.cam.hint': 'Etikett vor die Kamera halten — jeder Scan ergibt eine Zeile.',
   'audit.cam.off': 'Kamera aus',
   'audit.cam.on': 'Mit Kamera scannen',
-  'audit.code': 'Kennung',
+  'audit.code': 'Regal-Code scannen oder tippen',
   'audit.code.aria': 'Kennung des Lagerplatzes',
-  'audit.code.placeholder': 'Kennung des Regals / Raums',
+  'audit.code.placeholder': 'z. B. A1',
   'audit.col.checkedAt': 'Geprüft an',
   'audit.col.code': 'Code',
   'audit.col.expected': 'Erwartet in',
@@ -39,12 +38,9 @@ export const de: Record<string, string> = {
   'audit.missing.none': 'Hier wurde nichts erwartet — es kann also auch nichts fehlen.',
   'audit.noCam': 'Kein Kamera-Scan auf diesem Gerät.',
   'audit.noCode': 'ohne Code',
-  'audit.noPrefix':
-    'Kein Prefix hinterlegt — dann prüft an dieser Stelle nichts. Trage die Hausregel ein, wenn es eine gibt.',
   'audit.noSuchPlace': 'Kein Lagerplatz mit der Kennung „{code}".',
   'audit.notFound': 'Nicht gefunden',
-  'audit.nothingExpected':
-    'Der Datensatz verortet hier nichts. Das ist etwas anderes als „hier ist nichts" — es kann auch heißen, dass für die Objekte hier nie ein Lagerort hinterlegt wurde.',
+  'audit.nothingExpected': 'Für diesen Platz ist nichts erfasst.',
   'audit.nothingRecorded': 'Noch nichts erfasst.',
   'audit.outcome.here': 'Am erwarteten Ort',
   'audit.outcome.isLocation': 'Das ist ein Lagerort, kein Objekt',
@@ -52,22 +48,18 @@ export const de: Record<string, string> = {
   'audit.outcome.unknown': 'Nicht im Bestand',
   'audit.outcome.wrong': 'Am falschen Ort',
   'audit.pick.aria': 'Lagerplatz aus der Liste wählen',
-  'audit.pickWithoutScan': 'Ohne Scan wählen',
-  'audit.place': 'Lagerplatz',
-  'audit.placeFirst':
-    'Erst der Ort, dann die Objekte. Ohne ihn kann keine Zeile sagen, ob etwas am richtigen Platz liegt — das ist die ganze Frage einer Inventur.',
-  'audit.prefix': 'Erwarteter Prefix',
+  'audit.pickWithoutScan': 'oder auswählen',
+  'audit.prefix': 'Regal-Codes beginnen mit',
   'audit.prefix.aria': 'Erwarteter Prefix für Lagerplätze',
   'audit.prefix.placeholder': 'z. B. L#',
-  'audit.prefixMismatch':
-    '„{code}" fängt nicht mit „{prefix}" an. Das ist die Kennung eines Lagerplatzes im Haus — steht sie am Case statt am Regal, wird gleich am falschen Ort inventiert.',
+  'audit.prefixMismatch': '„{code}“ beginnt nicht mit „{prefix}“ — ist das wirklich ein Regal-Code?',
   'audit.record': 'Erfassen',
   'audit.recorded': 'Erfasst ({n})',
   'audit.scan.aria': 'Code des Objekts',
   'audit.scan.placeholder': 'Code scannen oder eintippen, Enter',
   'audit.sheet': 'Blatt laden (CSV)',
-  'audit.step1': 'Schritt 1: Lagerplatz',
-  'audit.step2': 'Schritt 2: Objekte an {place}',
+  'audit.step1': '1. Welches Regal?',
+  'audit.step2': '2. Was liegt auf {place}?',
   'audit.torch.off': 'Licht aus',
   'audit.torch.on': 'Licht an',
   'audit.via.pick': 'aus der Liste',
@@ -76,8 +68,7 @@ export const de: Record<string, string> = {
 
   // ── Werte & Schäden: Prüffristen ──
   'checks.ageMonths': '{n} Mon. alt',
-  'checks.ageNote':
-    'Das Alter neben der Einheit kommt aus ihrem Kaufdatum und ist eine Angabe, kein Urteil: ab wann ein Akku zu alt ist, entscheidet das Haus — als Frist der Art „Akku".',
+  'checks.ageNote': 'Das Alter zählt ab Kaufdatum.',
   'checks.allClear': 'Nichts überfällig und nichts in den nächsten {n} Tagen fällig.',
   'checks.col.days': 'Tage',
   'checks.col.due': 'fällig',
@@ -93,8 +84,7 @@ export const de: Record<string, string> = {
     'Für eine Einheit ist keine Frist hinterlegt — über sie sagt diese Ampel nichts, weder „geprüft" noch „fällig".',
   'checks.daysOver': '{n} über',
   'checks.dueIn': 'fällig in {n} Tagen',
-  'checks.empty':
-    'Keine serialisierten Einheiten. Eine Prüffrist hängt am einzelnen Gerät, nicht am Modell — „die ULXD2 sind im März geprüft" ist eine Aussage über zwölf Geräte, von denen zwei in der Werkstatt standen.',
+  'checks.empty': 'Noch keine Einheiten mit Seriennummer.',
   'checks.interval': 'Intervall (Monate)',
   'checks.interval.aria': 'Intervall in Monaten',
   'checks.kinds.add': 'Art anlegen',
@@ -102,8 +92,7 @@ export const de: Record<string, string> = {
   'checks.kinds.basis.aria': 'Grundlage der Frist',
   'checks.kinds.basis.example': 'z. B. DGUV Regel 100-500',
   'checks.kinds.every': 'alle {n} Mon.',
-  'checks.kinds.hint':
-    'Eingebaut sind {n} Arten. Alles, was dieses Haus zusätzlich prüft oder ablaufen lässt, steht hier — und reist in der Lager-Datei mit, damit ein Termin drüben nicht ohne seinen Grund ankommt.',
+  'checks.kinds.hint': '{n} Arten sind eingebaut. Eigene hier ergänzen.',
   'checks.kinds.interval.aria': 'Vorschlag für das Intervall',
   'checks.kinds.name': 'Name',
   'checks.kinds.name.aria': 'Name der neuen Fristart',
@@ -131,8 +120,7 @@ export const de: Record<string, string> = {
   'committed.col.inStock': 'im Bestand',
   'committed.col.item': 'Artikel',
   'committed.col.where': 'wo',
-  'committed.hint':
-    'Diese Stücke zählt der Bestand mit, im Regal liegen sie nicht. Wer das nicht sieht, sucht das fünfte Stück dort, wo es nicht mehr ist.',
+  'committed.hint': 'Im Bestand gezählt, aber nicht im Regal.',
   'committed.none': 'Nichts gebunden — alle Ausgaben sind zurück.',
   'committed.note': '{n} auf offener Ausgabe ({where})',
   'committed.title': 'Auf offenen Ausgaben ({n})',
@@ -160,8 +148,7 @@ export const de: Record<string, string> = {
   'damage.csv.returnedOn': 'Zurück am',
   'damage.csv.show': 'Show',
   'damage.csvButton': 'Schadensregister (CSV)',
-  'damage.empty':
-    'Bei keiner Rückgabe wurde ein Schaden aufgenommen. Das ist etwas anderes als „nichts ist kaputt": es heißt, dass nichts vermerkt wurde.',
+  'damage.empty': 'Kein Schaden vermerkt.',
   'damage.title': 'Schäden ({n})',
   'damage.unnamed': 'nicht benannt',
 
@@ -181,8 +168,7 @@ export const de: Record<string, string> = {
   'checkouts.col.project': 'Projekt',
   'checkouts.col.to': 'An',
   'checkouts.count': '{open} offen, davon {late} überfällig · {all} insgesamt',
-  'checkouts.empty':
-    'Noch kein Ausgabeschein. Ein Schein entsteht, wenn ein Container das Lager verlässt — und er hält fest, was wirklich drin war, nicht was drin sein sollte.',
+  'checkouts.empty': 'Noch keine Ausgabescheine.',
   'checkouts.noDue': 'kein Termin vereinbart',
 
   // ── Kopfzeile und Datei-Menü ──
@@ -229,7 +215,7 @@ export const de: Record<string, string> = {
   'stock.aria.target': 'Mindestmenge von {model}',
   'stock.col.category': 'Kategorie',
   'stock.col.location': 'Lagerort',
-  'stock.col.model': 'Modell',
+  'stock.col.model': 'Name',
   'stock.col.ownership': 'Eigentum',
   'stock.col.qty': 'Menge',
   'stock.col.supplier': 'Lieferant',
@@ -238,22 +224,19 @@ export const de: Record<string, string> = {
   'stock.create': 'Anlegen',
   // suite#231 — der Bestand hat jetzt einen eigenen Anlege-Block und einen
   // eigenen Zustand fuer „Suche ohne Treffer".
-  'stock.create.head': 'In den Bestand aufnehmen',
+  'stock.create.head': 'Equipment anlegen',
   'stock.noHit': 'Nichts passt zu „{q}". Im Bestand stehen {all} Modelle.',
   'stock.clearSearch': 'Suche zuruecksetzen',
-  'stock.empty':
-    'Noch nichts im Bestand. Anlegen — oder eine vorhandene Lagerdatei einlesen; das Format ist zwischen den Werkzeugen dasselbe.',
+  'stock.empty': 'Noch nichts da. Oben einen Namen eintippen und Anlegen drücken. Schon eine Liste? Datei → Öffnen.',
   'stock.merged': '{n} zu {model} hinzugefügt — jetzt {total}.',
   'stock.duplicate': '{model} lag schon an anderer Stelle im Bestand — als eigener Eintrag angelegt.',
-  'stock.newModel': 'Neues Modell',
-  'stock.newModel.aria': 'Modellbezeichnung',
+  'stock.newModel': 'z. B. Sony FX6',
+  'stock.newModel.aria': 'Name',
   'stock.ownership.unset': 'nicht angegeben',
   'stock.remove': 'Entfernen',
   'stock.search': 'Suchen — Modell, Hersteller, Lieferant, Ort',
   'stock.search.aria': 'Bestand durchsuchen',
   'stock.target.title': 'Ab wann nachbestellt oder sub-hired wird. Leer heisst: nicht festgelegt.',
-  'stock.targetExplain':
-    'Ziel ist die Mindestmenge, ab der nachbestellt oder sub-hired wird — eine Entscheidung des Hauses, keine Vorgabe aus einer Show. Leer heisst nicht null, sondern nicht festgelegt; solche Artikel führt der Bericht unter „unbewertet" statt unter „reicht". Wie es aktuell steht, sagt dort der Block „Unter Ziel".',
 
   // ── Scannen und Beleg-Erkennung (lib/codeLeser.ts, lib/belegOcr.ts) ──
   'ocr.blocked.cancelled': 'Die Texterkennung wurde abgebrochen. Der Beleg ist unverändert.',
@@ -292,16 +275,14 @@ export const de: Record<string, string> = {
   'receiving.optional': 'optional',
   'receiving.ownership': 'Eigentum',
   'receiving.ownership.aria': 'Eigentum der neuen Artikel',
-  'receiving.ownership.hint':
-    'Das Eigentum gilt für die Artikel, die NEU angelegt werden. Was das Haus zumietet, gehört auf die Sub-Hire-Liste — eine Vorgabe wäre für die Hälfte der Lieferungen falsch, und zwar die teurere Hälfte.',
+  'receiving.ownership.hint': 'Gilt nur für neu angelegte Artikel.',
   'receiving.preview': 'Was daraus würde',
   'receiving.reason.empty': 'leere Zeile',
   'receiving.reason.noName': 'keine Bezeichnung in der ersten Spalte',
   'receiving.reason.notAQty': '„{value}" ist keine Menge',
   'receiving.reason.notSeparable': 'Menge und Bezeichnung nicht zu trennen',
   'receiving.receipt': 'Beleg',
-  'receiving.receipt.hint':
-    'Positionen aus dem Lieferschein hier hineinschreiben oder einfügen — eine je Zeile. Lesbar sind „4 x Shure ULXD2", „Shure ULXD2; 4; 249,00" (Semikolon oder Tabulator, wie aus einem Portal) und der blosse Name. Beim blossen Namen fehlt die Menge, und sie wird nicht als 1 erfunden.',
+  'receiving.receipt.hint': 'Eine Zeile pro Position, z. B. „4 x Shure ULXD2“.',
   'receiving.supplier': 'Lieferant',
   'receiving.unreadable.many':
     '{n} Zeilen sind nicht lesbar und werden nicht gebucht — sie stehen unten mit dem Grund.',
@@ -338,10 +319,8 @@ export const de: Record<string, string> = {
   'report.importMode.aria': 'Wie soll eingelesen werden',
   'report.importMode.merge': 'zusammenführen (nichts geht verloren)',
   'report.importMode.replace': 'ersetzen (der Bestand wird überschrieben)',
-  'report.noPrice':
-    '{without} von {all} Zeilen tragen keinen Mietpreis — der Tagessatz oben ist die Summe über den Rest, nicht über den Bestand.',
-  'report.noTargets':
-    'Nicht einer der {n} Artikel im Bestand hat eine Mindestmenge. Ohne so eine Zahl gibt es nichts zu vergleichen — die Spalte „Soll" in der Bestandssicht setzt sie.',
+  'report.noPrice': '{without} von {all} Zeilen haben keinen Mietpreis.',
+  'report.noTargets': 'Noch kein Artikel hat eine Zielmenge — die steht unter Equipment.',
   'report.packList': 'Packliste',
   'report.packRoot.aria': 'Wurzel-Lagerort für die Packliste',
   'report.printBlocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
@@ -359,8 +338,7 @@ export const de: Record<string, string> = {
     'Format {name} — dieselbe Datei, die die Planer der Suite schreiben und lesen.',
   'report.exchange.onImport': 'Beim Einlesen',
   'report.packList.count': '{nodes} Knoten, {pieces} Stück.',
-  'report.packList.empty':
-    'Kein Wurzel-Lagerort angelegt. Eine Packliste beschreibt einen Container mit allem, was darin liegt — ohne Baum gibt es nichts zu beschreiben.',
+  'report.packList.empty': 'Noch keine Lagerorte.',
   'report.packList.open': 'Blatt öffnen (A4)',
   'report.packList.root': 'Wurzel',
 
@@ -374,8 +352,7 @@ export const de: Record<string, string> = {
   'subhire.col.supplier': 'Lieferant',
   'subhire.count': '{foreign} fremde Positionen · {due} brauchen eine Entscheidung',
   'subhire.dueTable': 'Zurück — überfällig oder ohne Termin',
-  'subhire.empty':
-    'Kein fremdes Material im Bestand. Was hier fehlt, ist keine Zusicherung: eine Position ohne Angabe zum Eigentum gilt als eigene — sie steht deshalb nicht auf dieser Liste, auch wenn sie gemietet ist.',
+  'subhire.empty': 'Kein zugemietetes Material. Artikel unter Equipment als „Sub-Hire“ markieren.',
   'subhire.noDate': 'kein Rückgabedatum',
   'subhire.since': 'seit',
   'subhire.unknown': 'unbekannt',
@@ -396,8 +373,7 @@ export const de: Record<string, string> = {
   'values.csv.sum': 'Summe ({n} Einheiten)',
   'values.csv.withoutValue': '{n} Einheiten ohne angegebenen Versicherungswert',
   'values.csvButton': 'Versicherungsliste (CSV)',
-  'values.empty':
-    'Keine serialisierten Einheiten. Ein Versicherungswert hängt an der einzelnen Einheit, nicht am Modell — ohne Einheiten gibt es nichts zu bewerten.',
+  'values.empty': 'Noch keine Einheiten mit Seriennummer.',
   'values.noneValued': 'Keine einzige Einheit trägt einen Wert — es gibt nichts zu summieren.',
   'values.ofUnits': '{n} von {all} Einheiten',
   'values.title': 'Werte',
@@ -409,13 +385,9 @@ export const de: Record<string, string> = {
 
   // ── Reiter und ihre Fragen ──
   'tab.audit': 'Inventur',
-  'tab.audit.q': 'Liegt hier, was hier liegen soll?',
   'tab.checkouts': 'Ausgabescheine',
-  'tab.checkouts.q': 'Was ist draußen, bei wem, und seit wann?',
   'tab.receiving': 'Wareneingang',
-  'tab.receiving.q': 'Was ist gekommen — und was macht das mit dem Bestand?',
   'tab.report': 'Bericht',
-  'tab.report.q': 'Was steckt drin — und wie kommt es hier raus?',
   // ── Statusleiste (suite#231, ADR-007 Abschnitt 6) ──────────────────────
   // Je Reiter eine Zahl. Nichts davon wertet — es sind Anzahlen.
   'status.stock': 'Modelle: {n} · Lagerplätze: {p}',
@@ -424,8 +396,7 @@ export const de: Record<string, string> = {
   'status.units': '{n} serialisierte Einheiten',
 
   'stack.head': 'Stapel-Prüfung',
-  'stack.intro':
-    'Unteren und oberen Container wählen. Die Antwort unterscheidet „passt nicht" von „nicht gemessen" — das sind verschiedene Probleme.',
+  'stack.intro': 'Unteres und oberes Case wählen.',
   'stack.noContainers': 'Noch keine Cases oder Transport-Cases im Bestand.',
   'stack.lower': 'Unterer Container',
   'stack.upper': 'Oberer Container',
@@ -466,13 +437,11 @@ export const de: Record<string, string> = {
   'stack.weightUnknown': 'Für das obere Case ist kein Gewicht bekannt.',
 
   'tab.stack': 'Stapeln',
-  'tab.stack.q': 'Kommt dieses Case auf jenes — und wie hoch wird der Turm?',
 
   'vehicle.add': 'Fahrzeug anlegen',
   'vehicle.aperture': 'Ladeöffnung:',
   'vehicle.apertureSize': '{w} x {h} mm',
   'vehicle.create.head': 'Fahrzeug anlegen',
-  'vehicle.head': 'Fahrzeuge',
   // Einbauten und Laderaum-Bearbeitung (Nutzer-Frage 2026-09-19).
   // „Radkasten", „Ersatzrad" sind Bauteile und keine Normbegriffe – sie
   // werden übersetzt; die Reifengröße selbst (235/65 R16C) nicht.
@@ -483,8 +452,7 @@ export const de: Record<string, string> = {
   'obstacle.kind.other': 'Sonstiges',
   'obstacle.none': 'Einbauten – keine eingetragen',
   'obstacle.count': 'Einbauten – {n} eingetragen',
-  'obstacle.intro':
-    'Radkästen, eine Sitzbank, das Ersatzrad: der Packer behandelt sie als belegten Raum, Draufsicht und 3D-Ansicht zeichnen sie. Der Ursprung ist die Ecke hinten links unten im Laderaum; x läuft quer, y nach oben, z nach vorn.',
+  'obstacle.intro': 'Radkästen, Sitzbank, Reserverad — der Packer hält sie frei.',
   'obstacle.name': 'Name',
   'obstacle.kind': 'Art',
   'obstacle.fromLeft': 'Von links (mm)',
@@ -510,22 +478,18 @@ export const de: Record<string, string> = {
   'affected.shape': '{label} stünde in einer Fase oder Rundung.',
   'affected.inObstacle': '{label} stünde in „{name}".',
   'tyre.head': 'Radkasten aus der Reifengröße',
-  'tyre.intro':
-    'Eine Reifengröße ist eine genormte Angabe und keine Schätzung: 235/65 R16 gibt Breite und Außendurchmesser exakt. Die Höhe über dem Ladeboden folgt daraus nicht – sie hängt am Aufbau und wird deshalb gefragt.',
+  'tyre.intro': 'Reifengröße eintragen, z. B. 235/65 R16.',
   'tyre.size': 'Reifengröße',
   'tyre.clearance': 'Zuschlag je Seite (mm)',
   'tyre.outer': 'Außendurchmesser',
-  'tyre.unreadable':
-    'Keine metrische Reifengröße mit Verhältnis. Größen wie 7.50 R16 tragen die Flankenhöhe nicht – trage die Maße unten von Hand ein.',
+  'tyre.unreadable': 'Größe nicht lesbar — Maße unten von Hand eintragen.',
   'tyre.derived': 'Der Radkasten wäre {b} mm breit und {l} mm lang.',
   'tyre.archHeight': 'Höhe über dem Boden (mm) – gemessen',
   'tyre.fromRear': 'Von hinten (mm)',
   'tyre.create': 'Beide Radkästen anlegen',
-  'tyre.needHeight':
-    'Die Höhe fehlt. Eine hergeleitete Höhe sähe auf dem Ladeplan aus wie eine gemessene – und der Packer stapelt darauf.',
+  'tyre.needHeight': 'Höhe über der Ladefläche eintragen.',
   'vehicle.edit': 'Stammdaten und Laderaum',
-  'vehicle.affected':
-    'Diese {n} Stücke wurden von Hand gesetzt und passten dann nicht mehr. Sie bleiben, wo sie sind – es wird nichts für dich verschoben:',
+  'vehicle.affected': 'Diese {n} von Hand gesetzten Stücke passen dann nicht mehr:',
   'vehicle.applySize': 'Laderaum übernehmen',
   'common.discard': 'Verwerfen',
   'vehicle.apertureHead': 'Ladeöffnung',
@@ -544,8 +508,6 @@ export const de: Record<string, string> = {
   'vehicle.sourcePlaceholder': 'Datenblatt-Link oder Zulassungsbescheinigung',
   'vehicle.notes': 'Notizen',
   'vehicle.height': 'Laderaum-Höhe (mm)',
-  'vehicle.intro':
-    'Ein Laderaum ist kein Quader: Radkästen verengen den Boden, und die Heckklappe ist kleiner als der Innenraum. Was nicht vermessen wurde, steht als nicht vermessen da.',
   'vehicle.itemNoDims': 'Für das Stück liegen keine vollständigen Außenmaße vor.',
   'vehicle.kind': 'Klasse',
   'vehicle.kind.boot': 'Kofferraum',
@@ -571,39 +533,30 @@ export const de: Record<string, string> = {
   'vehicle.width': 'Laderaum-Breite (mm)',
 
   'tab.vehicles': 'Fahrzeuge',
-  'tab.vehicles.q': 'Was passt hinein — und wer darf es fahren?',
 
   'load.add': 'Ladung anlegen',
-  'load.closePick': 'Auswahl schließen',
+  'load.closePick': 'Schließen',
   'load.groups': 'Abladegruppen:',
-  'load.head': 'Ladungen',
-  'load.intro':
-    'Die Container wählen, die mitfahren. Ein verschachteltes Case zählt einmal, zusammen mit seinem Transport-Case — nicht zweimal.',
+  'load.intro': 'Ladung anlegen und auswählen, was mitkommt. Maße lassen sich später ergänzen.',
   'load.name': 'Name der Ladung',
-  'load.allTaken': 'Jedes Case steht schon auf dieser Ladung.',
-  'load.noContainers': 'Noch keine Cases oder Transport-Cases im Bestand.',
+  'load.allTaken': 'Alles steht schon auf dieser Ladung.',
   'load.noVehicle': 'noch nicht gewählt',
   'load.noWeight': '{n} ohne Gewicht',
   'load.none': 'Noch keine Ladungen.',
-  'load.openPick': 'Container hinzufügen',
+  'load.openPick': 'Hinzufügen',
   'load.payloadKg': '{kg} kg',
   'load.payloadLeft': 'Restliche Nutzlast:',
-  'load.pickFor': 'Container für {name}',
+  'load.pickFor': 'Was kommt auf {name}?',
   'load.pieces': '{n} Stücke · {kg} kg bekannt',
   'load.remove': 'Ladung entfernen',
   'load.take': 'Zur Ladung hinzufügen',
-  'load.unplannable': '{n} Stücke lassen sich nicht einplanen — sie fahren trotzdem mit',
+  'load.unplannable': 'Noch ohne Platz im Plan: {n} — Maße ergänzen',
   'load.vehicle': 'Fahrzeug',
 
   'tab.load': 'Ladung',
-  'tab.load.q': 'Was fährt mit — und trägt das Fahrzeug es?',
 
-  'tab.stock': 'Bestand',
-  'tab.stock.q': 'Was ist da, wieviel, und wo liegt es?',
   'tab.subhire': 'Sub-Hire',
-  'tab.subhire.q': 'Was gehört uns nicht — und wann muss es zurück?',
   'tab.values': 'Werte & Schäden',
-  'tab.values.q': 'Was ist es wert, was ist kaputt, und was ist gebunden?',
 
   // ── Ladeplan: Packer, Draufsicht, 3D (#20, #22, #23) ────────────────────
   'pack.noAperture':
@@ -719,8 +672,7 @@ export const de: Record<string, string> = {
   'edge.cornerFrontRight': 'Raumecke vorn rechts',
   'edge.none': 'Form des Laderaums — scharfkantiger Quader, nichts gemessen',
   'edge.count': 'Form des Laderaums — {n} Kanten gemessen',
-  'edge.intro':
-    'Ein Laderaum ist selten eine Schachtel: Dachkanten sind gerundet, Wände laufen zusammen, ein Kofferraum verjüngt sich zur Heckklappe. Was nicht eingetragen ist, bleibt eine scharfe Kante — das lässt höchstens Platz ungenutzt und verspricht nie Platz, den es nicht gibt.',
+  'edge.intro': 'Gerundete Dachkanten oder schräge Wände — optional.',
   'edge.roundedBy': 'gerundet, {a} x {b} mm',
   'edge.chamferedBy': 'gefast, {a} x {b} mm',
   'edge.remove': 'Entfernen',
@@ -728,8 +680,7 @@ export const de: Record<string, string> = {
   'edge.art': 'Form',
   'edge.rounded': 'Gerundet',
   'edge.chamfered': 'Gefast (gerade)',
-  'edge.hintRound':
-    'Gleiche Werte ergeben einen Viertelkreis, ungleiche eine Ellipse. Gemessen wird, wie weit die Rundung in jede Richtung reicht.',
+  'edge.hintRound': 'Wie weit die Rundung in jede Richtung reicht.',
   'edge.hintChamfer':
     'Ein gerader Schnitt von einer Wand zur anderen — gemessen wird, wie weit er in jede Richtung reicht.',
   'edge.add': 'Kante eintragen',
@@ -744,8 +695,6 @@ export const de: Record<string, string> = {
   // „Umlagern" ist der Begriff des Hauses; „verschieben" wäre die Geste und
   // nicht der Vorgang. Der Unterschied steht mit Grund in
   // `types/storageMove.ts`: es ist eine Buchung und keine Nebenwirkung.
-  'tab.storage': 'Lager',
-  'tab.storage.q': 'Wo liegt es — und was steckt worin?',
 
   'move.subject.node': 'Lagerort/Container',
   'move.subject.item': 'Artikel',
@@ -770,7 +719,7 @@ export const de: Record<string, string> = {
   'tree.kind.case': 'Case',
   'tree.kind.transportCase': 'Transport-Case',
   'tree.intro':
-    'Zieh einen Lagerort, ein Case oder einen Artikel dorthin, wo er hingehört — mit der Maus oder mit dem Finger. Jeder Umzug geht ins Journal, und was nicht geht, sagt seinen Grund, bevor du loslässt.',
+    'Equipment auf ein Regal oder Case ziehen, um es einzuräumen — mit der Maus oder dem Finger.',
   'tree.create.head': 'Lagerort oder Case anlegen',
   'tree.name': 'Name',
   'tree.kind': 'Art',
@@ -778,16 +727,14 @@ export const de: Record<string, string> = {
   'tree.add': 'Anlegen',
   'tree.root': 'dem Lager selbst',
   'tree.grab': '{name} umlagern',
-  'tree.container': 'Container',
   'tree.remove': 'Entfernen',
-  'tree.qty': '{n} Stk',
+  'tree.qty': 'Menge {n}',
   'tree.moved': '{what} liegt jetzt in {where}.',
-  'tree.none': 'Noch keine Lagerorte. Ein Case braucht einen Platz, bevor etwas hineinkann.',
+  'tree.none': 'Noch keine Regale oder Cases — oben eins anlegen.',
   'tree.dropRoot': 'Hierher ziehen, um es aus allem herauszunehmen',
   'tree.unplaced': 'Nicht eingeräumt ({n})',
-  'tree.journal': 'Umlagerungen',
-  'tree.journalHint':
-    'Jeder Umzug wird festgehalten. Das ist der Nachweis, der „wo war es zuletzt" beantwortet, wenn erfasster Ort und Wirklichkeit auseinandergelaufen sind.',
+  'tree.journalCount': 'Umlagerungen ({n})',
+  'tree.journalHint': 'Jede Umlagerung steht hier.',
   'tree.journalEmpty': 'Noch nichts umgelagert.',
   'tree.csv': 'Umlagerungen als CSV',
   'tree.mode': 'Ansicht',
@@ -804,10 +751,8 @@ export const de: Record<string, string> = {
   'floor.unplacedHint':
     'Ein Lagerort ohne Grundriss-Eintrag ist nicht falsch — es hat nur niemand gemessen, wo er steht.',
   'floor.place': 'In den Grundriss',
-  'floor.empty':
-    'Es steht noch nichts im Grundriss, und die Halle ist nicht vermessen — es gibt also nichts zu zeichnen. Setz einen Lagerort in den Grundriss, oder gib dem obersten Knoten seine eigene Grundfläche.',
-  'floor.derived':
-    'Der Umriss folgt dem, was im Grundriss steht, und nicht einer vermessenen Halle. Gib dem obersten Lagerort eine Grundfläche, dann steht die echte da.',
+  'floor.empty': 'Noch nichts im Grundriss.',
+  'floor.derived': 'Umriss aus dem, was im Plan steht.',
   'floor.label': 'Grundriss des Lagers',
   'floor.clashes': 'Überschneidungen im Grundriss',
   'floor.clashHint':
@@ -832,8 +777,7 @@ export const de: Record<string, string> = {
   'code.stage.slot': 'Platz',
   'code.clash': 'Kennung {code} ist {n}-mal vergeben.',
   'code.head': 'Hausschema für Lagerplatz-Kennungen',
-  'code.intro':
-    'Dafür gibt es keine Norm. Gasse, Feld und Ebene ist die verbreitete Adressierung, aber jedes Haus schneidet sie anders — deshalb wird sie hier eingestellt und nicht angenommen.',
+  'code.intro': 'Festlegen, wie eure Regal-Codes aufgebaut sind.',
   'code.stage': 'Stufe',
   'code.chars': 'Zeichen',
   'code.letters': 'Buchstaben (A, B, … AA)',
@@ -845,8 +789,7 @@ export const de: Record<string, string> = {
   'code.example': 'Sieht so aus: {code}',
   'code.none': 'Keine Stufen — Lagerorte tragen dann keine Kennung aus diesem Schema.',
   'code.batch': 'Eine Reihe auf einmal beschriften',
-  'code.batchHint':
-    'Acht Felder und vier Ebenen sind zweiunddreissig Kennungen, und die tippt niemand ab. Angefasst wird nur, was noch keine Kennung trägt — eine Kennung, die schon auf einem Aufkleber steht, wird nicht still geändert.',
+  'code.batchHint': 'Vergibt Codes nur dort, wo noch keiner steht.',
   'code.under': 'Unterhalb von',
   'code.pick': '— Lagerort wählen —',
   'code.howMany': '{stage} — wieviele?',
@@ -875,16 +818,14 @@ export const de: Record<string, string> = {
   'area.clearHeight': 'Lichte Höhe (mm)',
   'area.blocked': '{node} steht auf {area} — das muss frei bleiben.',
   'area.blockedHead': 'Steht, wo es frei bleiben muss',
-  'area.blockedHint':
-    'Gemeldet, nicht verboten — beim Umbau steht ein Regal im Gang, weil es gerade nirgendwo anders hin kann. Es steht dort aber nicht still.',
+  'area.blockedHint': 'Angezeigt, nicht verboten.',
   'area.narrowest': 'Alles muss durch {name}: {w} x {h} mm lichte Weite.',
 
   // ── Der Lagerort als Adresse, die überall gilt ──────────────────────────
   'place.empty': 'Kein Lagerort angegeben.',
   'place.ambiguous': 'Das passt auf {n} Lagerorte: {list}. Welcher?',
   'place.unknown': 'Kein Lagerort mit diesem Namen oder dieser Kennung.',
-  'stock.nowhere': 'nicht eingeräumt',
-  'stock.setPlace': 'Kennung oder Pfad…',
+  'stock.setPlace': 'Nicht eingeräumt — Regal oder Case eintippen',
   'stock.setPlaceFor': 'Lagerort setzen',
   'floor.levelName': 'Ebene {n}',
   'floor.makeLevels': 'Die {n} Ebenen als Lagerorte anlegen',
@@ -899,8 +840,7 @@ export const de: Record<string, string> = {
   // Fachboden. Ein Wort für beides gäbe es nur, wenn es dasselbe wäre.
   'label.sheet': 'Lagerplatz-Etiketten',
   'label.head': 'Etiketten drucken',
-  'label.hint':
-    'Die Kennung steht als Text da, gross, mit ihrem Pfad daneben — ein Regalschild wird aus fünf Metern gelesen und nicht gescannt. Gedruckt wird nur, was eine Kennung trägt: ein Etikett ohne Kennung ist ein leerer Aufkleber.',
+  'label.hint': 'Druckt ein Etikett für jeden Platz mit Code.',
   'label.none': 'Nichts ausgewählt, was eine Kennung trägt — ein Etikett ohne Kennung ist ein leerer Aufkleber.',
   'label.nothing': 'Noch trägt kein Lagerplatz eine Kennung.',
   'label.count': '{n} Etiketten',
@@ -953,8 +893,7 @@ export const de: Record<string, string> = {
   'group.control': 'Regie',
   'group.cable': 'Kabel',
   'load.groupAssign': 'Abladegruppe je Stück',
-  'load.groupSuggest':
-    '{n} von {total} Stücken bekämen eine Gruppe aus ihrer Kategorie, {offen} haben keine zu holen, {behalten} behalten die von Hand gesetzte.',
+  'load.groupSuggest': '{n} von {total} Stücken bekommen eine Gruppe aus ihrer Kategorie.',
   'load.groupApply': 'Vorschlag übernehmen',
   'load.groupNone': 'keine Gruppe – wird zuletzt abgeladen',
   'load.bars': 'Sperrstangen oder Ladungssicherungsnetz zur Tür hin',
@@ -1014,14 +953,12 @@ export const de: Record<string, string> = {
   // Die Maske am Fahrzeug
   'weigh.none': 'Gewichte und Achsen — nichts eingetragen',
   'weigh.count': 'Gewichte und Achsen — {n} Achsen, davon {m} leer gewogen',
-  'weigh.intro':
-    'Gewicht ist die härtere Grenze: ein 3,5-Tonner ist oft bei unter 1.200 kg Zuladung am Ende. Nichts hier wird aus etwas anderem gerechnet — Nutzlast ist nicht zGG minus Leermasse, sobald ein Aufbau, eine Hebebühne oder eine volle Tankfüllung dazwischen liegt.',
+  'weigh.intro': 'Die Nutzlast ist oft die engere Grenze. Eintragen, was bekannt ist.',
   'weigh.gross': 'Zulässige Gesamtmasse (kg)',
   'weigh.kerb': 'Leermasse (kg)',
   'weigh.payload': 'Nutzlast (kg)',
   'weigh.floorOffset': 'Ladefläche hinter der Vorderachse (mm)',
-  'weigh.floorOffsetWhy':
-    'Gemessen von der Mitte der Vorderachse bis zur vorderen Kante der Ladefläche. Ohne sie steht der Laderaum nirgends am Fahrzeug, und ohne das gibt es keinen Hebelarm für eine Achslast.',
+  'weigh.floorOffsetWhy': 'Von der Vorderachse bis zur Vorderkante der Ladefläche — nötig für Achslasten.',
   'weigh.front': 'Vorderachse',
   'weigh.rear': 'Hinterachse',
   'weigh.axlePos': 'Abstand von der Vorderachse (mm)',
@@ -1029,8 +966,7 @@ export const de: Record<string, string> = {
   'weigh.axleEmpty': 'Leer gewogen (kg)',
   'weigh.removeAxle': 'Achse entfernen',
   'weigh.addAxle': 'Achse hinzufügen',
-  'weigh.axleWhy':
-    'Die Leerlast einer Achse kommt von der Brückenwaage und nicht aus den Papieren: die Papiere nennen, was eine Achse tragen DARF, nicht was sie leer trägt. Ohne sie sagt das Blatt, was die Ladung auf die Achse bringt, und schweigt dazu, ob die Achse überladen ist.',
+  'weigh.axleWhy': 'Leer-Achslasten von der Waage — nötig für die Überlast-Prüfung.',
 
   // ── Die Ausgabe: was am Dock an der Bordwand hängt (#25) ────────────────
   'out.totalWeight': '{kg} kg gesetzt',
@@ -1064,8 +1000,7 @@ export const de: Record<string, string> = {
   'out.csv.byPacker': 'vom Packer gesetzt',
   'out.blocked': 'Das Blatt liess sich nicht öffnen — der Browser hat das Fenster blockiert.',
   'out.head': 'Fürs Dock',
-  'out.intro':
-    'Am Dock steht niemand mit der 3D-Ansicht. Jedes Blatt trägt Fahrzeug, Datum, gesetztes Gewicht und das, was nicht eingeplant werden konnte — mit Grund.',
+  'out.intro': 'Blätter für die Rampe: Fahrzeug, Datum, Gewicht und Ladereihenfolge.',
   'out.plan': 'Ladeplan',
   'out.dock': 'Dock-Checkliste',
   'out.labels': 'Case-Etiketten',
@@ -1096,17 +1031,15 @@ export const de: Record<string, string> = {
   // ihr scheitert die Europalette, und wer nur oben misst, misst die
   // falsche Zahl.
   'fleet.derivedFrom': 'abgeleitet von {source}',
-  'fleet.fromCatalogue': 'Von einem Stammdatensatz ableiten',
-  'fleet.pick': 'auswählen',
-  'fleet.catalogueEmpty':
-    'Es gibt noch keinen Startsatz. Er müsste je Fahrzeug eine Quelle tragen — einen Link aufs Datenblatt oder die Zulassungsbescheinigung —, und geratene Innenmasse lesen sich auf einem Ladeplan wie Messungen.',
+  'fleet.fromCatalogue': 'Fahrzeugmodell wählen — der Laderaum wird eingetragen',
+  'fleet.pick': '—',
+  'fleet.catalogueEmpty': 'Noch keine Stammdaten — Laderaum von Hand eintragen.',
   'fleet.export': 'Fahrzeuge ausgeben',
   'fleet.import': 'Fahrzeuge einlesen',
   'fleet.importBad': 'Das ist keine Fahrzeug-Datei dieses Werkzeugs.',
   'fleet.imported': 'Übernommen: {n}',
   'measure.head': 'Wie man ein Fahrzeug ausmisst',
-  'measure.intro':
-    'Sechs Masse, in der Reihenfolge, in der man einmal ums Fahrzeug geht. Die Bodenbreite zwischen den Radkästen ist eine andere Zahl als die Breite darüber — und sie ist die, an der eine Europalette scheitert.',
+  'measure.intro': 'Sechs Maße, einmal ums Fahrzeug.',
   'measure.apertureW': 'Breite der Hecköffnung',
   'measure.apertureW.where': 'Zwischen den Türdichtungen an der engsten Stelle, nicht die Aussenbreite.',
   'measure.apertureH': 'Höhe der Hecköffnung',
@@ -1124,11 +1057,8 @@ export const de: Record<string, string> = {
     'Vom Boden bis zum tiefsten festen Einbau — eine Dachluke oder eine Querstrebe zählt mit.',
   // ── Cases: Layout und Inhaltsliste ──────────────────────────────────────
   'tab.cases': 'Cases',
-  'tab.cases.q': 'Wie liegt es darin — und was muss drin sein?',
   'case.pick': 'Case',
   'case.pick.aria': 'Welches Case',
-  'case.none':
-    'Noch kein Case im Lagerbaum. Anlegen unter Lager → Lagerort oder Case anlegen, Art Case oder Transport-Case.',
   'case.buildout': 'Innen',
   'case.inner.width': 'Innenbreite (mm)',
   'case.outside': 'Außen',
@@ -1136,7 +1066,7 @@ export const de: Record<string, string> = {
   'case.outer.height': 'Außenhöhe (mm)',
   'case.outer.depth': 'Außentiefe (mm)',
   'case.outer.weight': 'Leergewicht (kg)',
-  'case.outer.hint': 'Die Ladeplanung liest diese Werte. Ohne alle drei Maße fährt das Case trotzdem mit, lässt sich aber nicht im Fahrzeug platzieren.',
+  'case.outer.hint': 'Nötig, um das Case im Fahrzeug zu platzieren.',
   'case.inner.height': 'Innenhöhe (mm)',
   'case.inner.depth': 'Innentiefe (mm)',
   'case.inner.measured': 'Gemessenes Innenmass — es schlägt jede Rechnung.',
@@ -1202,23 +1132,19 @@ export const de: Record<string, string> = {
   'ausbau.art.divider': 'Verstellbare Trennwände',
   'ausbau.art.drawers': 'Schubladen',
   'ausbau.art.rack': '19-Zoll-Schienen',
-  'ausbau.innerHint':
-    'Das Innenmass folgt nicht aus dem Aussenmass — Schale, Schaum und Deckel nehmen sich ihren Teil. Miss es nach, oder gib die Wandstärke an, damit sie abgezogen werden kann. Geschätzt wird hier nichts.',
+  'ausbau.innerHint': 'Innenmaß messen oder Wandstärke eintragen.',
   'ausbau.wallThickness': 'Wandstärke der Trennwand (mm)',
   'ausbau.columns': 'Spaltenbreiten (mm)',
   'ausbau.rows': 'Reihentiefen (mm)',
-  'ausbau.dividerHint':
-    'Die Teilung ist deine Entscheidung und kein Ergebnis: die Wände bleiben, wo du sie hinsteckst, und gefragt wird, was hineinpasst. Breiten in mm, mit Komma getrennt.',
+  'ausbau.dividerHint': 'Breiten in mm, mit Komma getrennt.',
   'ausbau.evenSplit': '{n} Spalten, gleichmässig',
-  'ausbau.drawersHint':
-    'Unten zuerst — welcher Auszug tief sitzt, ist eine Entscheidung (das Schwere nach unten) und kein Rechenergebnis. Ein Auszug ohne Höhe steht in der Liste, wird aber nicht gestapelt; eine angenommene Höhe verschöbe jeden Auszug darüber.',
+  'ausbau.drawersHint': 'Unterste Schublade zuerst.',
   'ausbau.drawerName': 'Auszug',
   'ausbau.drawerHeight': 'Lichte Höhe (mm)',
   'ausbau.drawerRemove': 'Entfernen',
   'ausbau.drawerAdd': 'Auszug hinzufügen',
   'ausbau.drawerDefault': 'Auszug {n}',
-  'ausbau.rackHint':
-    'Das leere Rack gehört dem Lager: wieviele Höheneinheiten dieses Case hat, ist eine Eigenschaft des Cases. Was darin sitzt, gehört dem Signal-Plan — lade die Rack-Datei aus dem Cable Planner und wähle unten das Rack.',
+  'ausbau.rackHint': 'Rack-Datei aus dem Cable Planner laden, um den Inhalt zu sehen.',
   'ausbau.rackUnits': 'Höhe (HE)',
   'ausbau.rackDepth': 'Nutzbare Tiefe hinter der Schiene (mm)',
   'ausbau.rackRef': 'Rack im Signal-Plan',
@@ -1276,8 +1202,7 @@ export const de: Record<string, string> = {
   'katalog.lidBase': 'Deckel {deckel} mm + Unterteil {unterteil} mm',
   'katalog.empty': '{kg} kg leer',
 
-  'vorlage.pick': 'Schale aus einer Vorlage',
-  'vorlage.apply': 'Übernehmen',
+  'vorlage.pick': 'Case-Modell',
   'vorlage.own': ' eigen',
   'vorlage.maker': 'Hersteller',
   'vorlage.model': 'Modell',
@@ -1285,16 +1210,13 @@ export const de: Record<string, string> = {
   'vorlage.saved': 'Als Vorlage „{name}" gesichert.',
   'vorlage.cannotSave':
     'Noch nichts zu sichern: eine Vorlage braucht einen Modellnamen und mindestens einen vollständigen Satz Masse.',
-  'vorlage.noSizeToApply':
-    'Diese Vorlage trägt noch keine Masse. Miss das Case aus und sichere es als Vorlage zurück — ab dann trägt sie welche.',
-  'vorlage.shippedHint':
-    'Die mitgelieferten Vorlagen tragen Datenblatt-Zahlen mit Quelle. Ein gemessenes Case schlägt das Datenblatt: einmal nachmessen und zurücksichern, dann ersetzen deine Zahlen die mitgelieferten für dieses Modell.',
+  'vorlage.noSizeToApply': 'Diese Vorlage hat noch keine Maße.',
+  'vorlage.shippedHint': 'Dein gemessenes Case ersetzt die Datenblatt-Werte dieses Modells.',
   // ── Inlay: Schaumzuschnitt und 3D-Druck ─────────────────────────────────
   'case.inlay': 'Inlay als Datei',
   'inlay.nothing':
     'Noch keine Lage zum Schneiden. Ein Inlay braucht Innenmasse und mindestens ein Stück mit Massen.',
-  'inlay.hint':
-    'Das Layout legt die Stücke auf ihre wahren Masse; das Inlay gibt Spiel dazu, denn ein Fach in Gerätegrösse nimmt das Gerät nicht auf. Eine Datei je Lage — Lagen sind einzelne Platten.',
+  'inlay.hint': 'Eine Datei pro Lage, mit Spiel.',
   'inlay.layer': 'Lage',
   'inlay.layerOption': 'Lage {nr} · {mm} mm',
   'inlay.clearance': 'Spiel je Seite (mm, Vorgabe {mm})',
@@ -1306,8 +1228,7 @@ export const de: Record<string, string> = {
   'inlay.dxf': 'DXF für den Schaumzuschnitt',
   'inlay.3mf': '3MF zum Drucken',
   'inlay.stl': 'STL (ohne Einheit in der Datei)',
-  'inlay.formats':
-    '3MF nennt die Einheit (Millimeter) in der Datei und verlangt ein dichtes Netz — nimm es zuerst. STL nennt gar keine Einheit; ein Leser muss raten, und der klassische Fehler ist der Faktor 25,4. Stege unter {min} mm stehen oben.',
+  'inlay.formats': '3MF bevorzugt. Stege dünner als {min} mm stehen oben.',
   'inlay.overEdge':
     'Mit {spiel} mm Spiel ragt die Tasche für {label} über die Kante des Rohlings. Nimm weniger Spiel — oder das Stück gehört nicht in diese Lage.',
   'inlay.noGrip':
@@ -1354,8 +1275,7 @@ export const de: Record<string, string> = {
   'library.own.count': '{up} von {all} aktuell · {blocked} blockiert',
   'library.own.empty': 'Noch kein Lagerartikel hat Hersteller und Modell.',
   'library.own.head': 'Unsere Geräte in der Bibliothek',
-  'library.own.hint':
-    'Jeder Lagerartikel mit Hersteller und Modell geht als Gerätetyp hinauf: Modell, Hersteller, Kategorie, Maße, Gewicht, Materialart, Ursprungsland, dazu Datenblatt-Link, Höheneinheiten und Leistung aus dieser Tabelle. Mengen, Lagerorte, Preise und Seriennummern bleiben hier.',
+  'library.own.hint': 'Artikel mit Hersteller und Modell gehen als Gerätetyp hoch. Mengen, Orte und Preise bleiben hier.',
   'library.own.linkFor': 'Datenblatt-Link für {model}',
   'library.own.ruFor': 'Höheneinheiten von {model}',
   'library.own.uploadAll': 'Alle erneut hochladen',
@@ -1373,16 +1293,14 @@ export const de: Record<string, string> = {
   'library.up.never': 'Noch nicht hochgeladen',
   'library.up.pendingUpdated': 'Offener Vorschlag aktualisiert, wartet auf Moderation',
   'settings.library.auto': 'Eigene Geräte automatisch hochladen',
-  'settings.library.auto.hint':
-    'Beim Start und wenige Sekunden nach einer Änderung am Bestand: unsere Gerätetypen hochladen, danach Neues aus der Bibliothek holen. Nur angemeldet.',
+  'settings.library.auto.hint': 'Gleicht automatisch ab, solange du angemeldet bist.',
   'settings.library': 'Geräte-Bibliothek',
   'settings.library.apply': 'Übernehmen',
   'settings.library.badServer': 'Das ist keine brauchbare Server-Adresse. https:// verwenden (http nur für localhost).',
   'settings.library.cancel': 'Abbrechen',
   'settings.library.code': 'Authenticator-Code',
   'settings.library.forgot': 'Passwort vergessen',
-  'settings.library.hint':
-    'Gemeinsame Gerätedaten der LZ Planner Suite. Lesen geht nur mit Konto; der Planer speichert nur das Anmelde-Token, nie das Passwort.',
+  'settings.library.hint': 'Gemeinsame Gerätedaten. Braucht ein Konto; gespeichert wird nur das Anmelde-Token.',
   'settings.library.login': 'E-Mail oder Benutzername',
   'settings.library.password': 'Passwort',
   'settings.library.register': 'Konto anlegen',
@@ -1395,5 +1313,58 @@ export const de: Record<string, string> = {
   'settings.library.signedOut': 'Nicht angemeldet.',
   'settings.library.verify': 'Bestätigen',
   'tab.library': 'Geräte-Bibliothek',
-  'tab.library.q': 'Welche Gerätetypen kennt die gemeinsame Bibliothek — und welche von unseren fehlen dort?',
+  'plan.options': 'Rasteroptionen',
+  'case.more': 'Innenausbau, Schaumlayout und Inhaltsliste',
+  'nav.areas': 'Bereiche',
+  'nav.next': 'Weiter: {view} →',
+  'area.start': 'Start',
+  'area.stock': 'Lager',
+  'area.pack': 'Packen',
+  'area.out': 'Raus & zurück',
+  'area.reports': 'Auswertung',
+  'tab.stock': 'Equipment',
+  'tab.storage': 'Lagerorte',
+  'start.purpose': 'Behalte dein Equipment im Blick und plane, wie es in Cases und Fahrzeuge kommt.',
+  'start.step.items': 'Equipment anlegen',
+  'start.step.items.why': 'Name und Menge reichen für den Anfang.',
+  'start.step.vehicle': 'Fahrzeug anlegen',
+  'start.step.vehicle.why': 'Länge, Breite und Höhe des Laderaums.',
+  'start.step.load': 'Ladung planen',
+  'start.step.load.why': 'Auswählen, was mitkommt — Cases oder loses Equipment. Fehlende Maße lassen sich später ergänzen.',
+  'load.name.example': 'z. B. Festival Samstag',
+  'start.stepOf': 'Schritt {n} von {all}',
+  'start.step.items.go': 'Equipment anlegen',
+  'start.step.vehicle.go': 'Fahrzeug anlegen',
+  'start.step.load.go': 'Ladung planen',
+  'start.tile.items': 'Equipment',
+  'start.tile.cases': 'Cases',
+  'start.tile.vehicles': 'Fahrzeuge',
+  'start.tile.loads': 'Ladungen',
+  'start.tile.out': 'Gerade draußen',
+  'start.newLoad': 'Ladung planen',
+  'case.new.name': 'Neues Case',
+  'case.new.example': 'z. B. Kamera-Case 1',
+  'case.new.kind': 'Art',
+  'case.new.create': 'Case anlegen',
+  'case.pick.current': 'Case',
+  'vorlage.saveOwn': 'Selbst gemessen? Als eigene Vorlage sichern',
+  'katalog.retrieved': '(abgerufen {date})',
+  'report.group.unknown': 'nicht angegeben',
+  'report.group.unclassified': 'nicht eingeordnet',
+  'report.group.noPlace': 'nicht eingeräumt',
+  'stock.moreColumns': 'Mehr Spalten',
+  'stock.fewerColumns': 'Weniger Spalten',
+  'vehicle.summary': 'Laderaum {l} × {w} × {h} mm · {m3} m³',
+  'vehicle.details': 'Details und Maße',
+  'audit.prefixHead': 'Code-Prüfung',
+  'values.allEmpty': 'Noch nichts da. Werte und Prüftermine gehören zu Einheiten mit Seriennummer; Schäden kommen aus zurückgegebenen Ausgabescheinen.',
+  'load.pick.cases': 'Cases',
+  'load.pick.loose': 'Loses Equipment',
+  'load.pick.qty': 'Menge {n}',
+  'load.size.w': 'Breite mm',
+  'load.size.h': 'Höhe mm',
+  'load.size.d': 'Tiefe mm',
+  'load.size.kg': 'kg',
+  'vehicle.needSize': 'Länge, Breite und Höhe des Laderaums eintragen — oder oben ein Fahrzeugmodell wählen.',
+  'load.defaultName': 'Ladung {n}',
 }

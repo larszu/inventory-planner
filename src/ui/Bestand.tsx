@@ -65,6 +65,17 @@ export function Bestand() {
   const [meldung, setMeldung] = useState<string | null>(null)
   const modellFeld = useRef<HTMLInputElement>(null)
 
+  // Kategorie und Lieferant kommen nur aus Importen. Leere Spalten sind
+  // beim ersten Benutzen nur Rauschen — sie erscheinen, sobald eine Zeile
+  // etwas darin hat.
+  const mitKategorie = items.some((i) => i.category)
+  const mitLieferant = items.some((i) => i.supplier)
+  // Zielmenge und Eigentum braucht man beim Anlegen nicht. Sichtbar, sobald
+  // eins davon irgendwo gesetzt ist, sonst über „More columns".
+  const [mehrSpaltenGewaehlt, setMehrSpalten] = useState(false)
+  const mehrSpaltenErzwungen = items.some((i) => i.mindestmenge !== undefined || i.ownership !== undefined)
+  const mehrSpalten = mehrSpaltenGewaehlt || mehrSpaltenErzwungen
+
   const gefiltert = useMemo(() => {
     const q = suche.trim().toLowerCase()
     if (!q) return items
@@ -90,7 +101,13 @@ export function Bestand() {
     if (ziel) {
       const neu = (ziel.quantity ?? 0) + stueck
       updateItem(ziel.id, { quantity: neu })
-      setMeldung(format(t('stock.merged', 'Added {n} to {model} — now {total}.'), { n: stueck, model: ziel.model, total: neu }))
+      setMeldung(
+        format(t('stock.merged', 'Added {n} to {model} — now {total}.'), {
+          n: stueck,
+          model: ziel.model,
+          total: neu,
+        }),
+      )
     } else {
       addItem({ model: name, quantity: stueck })
       setMeldung(
@@ -128,7 +145,7 @@ export function Bestand() {
         zur Maus greifen, um ein Wort einzutragen.
       */}
       <details className="block" {...anlegenBlock}>
-        <summary>{t('stock.create.head', 'Add to stock')}</summary>
+        <summary>{t('stock.create.head', 'Add equipment')}</summary>
         <form
           className="zeile"
           onSubmit={(e) => {
@@ -137,12 +154,12 @@ export function Bestand() {
           }}
         >
           <label className="feld">
-            {t('stock.newModel.aria', 'Model designation')}
+            {t('stock.newModel.aria', 'Name')}
             <input
               ref={modellFeld}
               value={modell}
               onChange={(e) => setModell(e.target.value)}
-              placeholder={t('stock.newModel', 'New model')}
+              placeholder={t('stock.newModel', 'e.g. Sony FX6')}
             />
           </label>
           <label className="feld schmal">
@@ -160,25 +177,35 @@ export function Bestand() {
         )}
       </details>
 
-      <div className="leiste">
-        <input
-          type="search"
-          value={suche}
-          onChange={(e) => setSuche(e.target.value)}
-          placeholder={t('stock.search', 'Search — model, manufacturer, supplier, location')}
-          aria-label={t('stock.search.aria', 'Search the stock')}
-        />
-        <span className="zaehler">
-          {format(t('stock.countOf', '{shown} of {all}'), { shown: gefiltert.length, all: items.length })}
-        </span>
-      </div>
+      {items.length > 0 && (
+        <div className="leiste">
+          <input
+            type="search"
+            value={suche}
+            onChange={(e) => setSuche(e.target.value)}
+            placeholder={t('stock.search', 'Search — model, manufacturer, supplier, location')}
+            aria-label={t('stock.search.aria', 'Search the stock')}
+          />
+          {!mehrSpaltenErzwungen && (
+            <button type="button" className="still" aria-pressed={mehrSpalten} onClick={() => setMehrSpalten(!mehrSpalten)}>
+              {mehrSpalten ? t('stock.fewerColumns', 'Fewer columns') : t('stock.moreColumns', 'More columns')}
+            </button>
+          )}
+          <span className="zaehler">
+            {format(t('stock.countOf', '{shown} of {all}'), {
+              shown: gefiltert.length,
+              all: items.length,
+            })}
+          </span>
+        </div>
+      )}
 
       {items.length === 0 ? (
         <div className="leer-flaeche">
           <p className="leer">
             {t(
               'stock.empty',
-              'Nothing in stock yet. Create something — or read in an existing stock file; the format is the same across the tools.',
+              'Nothing here yet. Type a name above and press Create. Already have a list? File → Open.',
             )}
           </p>
         </div>
@@ -208,8 +235,8 @@ export function Bestand() {
           <table>
             <thead>
               <tr>
-                <th>{t('stock.col.model', 'Model')}</th>
-                <th>{t('stock.col.category', 'Category')}</th>
+                <th>{t('stock.col.model', 'Name')}</th>
+                {mitKategorie && <th>{t('stock.col.category', 'Category')}</th>}
                 <th className="rechts">{t('stock.col.qty', 'Qty')}</th>
                 {/*
                   „Ziel" und nicht „Mindestmenge": die Spalte ist schmal, und
@@ -217,21 +244,30 @@ export function Bestand() {
                   ist, sagt das `title` der Zelle und der Satz unter der
                   Tabelle — eine abgeschnittene Ueberschrift sagt gar nichts.
                 */}
-                <th className="rechts">{t('stock.col.target', 'Target')}</th>
+                {mehrSpalten && (
+                  <>
+                <th
+                  className="rechts"
+                  title={t('stock.target.title', 'When to reorder or sub-hire. Empty means: not decided.')}
+                >
+                  {t('stock.col.target', 'Target')}
+                </th>
                 <th>{t('stock.col.ownership', 'Ownership')}</th>
+                  </>
+                )}
                 <th>{t('stock.col.location', 'Location')}</th>
-                <th>{t('stock.col.supplier', 'Supplier')}</th>
+                {mitLieferant && <th>{t('stock.col.supplier', 'Supplier')}</th>}
                 <th />
               </tr>
             </thead>
             <tbody>
               {gefiltert.map((i) => (
                 <tr key={i.id}>
-                  <td data-spalte={t('stock.col.model', 'Model')}>
+                  <td data-spalte={t('stock.col.model', 'Name')}>
                     {i.model}
                     {i.manufacturer ? <span className="leise"> · {i.manufacturer}</span> : null}
                   </td>
-                  <td data-spalte={t('stock.col.category', 'Category')}>{i.category ?? ''}</td>
+                  {mitKategorie && <td data-spalte={t('stock.col.category', 'Category')}>{i.category ?? ''}</td>}
                   <td className="rechts" data-spalte={t('stock.col.qty', 'Qty')}>
                     <input
                       type="number"
@@ -245,6 +281,8 @@ export function Bestand() {
                       className="schmal"
                     />
                   </td>
+                  {mehrSpalten && (
+                    <>
                   <td className="rechts" data-spalte={t('stock.col.target', 'Target')}>
                     {/*
                       LEER IST EIN WERT, und zwar ein anderer als 0. Leer
@@ -301,17 +339,15 @@ export function Bestand() {
                       ))}
                     </select>
                   </td>
+                    </>
+                  )}
                   <td data-spalte={t('stock.col.location', 'Location')}>
                     {/* Die KENNUNG zuerst und der Pfad daneben: „A1" ist das,
                         was am Regal steht und was jemand im Gang sucht;
                         „Halle 1 › Regal A › Ebene 1" sagt, wo das ist. */}
-                    <LagerortZelle
-                      item={i}
-                      nodes={nodes}
-                      onSetze={(locationId) => moveItem(i.id, locationId)}
-                    />
+                    <LagerortZelle item={i} nodes={nodes} onSetze={(locationId) => moveItem(i.id, locationId)} />
                   </td>
-                  <td data-spalte={t('stock.col.supplier', 'Supplier')}>{i.supplier ?? ''}</td>
+                  {mitLieferant && <td data-spalte={t('stock.col.supplier', 'Supplier')}>{i.supplier ?? ''}</td>}
                   <td>
                     <button type="button" onClick={() => removeItem(i.id)} className="still">
                       {t('stock.remove', 'Remove')}
@@ -322,15 +358,6 @@ export function Bestand() {
             </tbody>
           </table>
         </TabelleRahmen>
-      )}
-
-      {items.length > 0 && (
-        <p className="leer">
-          {t(
-            'stock.targetExplain',
-            'Target is the minimum quantity at which the house reorders or sub-hires — a decision of the house, not a demand from a show. Empty does not mean zero, it means not decided; the report lists such items under "not assessed" rather than under "enough". How it currently stands is in the report\'s "Below target" block.',
-          )}
-        </p>
       )}
     </section>
   )
@@ -395,17 +422,16 @@ function LagerortZelle({
 
   return (
     <div className="lagerort-zelle">
-      {knoten ? (
-        <span>
-          {knoten.code && <strong className="lagerort-kennung">{knoten.code}</strong>}
-          <span className="leise">{pfad}</span>
-        </span>
-      ) : (
-        <span className="leise">{item.stockLocation ?? t('stock.nowhere', 'not put away')}</span>
-      )}
+      {/* Eine Zeile statt zwei: der aktuelle Ort steht IM Feld, Tippen
+          ersetzt ihn. Die Kennung zuerst — sie steht am Regal. */}
       <input
         value={text}
-        placeholder={t('stock.setPlace', 'Code or path…')}
+        className={knoten || item.stockLocation ? 'hat-ort' : undefined}
+        placeholder={
+          knoten
+            ? `${knoten.code ? `${knoten.code} · ` : ''}${pfad}`
+            : (item.stockLocation ?? t('stock.setPlace', 'Not put away — type a shelf or case'))
+        }
         aria-label={t('stock.setPlaceFor', 'Set the location')}
         onChange={(e) => setText(e.target.value)}
         onBlur={uebernehmen}

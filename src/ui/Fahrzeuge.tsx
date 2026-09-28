@@ -104,14 +104,21 @@ export function Fahrzeuge() {
     setMeldung(format(t('fleet.imported', 'Taken over: {n}'), { n: uebernommen }))
   }
 
+  const [fehlt, setFehlt] = useState<string | null>(null)
   const anlegen = (e: React.FormEvent) => {
     e.preventDefault()
     const l = Number(laenge)
     const b = Number(breite)
     const h = Number(hoehe)
-    if (!name.trim() || !(l > 0) || !(b > 0) || !(h > 0)) return
-
-    addVehicle({ name: name.trim(), kind, cargoMm: { lengthMm: l, widthMm: b, heightMm: h }, obstructions: [] })
+    // Der Name ist Beiwerk — ohne ihn heisst das Fahrzeug wie seine Klasse.
+    // Die drei Masse sind der Laderaum selbst; fehlt eins, sagt das Formular
+    // welches, statt still nichts zu tun.
+    if (!(l > 0) || !(b > 0) || !(h > 0)) {
+      setFehlt(t('vehicle.needSize', 'Enter length, width and height of the cargo space — or pick a vehicle model above.'))
+      return
+    }
+    setFehlt(null)
+    addVehicle({ name: name.trim() || labels[kind], kind, cargoMm: { lengthMm: l, widthMm: b, heightMm: h }, obstructions: [] })
     setName('')
     setLaenge('')
     setBreite('')
@@ -120,14 +127,6 @@ export function Fahrzeuge() {
 
   return (
     <section>
-      <h2>{t('vehicle.head', 'Vehicles')}</h2>
-      <p className="hinweis">
-        {t(
-          'vehicle.intro',
-          'A loading space is not a box: wheel arches narrow the floor, and the rear opening is smaller than the interior. What has not been measured is shown as not measured.',
-        )}
-      </p>
-
       {/* Dieselbe Bauart wie „Add to stock" im Bestand: der Block ist die
           Klappe. Offen, solange es kein Fahrzeug gibt. */}
       <details className="block" {...anlegenBlock}>
@@ -137,7 +136,7 @@ export function Fahrzeuge() {
         {FAHRZEUG_KATALOG.length > 0 ? (
           <div className="zeile">
             <label>
-              {t('fleet.fromCatalogue', 'Start from a master record')}
+              {t('fleet.fromCatalogue', 'Pick a vehicle model — the cargo space is filled in')}
               <select
                 value=""
                 onChange={(e) => {
@@ -145,7 +144,7 @@ export function Fahrzeuge() {
                   if (eintrag) addVehicle(ausKatalog(eintrag, name, t))
                 }}
               >
-                <option value="">{t('fleet.pick', 'pick one')}</option>
+                <option value="">{t('fleet.pick', '—')}</option>
                 {FAHRZEUG_KATALOG.map((k) => (
                   <option key={k.name} value={k.name}>
                     {k.name}
@@ -158,7 +157,7 @@ export function Fahrzeuge() {
           <p className="leise">
             {t(
               'fleet.catalogueEmpty',
-              'There is no master-data set yet. It would have to carry a source per vehicle — a datasheet link or the registration document — and guessed interior dimensions read like measurements on a load plan.',
+              'No master records yet — enter the cargo space by hand.',
             )}
           </p>
         )}
@@ -194,42 +193,30 @@ export function Fahrzeuge() {
               <input type="number" value={hoehe} onChange={(e) => setHoehe(e.target.value)} />
             </label>
           </div>
-          <button type="submit">{t('vehicle.add', 'Add vehicle')}</button>
+          <button type="submit" className="knopf-primaer">{t('vehicle.add', 'Add vehicle')}</button>
+          {fehlt && <p className="befund nein" role="alert">{fehlt}</p>}
         </form>
-
+        {/* Die Messanleitung gehoert zum Anlegen — zugeklappt darin. */}
+        <details className="optionen vermessen">
+          <summary>{t('measure.head', 'How to measure a vehicle')}</summary>
+          <p className="hinweis">
+            {t(
+              'measure.intro',
+              'Six measurements, once around the vehicle.',
+            )}
+          </p>
+          <ol className="messliste">
+            {vermessen(t).map((m) => (
+              <li key={m.was}>
+                <strong>{m.was}</strong>
+                <span className="leise"> {m.wo}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
       </details>
 
-      {/* Die Ausmessen-Hilfe steht NEBEN dem Formular und nicht darin: wer
-          misst, hat das Fahrzeug offen und das Telefon in der Hand, und eine
-          Liste im Formular wäre beim Eintragen im Weg. */}
-      <details className="block vermessen">
-        <summary>{t('measure.head', 'How to measure a vehicle')}</summary>
-        <p className="hinweis">
-          {t(
-            'measure.intro',
-            'Six measurements, in the order in which you walk around the vehicle once. The floor width between the wheel arches is a different figure from the width above them — and it is the one a Euro pallet fails on.',
-          )}
-        </p>
-        <ol className="messliste">
-          {vermessen(t).map((m) => (
-            <li key={m.was}>
-              <strong>{m.was}</strong>
-              <span className="leise"> {m.wo}</span>
-            </li>
-          ))}
-        </ol>
-      </details>
 
-      <div className="zeile">
-        <button type="button" className="still" onClick={exportieren} disabled={vehicles.length === 0}>
-          {t('fleet.export', 'Export vehicles')}
-        </button>
-        <label className="still dateiwahl">
-          {t('fleet.import', 'Import vehicles')}
-          <input type="file" accept="application/json,.json" onChange={importieren} />
-        </label>
-      </div>
-      {meldung && <p className="leise">{meldung}</p>}
 
       {vehicles.length === 0 && <p>{t('vehicle.none', 'No vehicles recorded yet.')}</p>}
 
@@ -243,92 +230,116 @@ export function Fahrzeuge() {
               {v.name} — {labels[v.kind]}
             </h3>
             <p>
-              {format(t('vehicle.space', 'Gross {brutto} l · net {netto} l · floor width {boden} mm'), {
-                brutto: liter(raum.bruttoLiter),
-                netto: liter(raum.nettoLiter),
-                boden: raum.bodenBreiteMm,
+              {format(t('vehicle.summary', 'Cargo space {l} × {w} × {h} mm · {m3} m³'), {
+                l: v.cargoMm.lengthMm,
+                w: v.cargoMm.widthMm,
+                h: v.cargoMm.heightMm,
+                m3: (raum.bruttoLiter / 1000).toFixed(1),
               })}
-              {raum.kantenLiter > 0 && (
-                <>
-                  {' · '}
-                  {format(t('vehicle.edgeLoss', '{l} l taken by chamfers and roundings'), {
-                    l: liter(raum.kantenLiter),
-                  })}
-                </>
-              )}
             </p>
-            <p>
-              {t('vehicle.payload', 'Payload:')}{' '}
-              {last.bekannt
-                ? format(t('vehicle.payloadKg', '{kg} kg'), { kg: last.wert })
-                : t('vehicle.notGiven', 'not given')}
-            </p>
-            <p>
-              {t('vehicle.aperture', 'Loading aperture:')}{' '}
-              {v.aperture
-                ? format(t('vehicle.apertureSize', '{w} x {h} mm'), {
-                    w: v.aperture.widthMm,
-                    h: v.aperture.heightMm,
-                  })
-                : t('vehicle.notMeasured', 'not measured — nothing can be checked against it')}
-            </p>
-            {/* Das Packmass-Raster (#21). Es steht NEBEN der Ladebreite und
-                nicht in den Wiegedaten: es ist eine Eigenschaft des Aufbaus,
-                und wer es ändert, ändert die Reihen und nicht das Gewicht. */}
-            <label className="raster-wahl">
-              {t('vehicle.grid', 'Packing grid (mm)')}
-              <select
-                value={String(rasterVon(v))}
-                onChange={(e) => updateVehicle(v.id, { rasterMm: Number(e.target.value) })}
-              >
-                <option value="0">{t('vehicle.gridNone', 'no grid')}</option>
-                {[400, 600, 800].map((r) => (
-                  <option key={r} value={r}>
-                    {format(t('vehicle.gridMm', '{n} mm'), { n: r })}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="leise">
-              {vorgabeRasterMm(v.kind) > 0
-                ? format(
-                    t('vehicle.gridDefault', 'Usual for this class: {n} mm — 1200 x 600 cases stand in rows on it.'),
-                    { n: vorgabeRasterMm(v.kind) },
-                  )
-                : t(
-                    'vehicle.gridNoDefault',
-                    'No grid is usual for this class: the cargo is not 2.40 m wide, so the row does not come out even.',
-                  )}
-            </p>
-            <p>
-              {t('vehicle.licence', 'Licence class:')}{' '}
-              {v.fuehrerscheinKlasse ?? t('vehicle.notGiven', 'not given')}
-            </p>
-            {/* Alle Angaben änderbar (Nutzer-Frage 2026-09-19): Name,
-                Klasse, Laderaum-Masse, Ladeöffnung, Ausstattung, Quelle. */}
-            <Laderaumdaten
-              vehicle={v}
-              kinds={KINDS}
-              kindLabel={(k) => labels[k]}
-              onAendern={(patch) => updateVehicle(v.id, patch)}
-            />
-            {/* Die Einbauten liessen sich bisher gar nicht eintragen — das
-                Formular legte `obstructions: []` an, und hinein kamen sie nur
-                über den Import. Für einen ausgebauten Bus ist der Radkasten
-                die wichtigste Angabe überhaupt. */}
-            <Einbauten
-              vehicle={v}
-              onAendern={(obstructions) => updateVehicle(v.id, { obstructions })}
-            />
-            <Kantenformen vehicle={v} onAendern={(kanten) => updateVehicle(v.id, { kanten })} />
-            <Wiegedaten vehicle={v} onAendern={(patch) => updateVehicle(v.id, patch)} />
+            {/* Alles Weitere ist Feinarbeit — zugeklappt, damit die Karte
+                beim ersten Blick nur sagt, was hineinpasst. */}
+            <details className="mehr">
+              <summary>{t('vehicle.details', 'Details and measurements')}</summary>
+              <p>
+                {format(t('vehicle.space', 'Gross {brutto} l · net {netto} l · floor width {boden} mm'), {
+                  brutto: liter(raum.bruttoLiter),
+                  netto: liter(raum.nettoLiter),
+                  boden: raum.bodenBreiteMm,
+                })}
+                {raum.kantenLiter > 0 && (
+                  <>
+                    {' · '}
+                    {format(t('vehicle.edgeLoss', '{l} l taken by chamfers and roundings'), {
+                      l: liter(raum.kantenLiter),
+                    })}
+                  </>
+                )}
+              </p>
+              <p>
+                {t('vehicle.payload', 'Payload:')}{' '}
+                {last.bekannt
+                  ? format(t('vehicle.payloadKg', '{kg} kg'), { kg: last.wert })
+                  : t('vehicle.notGiven', 'not given')}
+              </p>
+              <p>
+                {t('vehicle.aperture', 'Loading aperture:')}{' '}
+                {v.aperture
+                  ? format(t('vehicle.apertureSize', '{w} x {h} mm'), {
+                      w: v.aperture.widthMm,
+                      h: v.aperture.heightMm,
+                    })
+                  : t('vehicle.notMeasured', 'not measured — nothing can be checked against it')}
+              </p>
+              {/* Das Packmass-Raster (#21). Es steht NEBEN der Ladebreite und
+                  nicht in den Wiegedaten: es ist eine Eigenschaft des Aufbaus,
+                  und wer es ändert, ändert die Reihen und nicht das Gewicht. */}
+              <label className="raster-wahl">
+                {t('vehicle.grid', 'Packing grid (mm)')}
+                <select
+                  value={String(rasterVon(v))}
+                  onChange={(e) => updateVehicle(v.id, { rasterMm: Number(e.target.value) })}
+                >
+                  <option value="0">{t('vehicle.gridNone', 'no grid')}</option>
+                  {[400, 600, 800].map((r) => (
+                    <option key={r} value={r}>
+                      {format(t('vehicle.gridMm', '{n} mm'), { n: r })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="leise">
+                {vorgabeRasterMm(v.kind) > 0
+                  ? format(
+                      t('vehicle.gridDefault', 'Usual for this class: {n} mm — 1200 x 600 cases stand in rows on it.'),
+                      { n: vorgabeRasterMm(v.kind) },
+                    )
+                  : t(
+                      'vehicle.gridNoDefault',
+                      'No grid is usual for this class: the cargo is not 2.40 m wide, so the row does not come out even.',
+                    )}
+              </p>
+              <p>
+                {t('vehicle.licence', 'Licence class:')}{' '}
+                {v.fuehrerscheinKlasse ?? t('vehicle.notGiven', 'not given')}
+              </p>
+              {/* Alle Angaben änderbar (Nutzer-Frage 2026-09-19): Name,
+                  Klasse, Laderaum-Masse, Ladeöffnung, Ausstattung, Quelle. */}
+              <Laderaumdaten
+                vehicle={v}
+                kinds={KINDS}
+                kindLabel={(k) => labels[k]}
+                onAendern={(patch) => updateVehicle(v.id, patch)}
+              />
+              {/* Die Einbauten liessen sich bisher gar nicht eintragen — das
+                  Formular legte `obstructions: []` an, und hinein kamen sie nur
+                  über den Import. Für einen ausgebauten Bus ist der Radkasten
+                  die wichtigste Angabe überhaupt. */}
+              <Einbauten
+                vehicle={v}
+                onAendern={(obstructions) => updateVehicle(v.id, { obstructions })}
+              />
+              <Kantenformen vehicle={v} onAendern={(kanten) => updateVehicle(v.id, { kanten })} />
+              <Wiegedaten vehicle={v} onAendern={(patch) => updateVehicle(v.id, patch)} />
+            </details>
 
-            <button type="button" onClick={() => removeVehicle(v.id)}>
+            <button type="button" className="still" onClick={() => removeVehicle(v.id)}>
               {t('vehicle.remove', 'Remove')}
             </button>
           </div>
         )
       })}
+
+      <div className="zeile">
+        <button type="button" className="still" onClick={exportieren} disabled={vehicles.length === 0}>
+          {t('fleet.export', 'Export vehicles')}
+        </button>
+        <label className="still dateiwahl">
+          {t('fleet.import', 'Import vehicles')}
+          <input type="file" accept="application/json,.json" onChange={importieren} />
+        </label>
+      </div>
+      {meldung && <p className="leise">{meldung}</p>}
     </section>
   )
 }
