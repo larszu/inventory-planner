@@ -27,7 +27,7 @@ const path = require('path')
 // userData leitet Electron aus dem productName ab. Seit der Umbenennung in
 // „LZ Inventory Planner" laege der Bestand (localStorage) sonst in einem
 // leeren Ordner; deshalb bleibt der alte Pfad festgenagelt.
-app.setPath('userData', path.join(app.getPath('appData'), 'Inventory Planner'))
+if (app.isPackaged) app.setPath('userData', path.join(app.getPath('appData'), 'Inventory Planner'))
 
 let fenster
 

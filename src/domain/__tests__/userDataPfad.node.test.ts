@@ -6,7 +6,7 @@ const main = readFileSync(resolve(__dirname, '..', '..', '..', 'electron', 'main
 
 describe('userData bleibt nach der Umbenennung am alten Ort', () => {
   it('nagelt den Ordner des alten productName fest', () => {
-    expect(main).toContain("app.setPath('userData', path.join(app.getPath('appData'), 'Inventory Planner'))")
+    expect(main).toContain("if (app.isPackaged) app.setPath('userData', path.join(app.getPath('appData'), 'Inventory Planner'))")
   })
 
   it('bevor ein Fenster entsteht', () => {
