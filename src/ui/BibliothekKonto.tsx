@@ -7,8 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useT } from '../i18n'
 import { useBibliothekStore } from '../domain/store/bibliothekStore'
-import { bibliothekFehlerText, richtlinienUrl } from '../domain/lib/geraetebibliothek'
-import type { LibraryErrorCode } from '../lib/deviceLibraryClient'
+import { bibliothekFehlerText, richtlinienUrl, type BibliothekFehlerCode } from '../domain/lib/geraetebibliothek'
 import { DEFAULT_DEVICE_LIBRARY_URL, forgotPasswordUrl, registerUrl } from '../lib/deviceLibraryClient'
 import { Feld } from './Formular'
 
@@ -169,7 +168,7 @@ export function BibliothekKonto() {
 }
 
 /** Eine Fehlermeldung der Bibliothek; bei geaenderten Richtlinien mit dem Weg dorthin. */
-export function BibliothekFehler({ fehler, server }: { fehler: LibraryErrorCode | null; server: string }) {
+export function BibliothekFehler({ fehler, server }: { fehler: BibliothekFehlerCode | null; server: string }) {
   const { t } = useT()
   if (!fehler) return null
   return (

@@ -739,8 +739,10 @@ default*), Anmeldung mit E-Mail oder Benutzername und Passwort, bei
 eingeschalteter Zwei-Faktor-Anmeldung ein zweiter Schritt mit dem Code aus der
 Authenticator-App, Abmelden. Konto anlegen und Passwort zurücksetzen laufen auf
 der Website; die Einstellungen verlinken dorthin. Eine andere Server-Adresse
-meldet ab und leert den Cache — Token und `latestSeq` gelten nur bei dem
-Server, der sie ausgegeben hat. Klartext-`http` nur für `localhost`.
+meldet ab — das Token gilt nur bei dem Server, der es ausgegeben hat —, leert
+aber den Cache **nicht**: jeder Server hat seinen eigenen Platz (Cache,
+`latestSeq`, letzter Abgleich, Hochlade-Stände), und wer zurückwechselt, hat
+seinen alten Stand wieder. Klartext-`http` nur für `localhost`.
 
 **Token.** Liegt unter `inventory-planner:deviceLibraryToken` in
 `localStorage`, getrennt von allem anderen, in keinem Export und in keinem Log.
@@ -751,12 +753,24 @@ Gespeichert wird nur das Token, nie das Passwort.
 **Abgleich.** *Sync now* lädt zuerst die eigenen Artikeltypen hoch und holt
 dann `GET /api/sync?planner=inventory&after=<latestSeq>` — beim ersten Mal
 alles, danach nur, was seitdem kam. Geräte mit `removed` fallen aus dem Cache.
-Der Cache überlebt den Neustart (`inventory-planner:deviceLibrary`). Jede Zeile
+Der Cache überlebt den Neustart (`inventory-planner:deviceLibrary`, je Server
+unter `jeServer`; ein Stand im Altformat mit nur einem `cache` wird beim Lesen
+als Platz *seines* Servers übernommen). Jede Zeile
 zeigt Status und Zahl der Bestätigungen und verlinkt auf die Geräteseite.
 Geräte, deren Facet die Prüfung dieses Planers nicht besteht, erscheinen nicht
 in der Liste, sondern als Zahl *invalid* in der Leiste. *Add to stock* übernimmt
 Datenblattlink, Höheneinheiten und Leistung des Geräts in die Typangaben des
 neuen Artikels.
+
+**Offline-Vertrag.** Der Abgleich läuft über `syncFrom` aus dem gemeinsamen
+Client, dieselbe Regel in allen Planern. Der Cache ändert sich nur durch eine
+**erfolgreiche** Antwort: offline, Zeitüberschreitung (15 s, Hochladen 120 s),
+Serverfehler, abgelaufene Anmeldung und Abmelden lassen den letzten Stand
+stehen und benutzbar. Meldet der Server einen kleineren `latestSeq` als
+gemerkt (neu aufgesetzt, Sicherung eingespielt), wird der ganze Stand geholt
+und **ersetzt** den Cache. Kommt dabei kein einziges Gerät zurück, gilt das als
+leerer Ersatzserver, nicht als neuer Stand: Meldung *server-empty*, die lokalen
+Geräte bleiben.
 
 **Hochladen.** Jeder Lagerartikel mit Hersteller und Modell geht als Gerätetyp
 nach `POST /api/upload` (Stapel zu höchstens 100). Gleiches Gerät (Hersteller +
