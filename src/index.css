@@ -1557,3 +1557,8 @@ p.warnung { color: var(--warn); }
   :root:not([data-thema='dunkel']) .auf-hell { display: block; }
   :root:not([data-thema='dunkel']) .auf-dunkel { display: none; }
 }
+
+/* Unter 640 px schiebt das Signet die Menues aus dem Bild (mobil:check in cable-planner). */
+@media (max-width: 639px) {
+  .signet { display: none !important; }
+}
