@@ -43,8 +43,6 @@ export interface AnsichtDef {
 export interface BereichDef {
   id: BereichId
   titel: string
-  /** Ein Satz für die Startseite: wann man hierher kommt. */
-  wozu: string
   ansichten: AnsichtDef[]
 }
 
@@ -52,13 +50,11 @@ export const bereiche = (t: T): BereichDef[] => [
   {
     id: 'start',
     titel: t('area.start', 'Start'),
-    wozu: '',
     ansichten: [{ id: 'start', titel: t('area.start', 'Start'), frage: '' }],
   },
   {
     id: 'lager',
     titel: t('area.stock', 'Stock'),
-    wozu: t('area.stock.why', 'What you own and where it is. Add equipment, set up shelves and cases, count it.'),
     ansichten: [
       { id: 'bestand', titel: t('tab.stock', 'Equipment'), frage: t('tab.stock.q', 'What do you have, and how many?') },
       { id: 'lager', titel: t('tab.storage', 'Storage places'), frage: t('tab.storage.q', 'Where does it sit — shelves, cases, and what is inside what.') },
@@ -70,7 +66,6 @@ export const bereiche = (t: T): BereichDef[] => [
   {
     id: 'packen',
     titel: t('area.pack', 'Pack'),
-    wozu: t('area.pack.why', 'Getting ready for a job: what goes into which case, and how the cases fit into the vehicle.'),
     ansichten: [
       { id: 'cases', titel: t('tab.cases', 'Cases'), frage: t('tab.cases.q', 'Measure a case and lay out what goes inside.') },
       { id: 'fahrzeuge', titel: t('tab.vehicles', 'Vehicles'), frage: t('tab.vehicles.q', 'Your vans and trucks and their cargo space.') },
@@ -81,7 +76,6 @@ export const bereiche = (t: T): BereichDef[] => [
   {
     id: 'verleih',
     titel: t('area.out', 'Out & back'),
-    wozu: t('area.out.why', 'Equipment that leaves the house: checkout notes, returns, and gear hired in from others.'),
     ansichten: [
       { id: 'ausgabe', titel: t('tab.checkouts', 'Checkout notes'), frage: t('tab.checkouts.q', 'What is out, with whom, and since when.') },
       { id: 'subhire', titel: t('tab.subhire', 'Sub-hire'), frage: t('tab.subhire.q', 'Gear that is not yours, and when it has to go back.') },
@@ -90,7 +84,6 @@ export const bereiche = (t: T): BereichDef[] => [
   {
     id: 'auswertung',
     titel: t('area.reports', 'Reports'),
-    wozu: t('area.reports.why', 'Overviews to print or pass on: stock report, values, damage.'),
     ansichten: [
       { id: 'bericht', titel: t('tab.report', 'Report'), frage: t('tab.report.q', 'The stock at a glance, ready to print.') },
       { id: 'werte', titel: t('tab.values', 'Values & damage'), frage: t('tab.values.q', 'What it is worth and what is broken.') },

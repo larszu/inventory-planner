@@ -182,7 +182,7 @@ export function App() {
           1100 px, mitten auf dem Bildschirm. */}
       <main className="inhalt">
         {aktiv.frage && <p className="frage">{aktiv.frage}</p>}
-        {reiter === 'start' && <Start bereiche={bereichListe} onGehe={setReiter} />}
+        {reiter === 'start' && <Start onGehe={setReiter} />}
         {reiter === 'bestand' && <Bestand />}
         {reiter === 'lager' && <Lagerbaum />}
         {reiter === 'eingang' && <Wareneingang />}
