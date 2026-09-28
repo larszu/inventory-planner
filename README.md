@@ -107,11 +107,18 @@ Downloads.
 
 ## Bedienung auf einen Blick
 
-Die App öffnet beim ersten Mal auf **Start**: ein Satz, wofür sie da ist, und
-fünf **erste Schritte** mit Stand — Equipment anlegen, Regale und Cases
-anlegen, Cases vermessen, Fahrzeug anlegen, Ladung planen. Der nächste offene
-Schritt trägt den Hauptknopf; jede Ansicht dieses Wegs endet mit
-„Next: …" zur nächsten.
+Die App öffnet auf **Start** und zeigt dort genau **einen** nächsten Schritt
+mit einem Knopf — Equipment anlegen, Fahrzeug anlegen, Ladung planen. Mehr
+braucht eine Planung nicht: Regale, Cases und Maße verbessern sie, sind aber
+keine Bedingung. Sind die drei Schritte erledigt, zeigt Start einen Überblick
+aus fünf Zahlen. Jede Ansicht dieses Wegs endet mit „Next: …".
+
+**Nichts muss vollständig sein, um weiterzukommen.** Eine Ladung nimmt Cases
+und loses Equipment; ohne Namen heißt sie „Load 1", bei genau einem Fahrzeug
+ist es vorausgewählt. Stücke ohne Maße fahren mit und stehen unter „No place
+in the plan yet" — die Maße lassen sich dort direkt eintragen und landen am
+Case bzw. am Artikel. Ein Fahrzeug braucht nur seinen Laderaum; ohne Namen
+heißt es wie seine Klasse, und das Formular sagt, was fehlt.
 
 Oben stehen fünf **Bereiche**, darunter die Ansichten des gewählten Bereichs
 in der Reihenfolge der Arbeit:

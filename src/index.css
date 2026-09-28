@@ -512,6 +512,13 @@ body {
 
 .lagerort-zelle input.hat-ort::placeholder { color: var(--text); opacity: 1; }
 
+.kicker-klein { margin: var(--steg-3) 0 var(--steg-1); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise); }
+.optionen.masse-liste { display: block; }
+.masse-zeile { align-items: flex-end; flex-wrap: nowrap; padding: var(--steg-2) 0; border-bottom: 1px solid var(--rand); }
+.masse-zeile > strong { flex: 1 1 auto; align-self: center; }
+.masse-zeile > label.schmal { flex: 0 0 6.5rem; }
+@media (max-width: 639px) { .masse-zeile { flex-wrap: wrap; } }
+
 /* ── Start ──────────────────────────────────────────────────────────────
  * Ein Schritt, ein Knopf. Gross genug, dass nichts anderes um Aufmerksamkeit
  * konkurriert. */

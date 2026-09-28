@@ -88,10 +88,10 @@ const zaehler = (
  *  Schritte auf der Startseite. Am Ende jeder dieser Ansichten steht der
  *  naechste, damit niemand in dreizehn Ansichten suchen muss. */
 const WEITER: Partial<Record<Ansicht, Ansicht>> = {
-  bestand: 'lager',
-  lager: 'cases',
-  cases: 'fahrzeuge',
+  bestand: 'fahrzeuge',
   fahrzeuge: 'ladung',
+  lager: 'cases',
+  cases: 'ladung',
 }
 
 export function App() {

@@ -45,7 +45,11 @@ export function Laderaumdaten({ vehicle, kinds, kindLabel, onAendern }: Props) {
   const { t, format } = useT()
   const gespeichert = useLoadStore((s) => s.loads)
   const nodes = useInventoryStore((s) => s.nodes)
-  const loads = useMemo(() => gespeichert.map((l) => mitAktuellenMassen(l, nodes)), [gespeichert, nodes])
+  const items = useInventoryStore((s) => s.items)
+  const loads = useMemo(
+    () => gespeichert.map((l) => mitAktuellenMassen(l, nodes, items)),
+    [gespeichert, nodes, items],
+  )
 
   /** Was gerade im Formular steht — noch nicht im Store. */
   const [entwurf, setEntwurf] = useState<Vehicle['cargoMm']>(vehicle.cargoMm)

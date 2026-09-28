@@ -7,6 +7,10 @@
 // erledigt sind, wird Start zum Überblick: Zahlen, jede führt dorthin, wo sie
 // herkommt. Der Stand kommt aus den Stores — „erledigt" heisst, es gibt davon
 // mindestens eins.
+//
+// Drei Schritte und nicht fünf: Regale, Cases und Masse sind Verbesserungen
+// einer Planung, keine Bedingung. Wer eine Ladung plant, braucht Equipment
+// und ein Fahrzeug — der Rest lässt sich in der Ladung nachtragen.
 // ───────────────────────────────────────────────────────────────────────────
 import { useT } from '../i18n'
 import { useInventoryStore } from '../domain/store/inventoryStore'
@@ -25,7 +29,6 @@ export function Start({ onGehe }: { onGehe: (a: Ansicht) => void }) {
   const records = useCheckoutStore((s) => s.records)
 
   const cases = nodes.filter((n) => CONTAINER_KINDS.includes(n.kind))
-  const vermessen = cases.filter((c) => c.dimensions?.widthMm && c.dimensions?.heightMm && c.dimensions?.depthMm).length
 
   const schritte: { ziel: Ansicht; titel: string; satz: string; knopf: string; erledigt: boolean }[] = [
     {
@@ -34,20 +37,6 @@ export function Start({ onGehe }: { onGehe: (a: Ansicht) => void }) {
       satz: t('start.step.items.why', 'Name and quantity are enough to start.'),
       knopf: t('start.step.items.go', 'Add equipment'),
       erledigt: items.length > 0,
-    },
-    {
-      ziel: 'lager',
-      titel: t('start.step.places', 'Create shelves and cases'),
-      satz: t('start.step.places.why', 'Then drag the equipment to where it sits.'),
-      knopf: t('start.step.places.go', 'Create shelves and cases'),
-      erledigt: cases.length > 0,
-    },
-    {
-      ziel: 'cases',
-      titel: t('start.step.measure', 'Measure your cases'),
-      satz: t('start.step.measure.why', 'Pick a template or enter the outside size — needed to pack a vehicle.'),
-      knopf: t('start.step.measure.go', 'Measure cases'),
-      erledigt: cases.length > 0 && vermessen === cases.length,
     },
     {
       ziel: 'fahrzeuge',
@@ -59,7 +48,7 @@ export function Start({ onGehe }: { onGehe: (a: Ansicht) => void }) {
     {
       ziel: 'ladung',
       titel: t('start.step.load', 'Plan a load'),
-      satz: t('start.step.load.why', 'Choose the cases for a job — the app lays them out in the vehicle.'),
+      satz: t('start.step.load.why', 'Pick what goes along — cases or loose equipment. Missing sizes can be added later.'),
       knopf: t('start.step.load.go', 'Plan a load'),
       erledigt: loads.length > 0,
     },

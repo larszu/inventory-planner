@@ -104,14 +104,21 @@ export function Fahrzeuge() {
     setMeldung(format(t('fleet.imported', 'Taken over: {n}'), { n: uebernommen }))
   }
 
+  const [fehlt, setFehlt] = useState<string | null>(null)
   const anlegen = (e: React.FormEvent) => {
     e.preventDefault()
     const l = Number(laenge)
     const b = Number(breite)
     const h = Number(hoehe)
-    if (!name.trim() || !(l > 0) || !(b > 0) || !(h > 0)) return
-
-    addVehicle({ name: name.trim(), kind, cargoMm: { lengthMm: l, widthMm: b, heightMm: h }, obstructions: [] })
+    // Der Name ist Beiwerk — ohne ihn heisst das Fahrzeug wie seine Klasse.
+    // Die drei Masse sind der Laderaum selbst; fehlt eins, sagt das Formular
+    // welches, statt still nichts zu tun.
+    if (!(l > 0) || !(b > 0) || !(h > 0)) {
+      setFehlt(t('vehicle.needSize', 'Enter length, width and height of the cargo space — or pick a vehicle model above.'))
+      return
+    }
+    setFehlt(null)
+    addVehicle({ name: name.trim() || labels[kind], kind, cargoMm: { lengthMm: l, widthMm: b, heightMm: h }, obstructions: [] })
     setName('')
     setLaenge('')
     setBreite('')
@@ -129,7 +136,7 @@ export function Fahrzeuge() {
         {FAHRZEUG_KATALOG.length > 0 ? (
           <div className="zeile">
             <label>
-              {t('fleet.fromCatalogue', 'Start from a master record')}
+              {t('fleet.fromCatalogue', 'Pick a vehicle model — the cargo space is filled in')}
               <select
                 value=""
                 onChange={(e) => {
@@ -137,7 +144,7 @@ export function Fahrzeuge() {
                   if (eintrag) addVehicle(ausKatalog(eintrag, name, t))
                 }}
               >
-                <option value="">{t('fleet.pick', 'pick one')}</option>
+                <option value="">{t('fleet.pick', '—')}</option>
                 {FAHRZEUG_KATALOG.map((k) => (
                   <option key={k.name} value={k.name}>
                     {k.name}
@@ -186,7 +193,8 @@ export function Fahrzeuge() {
               <input type="number" value={hoehe} onChange={(e) => setHoehe(e.target.value)} />
             </label>
           </div>
-          <button type="submit">{t('vehicle.add', 'Add vehicle')}</button>
+          <button type="submit" className="knopf-primaer">{t('vehicle.add', 'Add vehicle')}</button>
+          {fehlt && <p className="befund nein" role="alert">{fehlt}</p>}
         </form>
         {/* Die Messanleitung gehoert zum Anlegen — zugeklappt darin. */}
         <details className="optionen vermessen">

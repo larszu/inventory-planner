@@ -20,7 +20,16 @@ import { useLoadStore } from '../domain/store/loadStore'
 import { CONTAINER_KINDS } from '../domain/types/inventory'
 import type { InventoryItem } from '../domain/types/inventory'
 import type { Ladung } from '../domain/types/load'
-import { gesamtGewicht, gruppen, mitAktuellenMassen, stueckeAusContainern, unplanbar } from '../domain/lib/ladung'
+import {
+  gesamtGewicht,
+  gruppen,
+  loseArtikel,
+  mitAktuellenMassen,
+  stueckeAusArtikeln,
+  stueckeAusContainern,
+  unplanbar,
+} from '../domain/lib/ladung'
+import type { PhysicalDimensions } from '../domain/types/inventory'
 import { gruppenVorschlaege } from '../domain/lib/abladegruppen'
 import { gruppenFarbe } from '../domain/lib/gruppenFarben'
 import { nutzlastFrei } from '../domain/lib/laderaum'
@@ -32,32 +41,53 @@ export function Ladung() {
   const vehicles = useVehicleStore((s) => s.vehicles)
   const { loads: gespeichert, addLadung, addStuecke, setVehicle, removeLadung, setGruppe, setGruppenReihenfolge } =
     useLoadStore()
-  const loads = useMemo(() => gespeichert.map((l) => mitAktuellenMassen(l, nodes)), [gespeichert, nodes])
   const items = useInventoryStore((s) => s.items)
+  const updateItem = useInventoryStore((s) => s.updateItem)
+  const updateNode = useInventoryStore((s) => s.updateNode)
+  const loads = useMemo(
+    () => gespeichert.map((l) => mitAktuellenMassen(l, nodes, items)),
+    [gespeichert, nodes, items],
+  )
+  const lose = useMemo(() => loseArtikel(items, nodes), [items, nodes])
 
   const container = useMemo(() => nodes.filter((n) => CONTAINER_KINDS.includes(n.kind)), [nodes])
 
   const [name, setName] = useState('')
   const [offen, setOffen] = useState<string>('')
   const [wahl, setWahl] = useState<string[]>([])
+  const [wahlArtikel, setWahlArtikel] = useState<string[]>([])
 
   const aktuell = loads.find((l) => l.id === offen)
 
   const umschalten = (id: string) =>
     setWahl((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]))
 
+  const umschaltenArtikel = (id: string) =>
+    setWahlArtikel((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]))
+
   const uebernehmen = () => {
     if (!aktuell) return
-    addStuecke(aktuell.id, stueckeAusContainern(nodes, wahl))
+    addStuecke(aktuell.id, [...stueckeAusContainern(nodes, wahl), ...stueckeAusArtikeln(items, wahlArtikel)])
     setWahl([])
+    setWahlArtikel([])
     setOffen('')
   }
 
   // Was schon auf der Ladung steht, wird nicht noch einmal angeboten: ein
-  // zweites Hinzufuegen luede dasselbe Case doppelt.
+  // zweites Hinzufuegen luede dasselbe Stueck doppelt.
   const waehlbar = (l: { stuecke: { nodeId?: string }[] }) => {
     const drin = new Set(l.stuecke.map((s) => s.nodeId))
     return container.filter((c) => !drin.has(c.id))
+  }
+  const waehlbarLose = (l: { stuecke: { itemId?: string }[] }) => {
+    const drin = new Set(l.stuecke.map((s) => s.itemId))
+    return lose.filter((i) => !drin.has(i.id))
+  }
+
+  /** Masse nachtragen, wo sie hingehören: am Case oder am Artikel. */
+  const masseSetzen = (st: { nodeId?: string; itemId?: string; dimensions?: PhysicalDimensions }, d: PhysicalDimensions) => {
+    if (st.nodeId) updateNode(st.nodeId, { dimensions: d })
+    else if (st.itemId) updateItem(st.itemId, { dimensions: d })
   }
 
   return (
@@ -65,7 +95,7 @@ export function Ladung() {
       <p className="hinweis">
         {t(
           'load.intro',
-          'Create a load, choose a vehicle, add the cases. A case inside a transport case counts once.',
+          'Create a load and pick what goes along. Sizes can be added later.',
         )}
       </p>
 
@@ -73,8 +103,14 @@ export function Ladung() {
         className="block zeile"
         onSubmit={(e) => {
           e.preventDefault()
-          if (!name.trim()) return
-          setOffen(addLadung(name))
+          // Ohne Namen heisst sie nach ihrer Nummer — ein Pflichtfeld vor dem
+          // ersten Case hielt nur auf.
+          // Gibt es genau ein Fahrzeug, ist es gesetzt — die Wahl hätte nur eine Antwort.
+          const neu = addLadung(
+            name.trim() || format(t('load.defaultName', 'Load {n}'), { n: loads.length + 1 }),
+            vehicles.length === 1 ? vehicles[0]!.id : undefined,
+          )
+          setOffen(neu)
           setName('')
         }}
       >
@@ -130,13 +166,22 @@ export function Ladung() {
               </p>
             )}
 
+            {/* Fehlende Masse sind kein Halt: das Stück fährt mit, und wer
+                will, trägt sie gleich hier nach — sie landen am Case bzw.
+                am Artikel und gelten dann überall. */}
             {offeneMasse.length > 0 && (
-              <p className="befund offen">
-                {format(t('load.unplannable', '{n} pieces cannot be laid out — they still travel'), {
-                  n: offeneMasse.length,
+              <details className="optionen masse-liste">
+                <summary>
+                  {format(t('load.unplannable', 'No place in the plan yet: {n} — add sizes'), {
+                    n: offeneMasse.length,
+                  })}
+                </summary>
+                {offeneMasse.map((u) => {
+                  const st = l.stuecke.find((x) => x.id === u.stueckId)
+                  if (!st || (!st.nodeId && !st.itemId)) return null
+                  return <MasseZeile key={u.stueckId} label={u.label} d={st.dimensions} onSetze={(d) => masseSetzen(st, d)} />
                 })}
-                : {offeneMasse.map((u) => u.label).join(', ')}
-              </p>
+              </details>
             )}
 
             {gruppen(l).length > 0 && (
@@ -168,7 +213,7 @@ export function Ladung() {
               className={l.id === loads.find((x) => x.stuecke.length === 0)?.id && l.id !== offen ? 'knopf-primaer' : undefined}
               onClick={() => setOffen(l.id === offen ? '' : l.id)}
             >
-              {l.id === offen ? t('load.closePick', 'Close') : t('load.openPick', 'Add cases')}
+              {l.id === offen ? t('load.closePick', 'Close') : t('load.openPick', 'Add')}
             </button>
             <button type="button" className="still" onClick={() => removeLadung(l.id)}>
               {t('load.remove', 'Remove load')}
@@ -178,11 +223,11 @@ export function Ladung() {
                 ganzen Ladeplan, sah niemand, dass der Klick etwas getan hat. */}
             {aktuell?.id === l.id && (
               <div className="block">
-                <h3>{format(t('load.pickFor', 'Containers for {name}'), { name: aktuell.name })}</h3>
-                {container.length === 0 && <p>{t('load.noContainers', 'No cases or transport cases in stock yet.')}</p>}
-                {container.length > 0 && waehlbar(l).length === 0 && (
-                  <p>{t('load.allTaken', 'Every case is already on this load.')}</p>
+                <h3>{format(t('load.pickFor', 'What goes on {name}?'), { name: aktuell.name })}</h3>
+                {waehlbar(l).length === 0 && waehlbarLose(l).length === 0 && (
+                  <p>{t('load.allTaken', 'Everything is already on this load.')}</p>
                 )}
+                {waehlbar(l).length > 0 && <p className="kicker-klein">{t('load.pick.cases', 'Cases')}</p>}
                 {waehlbar(l).map((c) => (
                   <label key={c.id} className="wahl">
                     <input type="checkbox" checked={wahl.includes(c.id)} onChange={() => umschalten(c.id)} />
@@ -192,8 +237,23 @@ export function Ladung() {
                     </span>
                   </label>
                 ))}
-                {waehlbar(l).length > 0 && (
-                  <button type="button" onClick={uebernehmen} disabled={wahl.length === 0}>
+                {waehlbarLose(l).length > 0 && <p className="kicker-klein">{t('load.pick.loose', 'Loose equipment')}</p>}
+                {waehlbarLose(l).map((i) => (
+                  <label key={i.id} className="wahl">
+                    <input type="checkbox" checked={wahlArtikel.includes(i.id)} onChange={() => umschaltenArtikel(i.id)} />
+                    <span>
+                      {i.model}
+                      <em>{format(t('load.pick.qty', 'Qty {n}'), { n: i.quantity ?? 1 })}</em>
+                    </span>
+                  </label>
+                ))}
+                {(waehlbar(l).length > 0 || waehlbarLose(l).length > 0) && (
+                  <button
+                    type="button"
+                    className="knopf-primaer"
+                    onClick={uebernehmen}
+                    disabled={wahl.length + wahlArtikel.length === 0}
+                  >
                     {t('load.take', 'Add to load')}
                   </button>
                 )}
@@ -287,5 +347,38 @@ function Gruppenzuordnung({
         </label>
       ))}
     </>
+  )
+}
+
+/** Eine Zeile: Breite, Höhe, Tiefe, Gewicht — für ein Stück ohne Masse. */
+function MasseZeile({
+  label,
+  d,
+  onSetze,
+}: {
+  label: string
+  d: PhysicalDimensions | undefined
+  onSetze: (d: PhysicalDimensions) => void
+}) {
+  const { t } = useT()
+  const feld = (k: keyof PhysicalDimensions, titel: string) => (
+    <label className="schmal">
+      {titel}
+      <input
+        type="number"
+        min={0}
+        value={d?.[k] ?? ''}
+        onChange={(e) => onSetze({ ...d, [k]: e.target.value === '' ? undefined : Number(e.target.value) })}
+      />
+    </label>
+  )
+  return (
+    <div className="zeile masse-zeile">
+      <strong>{label}</strong>
+      {feld('widthMm', t('load.size.w', 'Width mm'))}
+      {feld('heightMm', t('load.size.h', 'Height mm'))}
+      {feld('depthMm', t('load.size.d', 'Depth mm'))}
+      {feld('weightKg', t('load.size.kg', 'kg'))}
+    </div>
   )
 }
