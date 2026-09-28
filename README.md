@@ -1,4 +1,4 @@
-# Inventory Planner
+# LZ Inventory Planner
 
 Das Lager als eigenes Werkzeug: **Bestand**, **Ausgabescheine**, **Sub-Hire** —
 mit einer Bedienung für den Lageristen statt eines Dialogs im Kabelplan.
@@ -83,6 +83,19 @@ hält die in seinem eigenen `userData`-Bereich — Desktop-Fassung und
 Browser-Fassung sind zwei Lager auf demselben Rechner. Das ist keine Panne,
 sondern die Eigenschaft der Ablage; der Weg dazwischen ist der Export
 (`avplan-inventory`), nicht die Erwartung, es sei dasselbe Fenster.
+
+Der `userData`-Ordner der Desktop-Fassung heißt `Inventory Planner`, nicht wie
+der Anzeigename `LZ Inventory Planner`: `electron/main.cjs` setzt ihn fest, bevor
+ein Fenster entsteht, damit Bestand und Einstellungen am bekannten Ort liegen.
+Die Pakete heißen `LZ-Inventory-Planner-Setup-<version>.exe`,
+`LZ-Inventory-Planner-Portable-<version>.exe` und
+`LZ-Inventory-Planner-<version>-<arch>.dmg`.
+
+**Erscheinungsbild.** App-Symbol in `build/` (`icon.svg` ist die Vorlage,
+`icon.png`/`icon.ico` gehen in die Pakete), Favicon, Touch-Icon und
+Web-Manifest in `public/`. Die Kopfzeile trägt das Signet „lz" ohne Tally-Punkt (ein Rot pro Sichtfeld), Hilfe → Über
+das Hauptlogo; beide Zeichen liegen als Originalkonturen aus dem Brand Kit 2.0
+unter `src/assets/brand/` und folgen dem Thema (Off-White dunkel, Navy hell).
 
 **Die Web-Seite ist noch nicht live.** Eine GitHub-Pages-Site kann nur ein
 Mensch in den Repo-Einstellungen anlegen (*Settings → Pages → Source:

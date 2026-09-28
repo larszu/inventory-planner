@@ -51,7 +51,7 @@
   },
   "build": {
     "appId": "com.larszumpe.inventoryplanner",
-    "productName": "Inventory Planner",
+    "productName": "LZ Inventory Planner",
     "directories": {
       "output": "release"
     },
@@ -66,14 +66,14 @@
       ]
     },
     "portable": {
-      "artifactName": "Inventory-Planner-Portable-${version}.${ext}"
+      "artifactName": "LZ-Inventory-Planner-Portable-${version}.${ext}"
     },
     "nsis": {
       "oneClick": true,
       "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "artifactName": "Inventory-Planner-Setup-${version}.${ext}"
+      "artifactName": "LZ-Inventory-Planner-Setup-${version}.${ext}"
     },
     "mac": {
       "target": [
@@ -87,7 +87,7 @@
         }
       ],
       "category": "public.app-category.business",
-      "artifactName": "Inventory-Planner-${version}-${arch}.${ext}",
+      "artifactName": "LZ-Inventory-Planner-${version}-${arch}.${ext}",
       "identity": "-",
       "hardenedRuntime": false,
       "gatekeeperAssess": false

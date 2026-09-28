@@ -186,10 +186,9 @@ export const de: Record<string, string> = {
   'checkouts.noDue': 'kein Termin vereinbart',
 
   // ── Kopfzeile und Datei-Menü ──
-  'brand': 'Lager',
   'file.importReport': '{ok} übernommen, {no} abgewiesen.',
   'file.unreadable': 'Die Datei ist kein lesbarer Lagerbestand (avplan-inventory).',
-  'menu.about': 'Über Inventory Planner…',
+  'menu.about': 'Über LZ Inventory Planner…',
   'menu.file': 'Datei',
   'menu.help': 'Hilfe',
   'menu.new': 'Neues Lager',
@@ -201,7 +200,7 @@ export const de: Record<string, string> = {
 
   // ── Einstellungen ──
   'settings.about': 'Über',
-  'settings.about.body': 'Das Lager der AV-Planner-Suite (ADR-006).',
+  'settings.about.body': 'Das Lager der LZ Planner Suite (ADR-006).',
   'settings.close': 'Schliessen',
   'settings.language': 'Sprache',
   'settings.language.hint':
@@ -1374,7 +1373,7 @@ export const de: Record<string, string> = {
   'settings.library.code': 'Authenticator-Code',
   'settings.library.forgot': 'Passwort vergessen',
   'settings.library.hint':
-    'Gemeinsame Gerätedaten der AV-Planner-Suite. Lesen geht nur mit Konto; der Planer speichert nur das Anmelde-Token, nie das Passwort.',
+    'Gemeinsame Gerätedaten der LZ Planner Suite. Lesen geht nur mit Konto; der Planer speichert nur das Anmelde-Token, nie das Passwort.',
   'settings.library.login': 'E-Mail oder Benutzername',
   'settings.library.password': 'Passwort',
   'settings.library.register': 'Konto anlegen',

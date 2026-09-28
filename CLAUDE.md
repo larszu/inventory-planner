@@ -2,7 +2,7 @@
 
 Anleitung für Claude Code (claude.ai/code) in diesem Repo.
 
-Inventory Planner ist das **Lager** der AV-Planner-Suite als eigenes Werkzeug:
+LZ Inventory Planner ist das **Lager** der AV-Planner-Suite als eigenes Werkzeug:
 Bestand, Ausgabescheine, Sub-Hire. React 19 + TypeScript + Zustand + Vite,
 offline-first, Ablage in `localStorage`.
 
