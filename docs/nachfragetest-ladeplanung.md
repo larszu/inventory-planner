@@ -52,7 +52,7 @@ eingetragen, wo er erkennbar ist.
 ## Die Testseite
 
 `public/ladeplanung/` — englisch (`index.html`) und deutsch (`de.html`),
-ausgeliefert mit der Web-Seite unter `…/inventory-planner/ladeplanung/`.
+ausgeliefert mit der Web-Seite unter `https://larszu.github.io/lz-inventory-planner/ladeplanung/`.
 Bild: 3D-Ansicht eines gepackten Fiat Ducato L3H2 aus der App (Maße aus dem
 Katalog, Cases aus den mitgelieferten Vorlagen). Ein Sprinter steht nicht im
 Katalog — ohne Datenblatt-Quelle kommt er dort nicht hinein.
