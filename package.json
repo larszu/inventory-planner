@@ -1,5 +1,22 @@
 {
   "name": "inventory-planner",
+  "description": "Equipment inventory and rental warehouse tool for AV and event production: stock, check-out slips and sub-hire. Offline-first Electron + React desktop app.",
+  "keywords": [
+    "inventory-management",
+    "warehouse-management",
+    "equipment-rental",
+    "rental-management",
+    "av-production",
+    "event-technology",
+    "asset-management",
+    "live-production",
+    "electron",
+    "react",
+    "typescript",
+    "desktop-app",
+    "offline-first",
+    "cross-platform"
+  ],
   "private": true,
   "avplan": {
     "sourceLanguage": "en"

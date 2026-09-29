@@ -1,5 +1,10 @@
 # LZ Inventory Planner
 
+> **Equipment inventory and rental warehouse tool for AV and event production** —
+> stock, check-out slips and sub-hire, run by the warehouse crew instead of from
+> inside a cable plan. Offline-first Electron desktop app, part of the
+> [LZ Planner Suite](https://github.com/larszu/lz-planner-suite).
+
 Das Lager als eigenes Werkzeug: **Bestand**, **Ausgabescheine**, **Sub-Hire** —
 mit einer Bedienung für den Lageristen statt eines Dialogs im Kabelplan.
 
